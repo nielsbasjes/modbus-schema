@@ -12,8 +12,7 @@ after they have been analysed and a fix is available.
 To report a security vulnerability, send an email to security@basjes.nl .
 
 Do *not* open a public issue, send a pull request, or disclose any information about the suspected vulnerability publicly.
-If you discover any publicly disclosed security vulnerabilities, please notify us *immediately* through
-ccrelease-security@basjes.nl .
+If you discover any publicly disclosed security vulnerabilities, please notify us *immediately* through security@basjes.nl .
 
 ## Supported Versions
 

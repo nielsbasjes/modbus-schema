@@ -1,4 +1,11 @@
 # Modbus Schema Toolkit
+This toolkit is intended to make retrieving data from Modbus based devices a lot easier.
+I have split this into 3 projects:
+- [Modbus Schema](https://github.com/nielsbasjes/modbus-schema): A toolkit and schema definition
+- [Modbus Devices](https://github.com/nielsbasjes/modbus-devices): The actual schemas of a few devices.
+- [SunSpec Device](https://github.com/nielsbasjes/sunspec-device): The schema for a SunSpec device differs per physical device
+
+All of this was created by Niels Basjes
 
 ## The problem
 I have multiple devices at home that are capable of exposing metrics using the modbus protocol.
@@ -55,7 +62,8 @@ Works on my machine. Usable for experiments.
 ## Donations
 If this project has business value for you then don't hesitate to support me with a small donation.
 
-[![Donations via PayPal](https://img.shields.io/badge/Donations-via%20Paypal-blue.svg)](https://www.paypal.me/nielsbasjes)
+[![If this project has business value for you then don't hesitate to support me with a small donation.](https://img.shields.io/badge/Donations-via%20Github-red.svg)](https://github.com/sponsors/nielsbasjes)
+[![If this project has business value for you then don't hesitate to support me with a small donation.](https://img.shields.io/badge/Donations-via%20Paypal-red.svg)](https://www.paypal.me/nielsbasjes)
 
 ---
 

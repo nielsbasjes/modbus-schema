@@ -1,8 +1,17 @@
+# Modbus Schema Toolkit
+This toolkit is intended to make retrieving data from Modbus based devices a lot easier.
+
+I have split this into 3 projects:
+- [Modbus Schema](https://github.com/nielsbasjes/modbus-schema): A toolkit and schema definition
+- [Modbus Devices](https://github.com/nielsbasjes/modbus-devices): The actual schemas of a few devices.
+- [SunSpec Device](https://github.com/nielsbasjes/sunspec-device): The schema for a SunSpec device differs per physical device
+
+The documentation can be found here https://modbus.basjes.nl/
+
+All of this was created by [Niels Basjes](https://niels.basjes.nl/).
+
 # What is this?
-
 This is a specification and a library that makes reading data from Modbus devices a lot easier.
-
-Check https://modbus.basjes.nl for more info.
 
 # License
     Modbus Schema Toolkit
