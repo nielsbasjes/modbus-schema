@@ -103,12 +103,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.yaml</groupId>
-        <artifactId>snakeyaml</artifactId>
-        <version>2.4</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
         <version>[${antlr.version}]</version> <!-- PIN to exact version -->

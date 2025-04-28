@@ -30,9 +30,6 @@
   <packaging>jar</packaging>
   <name>Modbus Schema : Modbus : Impl : J2Mod</name>
 
-  <properties>
-  </properties>
-
   <dependencies>
 
     <dependency>
