@@ -1,0 +1,83 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Expressions for Strings'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'StringsBlock'
+    description: 'Fields that are a string'
+    fields:
+      - id: 'StringUtf8'
+        description: 'A UTF8 encoded string'
+        expression: 'utf8(hr:0 # 12)'
+      - id: 'StringHex'
+        description: 'A hex dump of a set of bytes'
+        expression: 'hexstring(hr:0 # 12)'
+      - id: 'StringConcat'
+        description: 'A concat'
+        expression: 'concat(''!'' , utf8(hr:0 # 3) , ''~'' , StringUtf8 , ''"'')'
+
+tests:
+  - id: 'String: Empty'
+    description: 'Test with NO letters only 0x000 bytes'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+    blocks:
+      - id: 'StringsBlock'
+        expected:
+          StringUtf8:   [ '' ]
+          StringHex :   [ '0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00' ]
+          StringConcat: [ '!~"' ]
+
+  - id: 'String: Plain ASCII'
+    description: 'Test with only plain ASCII'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 4e69 656c 7320 4261 736a 6573 0000 0000 0000 0000 0000 0000
+    blocks:
+      - id: 'StringsBlock'
+        expected:
+          StringUtf8  : [ 'Niels Basjes' ]
+          StringHex   : [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00' ]
+          StringConcat: [ '!Niels ~Niels Basjes"' ]
+
+  - id: 'String: Emoji'
+    description: 'Test with emojis in the String'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 4e69 656c 7320 4261 736a 6573 20f0 9f98 98f0 9f96 9600 0000
+    blocks:
+      - id: 'StringsBlock'
+        expected:
+          StringUtf8  : [ 'Niels Basjes 😘🖖' ]
+          StringHex   : [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73 0x20 0xF0 0x9F 0x98 0x98 0xF0 0x9F 0x96 0x96 0x00 0x00 0x00' ]
+          StringConcat: [ '!Niels ~Niels Basjes 😘🖖"' ]
+
+  - id: 'String: Invalid'
+    description: 'Test with a null byte which should terminate the String earlier'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 4e69 656c 7320 4261 736a 6573 00f0 9f98 98f0 9f96 9600 0000
+        #                                        ^^ null byte.
+    blocks:
+      - id: 'StringsBlock'
+        expected:
+          StringUtf8  : [ 'Niels Basjes' ]
+          StringHex   : [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73 0x00 0xF0 0x9F 0x98 0x98 0xF0 0x9F 0x96 0x96 0x00 0x00 0x00' ]
+          StringConcat: [ '!Niels ~Niels Basjes"' ]

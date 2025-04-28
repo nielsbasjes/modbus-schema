@@ -1,0 +1,148 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Expressions for Float'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'Float32Block'
+    description: 'Fields that are a Float 32'
+    fields:
+      - id: 'Float32'
+        description: 'Float 32'
+        expression: "ieee754_32(hr:0#2)"
+      - id: 'Float32_NI'
+        description: 'Float 32 with "Not Implemented" value'
+        expression: "ieee754_32(hr:0#2; 0xDEAD 0xDEAD)"
+      - id: 'Float32String'
+        description: 'Float 32 converted to String'
+        expression: "concat('>' , Float32 , '<')"
+      - id: 'Float32_NIString'
+        description: 'Float 32 converted to String'
+        expression: "concat('>' , Float32_NI , '<')"
+  - id: 'Float64Block'
+    description: 'Fields that are a Float 64'
+    fields:
+      - id: 'Float64'
+        description: 'Float 64'
+        expression: "ieee754_64(hr:2#4)"
+      - id: 'Float64_NI'
+        description: 'Float 64 with "Not Implemented" value'
+        expression: "ieee754_64(hr:2#4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)"
+      - id: 'Float64String'
+        description: 'Float 64 converted to String'
+        expression: "concat('>' , Float64 , '<')"
+      - id: 'Float64_NIString'
+        description: 'Float 64 converted to String'
+        expression: "concat('>' , Float64_NI , '<')"
+
+tests:
+  - id: 'Float: Not Implemented'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD DEAD DEAD DEAD DEAD DEAD
+    blocks:
+      - id: 'Float32Block'
+        expected:
+          Float32         : [ -6264320714451452000.000 ]
+          Float32_NI      : []
+          Float32String   : [ '>-6.264320714451452E18<' ]
+          Float32_NIString: [ '><' ]
+      - id: 'Float64Block'
+        expected:
+          Float64         : [ -11935504820988231000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000 ]
+          Float64_NI      : []
+          Float64String   : [ '>-1.1935504820988231E148<' ]
+          Float64_NIString: [ '><' ]
+
+  - id: 'Float: Not A Number (NaN)'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 7Fc0 0000 7FF8 0000 0000 0000
+    blocks:
+      - id: 'Float32Block'
+        expected:
+          Float32         : [ 'NaN' ]
+          Float32_NI      : [ 'NaN' ]
+          Float32String   : [ '>NaN<' ]
+          Float32_NIString: [ '>NaN<' ]
+      - id: 'Float64Block'
+        expected:
+          Float64         : [ 'NaN' ]
+          Float64_NI      : [ 'NaN' ]
+          Float64String   : [ '>NaN<' ]
+          Float64_NIString: [ '>NaN<' ]
+
+
+  - id: 'Float: +Infinite'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 7F80 0000 7FF0 0000 0000 0000
+    blocks:
+      - id: 'Float32Block'
+        expected:
+          Float32         : [ '+Infinite' ]
+          Float32_NI      : [ '+Infinite' ]
+          Float32String   : [ '>Infinity<' ]
+          Float32_NIString: [ '>Infinity<' ]
+      - id: 'Float64Block'
+        expected:
+          Float64         : [ '+Infinite' ]
+          Float64_NI      : [ '+Infinite' ]
+          Float64String   : [ '>Infinity<' ]
+          Float64_NIString: [ '>Infinity<' ]
+
+  - id: 'Float: -Infinite'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: FF80 0000 FFF0 0000 0000 0000
+    blocks:
+      - id: 'Float32Block'
+        expected:
+          Float32         : [ '-Infinite' ]
+          Float32_NI      : [ '-Infinite' ]
+          Float32String   : [ '>-Infinity<' ]
+          Float32_NIString: [ '>-Infinity<' ]
+      - id: 'Float64Block'
+        expected:
+          Float64         : [ '-Infinite' ]
+          Float64_NI      : [ '-Infinite' ]
+          Float64String   : [ '>-Infinity<' ]
+          Float64_NIString: [ '>-Infinity<' ]
+
+  - id: 'Float: Normal values'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 449A 5225 4093 4A45 84FC D47C
+    blocks:
+      - id: 'Float32Block'
+        expected:
+          Float32         : [ 1234.567 ]
+          Float32_NI      : [ 1234.567 ]
+          Float32String   : [ '>1234.5670166015625<' ]
+          Float32_NIString: [ '>1234.5670166015625<' ]
+      - id: 'Float64Block'
+        expected:
+          Float64         : [ 1234.568 ] # 1234.56789012
+          Float64_NI      : [ 1234.568 ] # 1234.56789012
+          Float64String   : [ '>1234.56789012<' ]
+          Float64_NIString: [ '>1234.56789012<' ]

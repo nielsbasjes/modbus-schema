@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Modbus Schema Toolkit
+  ~ Copyright (C) 2019-2025 Niels Basjes
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>nl.basjes.modbus</groupId>
+  <artifactId>modbus-schema-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+  <name>Modbus Schema :</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+
+    <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
+    <project.build.outputTimestamp>2001-01-01T01:01:01Z</project.build.outputTimestamp>
+
+    <java.version>17</java.version>
+    <kotlin.version>2.1.0</kotlin.version>
+
+    <!-- Tell IntelliJ which JDK to use -->
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <!--    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>-->
+
+    <kotlin.code.style>official</kotlin.code.style>
+    <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
+
+    <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
+    <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
+    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
+    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+    <maven-artifact-plugin.version>3.6.0</maven-artifact-plugin.version>
+    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+    <apache-rat-plugin.version>0.16.1</apache-rat-plugin.version>
+
+    <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
+    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+    <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+
+    <junit5.version>5.12.2</junit5.version>
+
+    <antlr.version>4.13.2</antlr.version>
+
+    <plc4j.version>0.12.0</plc4j.version>
+
+  </properties>
+
+  <dependencyManagement>
+
+    <dependencies>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-stdlib</artifactId>
+        <version>${kotlin.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-test-junit5</artifactId>
+        <version>${kotlin.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit5.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-bom</artifactId>
+        <version>2.24.3</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>2.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-runtime</artifactId>
+        <version>[${antlr.version}]</version> <!-- PIN to exact version -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.plc4x</groupId>
+        <artifactId>plc4j-driver-modbus</artifactId>
+        <version>${plc4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.ghgande</groupId>
+        <artifactId>j2mod</artifactId>
+        <version>3.2.1</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+
+    <profile>
+      <id>skipQuality</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <rat.skip>true</rat.skip>
+        <dependency-convergence.phase>none</dependency-convergence.phase>
+        <invoker.skip>true</invoker.skip>
+        <cyclonedx.skip>true</cyclonedx.skip>
+        <gpg.skip>true</gpg.skip>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>artifactCompare</id>
+      <build>
+        <defaultGoal>clean verify</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-artifact-plugin</artifactId>
+            <version>${maven-artifact-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>compare</id>
+                <goals>
+                  <goal>compare</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>packageForRelease</id>
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-artifact-plugin</artifactId>
+            <version>${maven-artifact-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>Ensure plugins are reproducible</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>check-buildplan</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>Generate buildinfo</id>
+                <goals>
+                  <goal>buildinfo</goal>
+                </goals>
+                <configuration>
+                  <attach>true</attach>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- https://central.sonatype.org/publish/publish-portal-maven/ -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.7.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <!--              <autoPublish>true</autoPublish>-->
+              <!--              <waitUntil>published</waitUntil>-->
+              <waitUntil>validated</waitUntil>
+              <excludeArtifacts>
+                <excludeArtifact>devtools</excludeArtifact>
+              </excludeArtifacts>
+            </configuration>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <build>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven-clean-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <failIfNoTests>true</failIfNoTests>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.jetbrains.kotlin</groupId>
+          <artifactId>kotlin-maven-plugin</artifactId>
+          <version>${kotlin.version}</version>
+          <executions>
+            <execution>
+              <id>compile</id>
+              <phase>process-sources</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>test-compile</id>
+              <phase>test-compile</phase>
+              <goals>
+                <goal>test-compile</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <compilerPlugins>
+              <plugin>kotlinx-serialization</plugin>
+            </compilerPlugins>
+            <jvmTarget>${java.version}</jvmTarget>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.jetbrains.kotlin</groupId>
+              <artifactId>kotlin-maven-serialization</artifactId>
+              <version>${kotlin.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-artifact-plugin</artifactId>
+        <version>${maven-artifact-plugin.version}</version>
+        <configuration>
+          <skipModules>
+            <skipModule>nl.basjes.modbus/devtools</skipModule>
+          </skipModules>
+        </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+            <plugin>
+              <groupId>org.apache.rat</groupId>
+              <artifactId>apache-rat-plugin</artifactId>
+              <version>${apache-rat-plugin.version}</version>
+              <inherited>false</inherited>
+              <executions>
+                <execution>
+                  <phase>validate</phase>
+                  <goals>
+                    <goal>check</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                <consoleOutput>true</consoleOutput>
+                <excludeSubProjects>false</excludeSubProjects>
+                <excludes>
+                  <!-- Build config files -->
+                  <exclude>.mvn/jvm.config</exclude>
+                  <!-- Version control files -->
+                  <exclude>**/.git/**</exclude>
+                  <exclude>**/.gitignore</exclude>
+                  <exclude>**/.gitmodules</exclude>
+                  <!-- IDE settings and files -->
+                  <exclude>**/.classpath</exclude>
+                  <exclude>**/.project</exclude>
+                  <exclude>**/.settings/**</exclude>
+                  <exclude>**/.idea/**</exclude>
+                  <exclude>**/*.iml</exclude>
+                  <exclude>**/.run/**</exclude>
+                  <exclude>**/*.patch</exclude>
+                  <exclude>**/*.diff</exclude>
+                  <!-- Test files that should not be 'polluted' -->
+<!--                  <exclude>gitignore-reader/src/test/resources/testtree/</exclude>-->
+<!--                  <exclude>enforcer/src/it/testtree/</exclude>-->
+                  <!-- Files that cannot be 'polluted' -->
+                  <exclude>docs/CNAME</exclude>
+                  <exclude>.git-hooks/commit-msg.d/sailr.*</exclude>
+                  <exclude>.github/**</exclude>
+                  <exclude>**/*.json</exclude>
+                  <exclude>**/*.ndjson</exclude>
+                  <!-- Files generated during build and/or development -->
+                  <exclude>**/target/**</exclude>
+                  <exclude>**/gen/**</exclude>
+                  <exclude>**/dependency-reduced-pom.xml</exclude>
+                  <!-- Test scripts -->
+                  <exclude>*.sh</exclude>
+                  <exclude>**/_*/**</exclude>
+                  <exclude>**/*_/**</exclude>
+                  <exclude>**/gitignore-reader/src/test/resources/**</exclude>
+                </excludes>
+              </configuration>
+            </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>3.1.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>nl.basjes.maven.release</groupId>
+            <artifactId>conventional-commits-version-policy</artifactId>
+            <version>1.0.7</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+
+          <scmCommentPrefix>Release:</scmCommentPrefix>
+          <scmReleaseCommitComment>Release: Version @{releaseLabel}</scmReleaseCommitComment>
+          <scmDevelopmentCommitComment>Release: Start development of next version</scmDevelopmentCommitComment>
+          <scmRollbackCommitComment>Release: Rollback the release of @{releaseLabel}</scmRollbackCommitComment>
+
+          <tagNameFormat>v@{project.version}</tagNameFormat>
+          <projectVersionPolicyId>ConventionalCommitsVersionPolicy</projectVersionPolicyId>
+          <projectVersionPolicyConfig>
+            <versionTag>^v([0-9]+\.[0-9]+\.[0-9]+)$</versionTag>
+          </projectVersionPolicyConfig>
+
+          <preparationProfiles>packageForRelease</preparationProfiles>
+          <preparationGoals>clean verify</preparationGoals>
+          <releaseProfiles>packageForRelease,release</releaseProfiles>
+          <pushChanges>false</pushChanges>
+          <remoteTagging>false</remoteTagging>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>${cyclonedx-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <modules>
+    <module>devtools</module>
+    <module>modbus-schema-bom</module>
+    <module>modbus-api-parent</module>
+    <module>modbus-schema-reference</module>
+    <module>modbus-schema-device</module>
+    <module>modbus-schema-maven-plugin</module>
+  </modules>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Niels Basjes</name>
+      <email>niels@basjes.nl</email>
+      <roles>
+        <role>Architect</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>https://github.com/nielsbasjes/modbus-schema</url>
+    <connection>scm:git:https://github.com/nielsbasjes/modbus-schema.git</connection>
+    <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+</project>

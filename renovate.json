@@ -1,0 +1,89 @@
+{
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "packageRules": [
+    {
+      "description": "Disable strange versions of graphql-java",
+      "matchPackageNames": [
+        "com.graphql-java:graphql-java"
+      ],
+      "allowedVersions": "/^[0-9]{1,3}\\.[0-9]{1,3}(?:\\.[0-9]{1,3})?$/"
+    },
+    {
+      "groupSlug": "logging",
+      "groupName": "logging",
+      "labels": [
+        "logging"
+      ],
+      "matchPackageNames": [
+        "org.apache.logging{/,}**",
+        "org.slf4j{/,}**"
+      ]
+    },
+    {
+      "groupSlug": "maven_build_plugins",
+      "groupName": "maven build plugins",
+      "labels": [
+        "maven-build-plugins"
+      ],
+      "matchPackageNames": [
+        "org.apache.maven.plugins{/,}**",
+        "org.codehaus.mojo{/,}**",
+        "org.sonarsource.scanner.maven{/,}**",
+        "com.github.spotbugs{/,}**",
+        "com.google.code.maven-replacer-plugin{/,}**",
+        "io.fabric8{/,}**",
+        "pl.project13.maven{/,}**",
+        "com.alexecollins.maven.plugin{/,}**",
+        "org.jetbrains.kotlin{/,}**",
+        "net.alchim31.maven{/,}**"
+      ]
+    },
+    {
+      "groupSlug": "google",
+      "groupName": "google",
+      "labels": [
+        "google"
+      ],
+      "matchPackageNames": [
+        "com.google{/,}**"
+      ]
+    },
+    {
+      "groupSlug": "commons",
+      "groupName": "Apache Commons",
+      "labels": [
+        "apache-commons"
+      ],
+      "allowedVersions": "/^[0-9]{1,3}\\.[0-9]{1,3}(?:\\.[0-9]{1,3})?(?:-M[0-9]{1,3})?$/",
+      "matchPackageNames": [
+        "commons-{/,}**",
+        "org.apache.commons{/,}**"
+      ]
+    },
+    {
+      "groupSlug": "testing",
+      "groupName": "Testing and Code Quality",
+      "labels": [
+        "testing"
+      ],
+      "matchPackageNames": [
+        "org.junit{/,}**",
+        "org.scalatest{/,}**",
+        "org.hamcrest{/,}**",
+        "org.owasp{/,}**",
+        "org.pitest{/,}**",
+        "org.jacoco{/,}**",
+        "org.sonarsource{/,}**",
+        "com.github.spotbugs{/,}**",
+        "org.eluder.coveralls{/,}**",
+        "org.apache.rat{/,}**",
+        "net.sourceforge.cobertura{/,}**",
+        "com.puppycrawl.tools{/,}**"
+      ]
+    }
+  ]
+}

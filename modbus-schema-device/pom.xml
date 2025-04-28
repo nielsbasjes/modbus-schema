@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Modbus Schema Toolkit
+  ~ Copyright (C) 2019-2025 Niels Basjes
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>nl.basjes.modbus</groupId>
+    <artifactId>modbus-schema-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>modbus-schema-device</artifactId>
+
+  <packaging>jar</packaging>
+  <name>Modbus Schema : Schema Device</name>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+    </dependency>
+
+    <!-- https://github.com/charleskorn/kaml -->
+    <dependency>
+      <groupId>com.charleskorn.kaml</groupId>
+      <artifactId>kaml-jvm</artifactId>
+      <version>0.77.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api-plc4j</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api-j2mod</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-schema-reference</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>antlr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <visitor>true</visitor>
+              <listener>false</listener>
+              <treatWarningsAsErrors>true</treatWarningsAsErrors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <!--      &lt;!&ndash; Always run integration tests &ndash;&gt;-->
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-invoker-plugin</artifactId>-->
+<!--        <version>${maven-invoker-plugin.version}</version>-->
+<!--        <configuration>-->
+<!--          <failIfNoProjects>true</failIfNoProjects>-->
+<!--          &lt;!&ndash;          <debug>true</debug>&ndash;&gt;-->
+<!--          <streamLogsOnFailures>true</streamLogsOnFailures>-->
+<!--          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>-->
+<!--          <postBuildHookScript>verify</postBuildHookScript>-->
+<!--          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>-->
+<!--          <settingsFile>./src/it/settings.xml</settingsFile>-->
+<!--          <goals>-->
+<!--            <goal>clean</goal>-->
+<!--            <goal>test</goal>-->
+<!--          </goals>-->
+<!--        </configuration>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>integration-test</id>-->
+<!--            <goals>-->
+<!--              <goal>install</goal>-->
+<!--              <goal>run</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>add-generated-antlr4-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/antlr4/</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}</directory>
+              <includes>
+                <!-- Cleaning the intermediate files from maven-shade-plugin. -->
+                <include>dependency-reduced-pom.xml</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven-shade-plugin.version}</version>
+        <configuration>
+          <minimizeJar>true</minimizeJar>
+          <createDependencyReducedPom>true</createDependencyReducedPom>
+          <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
+          <filters>
+            <filter>
+              <artifact>org.antlr:antlr4-runtime</artifact>
+              <excludes>
+                <exclude>META-INF/services/**</exclude>
+                <exclude>META-INF/MANIFEST.MF</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <relocations>
+            <relocation>
+              <pattern>org.antlr</pattern>
+              <shadedPattern>nl.basjes.modbus.schema.shaded.org.antlr</shadedPattern>
+            </relocation>
+          </relocations>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>inject-problematic-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>org.antlr:antlr4-runtime</include>
+                </includes>
+              </artifactSet>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Niels Basjes</name>
+      <email>niels@basjes.nl</email>
+      <roles>
+        <role>Architect</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>https://github.com/nielsbasjes/modbus-schema</url>
+    <connection>scm:git:https://github.com/nielsbasjes/modbus-schema.git</connection>
+    <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+
+</project>

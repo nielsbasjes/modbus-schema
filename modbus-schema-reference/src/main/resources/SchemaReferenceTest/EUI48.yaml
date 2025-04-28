@@ -1,0 +1,62 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Expressions for EUI48'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'EUI48Block'
+    description: 'Fields that are a EUI48'
+    fields:
+      - id: 'EUI48_3'
+        description: 'EUI48 (3 registers)'
+        expression: "eui48(hr:0#3 )"
+      - id: 'EUI48_3_NI'
+        description: 'EUI48 (3 registers) with "Not Implemented" value'
+        expression: "eui48(hr:0#3 ; 0xDEAD 0xDEAD 0xDEAD  )"
+      - id: 'EUI48_4'
+        description: 'EUI48 (4 registers)'
+        expression: "eui48(hr:0#4 )"
+      - id: 'EUI48_4_NI'
+        description: 'EUI48 (4 registers) with "Not Implemented" value'
+        expression: "eui48(hr:0#4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD )"
+
+tests:
+  - id: 'EUI48: Normal values'
+    description: 'Test with normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'EUI48Block'
+        expected:
+          EUI48_3     : [ '01:02:03:04:05:06' ]
+          EUI48_3_NI  : [ '01:02:03:04:05:06' ]
+          EUI48_4     : [ '03:04:05:06:07:08' ]
+          EUI48_4_NI  : [ '03:04:05:06:07:08' ]
+  - id: 'EUI48: Not Implemented'
+    description: 'Test with Not Implemented values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD DEAD DEAD DEAD
+    blocks:
+      - id: 'EUI48Block'
+        expected:
+          EUI48_3     : [ 'DE:AD:DE:AD:DE:AD' ]
+          EUI48_3_NI  : []
+          EUI48_4     : [ 'DE:AD:DE:AD:DE:AD' ]
+          EUI48_4_NI  : []

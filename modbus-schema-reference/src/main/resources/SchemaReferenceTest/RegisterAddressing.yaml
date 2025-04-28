@@ -1,0 +1,197 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Addressing registers in all allowed formats'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'RegisterBlockSingle'
+    description: 'Fields that simply retrieve a single register as-is'
+    fields:
+      - id: 'Holding0_short'
+        expression: "hexstring(hr:0)"
+      - id: 'Holding0_long'
+        expression: "hexstring(holding-register:0)"
+      - id: 'Holding0_x1'
+        expression: "hexstring(4x1)"
+      - id: 'Holding0_x2'
+        expression: "hexstring(4x000000001)"
+      - id: 'Holding0_modspec5'
+        expression: "hexstring(40001)"
+      - id: 'Holding0_modspec6'
+        expression: "hexstring(400001)"
+
+  - id: 'RegisterBlockThreeCount'
+    description: 'Fields that simply retrieve a range of 3 registers by specifying a count'
+    fields:
+      - id: 'Holding0_short'
+        expression: "hexstring(hr:0 #3)"
+      - id: 'Holding0_long'
+        expression: "hexstring(holding-register:0#3)"
+      - id: 'Holding0_x1'
+        expression: "hexstring(4x1#3)"
+      - id: 'Holding0_x2'
+        expression: "hexstring(4x000000001#3)"
+      - id: 'Holding0_modspec5'
+        expression: "hexstring(40001#3)"
+      - id: 'Holding0_modspec6'
+        expression: "hexstring(400001#3)"
+
+  - id: 'RegisterBlockThreeRange'
+    description: 'Fields that simply retrieve a range of 3 registers by specifying the first and last'
+    fields:
+      - id: 'Holding0_short'
+        expression: "hexstring(hr:0 .. hr:2 )"
+      - id: 'Holding0_long'
+        expression: "hexstring(holding-register:0 .. holding-register:2)"
+      - id: 'Holding0_x1'
+        expression: "hexstring(4x1..4x3 )"
+      - id: 'Holding0_x2'
+        expression: "hexstring(4x000000001..   4x000000003)"
+      - id: 'Holding0_modspec5'
+        expression: "hexstring(40001 .. 40003)"
+      - id: 'Holding0_modspec6'
+        expression: "hexstring(400001 .. 400003)"
+
+  - id: 'RegisterBlockThree'
+    description: 'Fields that simply retrieve a range of 3 registers by specifying them individually'
+    fields:
+      - id: 'Holding0_short'
+        expression: "hexstring(hr:0, hr:1, hr:2 )"
+      - id: 'Holding0_long'
+        expression: "hexstring(holding-register:0, holding-register:1, holding-register:2)"
+      - id: 'Holding0_x1'
+        expression: "hexstring(4x1, 4x2 , 4x3 )"
+      - id: 'Holding0_x2'
+        expression: "hexstring(4x000000001 ,4x000000002   ,   4x000000003)"
+      - id: 'Holding0_modspec5'
+        expression: "hexstring(40001 , 40002 , 40003)"
+      - id: 'Holding0_modspec6'
+        expression: "hexstring(400001 , 400002  , 400003)"
+
+  - id: 'RegisterBlockThreeMixed'
+    description: 'Fields that simply retrieve a range of 3 registers by specifying them individually'
+    fields:
+      - id: 'Holding0_mix1'
+        description: 'Holding register Mixed formats 1'
+        expression: "hexstring(hr:0,holding-register:1 ,4x3 )"
+      - id: 'Holding0_mix2'
+        description: 'Holding register Mixed formats 2'
+        expression: "hexstring(holding-register:0,4x000000002,400003)"
+      - id: 'Holding0_mix3'
+        description: 'Holding register Mixed formats 3'
+        expression: "hexstring(400001, 40002 ,4x3)"
+      - id: 'Holding0_mix4'
+        description: 'Holding register Mixed formats 4'
+        expression: "hexstring(4x000000001 ,40002 ,holding-register:2)"
+
+  - id: 'RegisterBlockThreeRangeMixed'
+    description: 'Fields that simply retrieve a range of 3 registers by specifying the first and last'
+    fields:
+      - id: 'Holding0_mix1'
+        description: 'Holding register Mixed formats 1'
+        expression: "hexstring(hr:0..4x3 )"
+      - id: 'Holding0_mix2'
+        description: 'Holding register Mixed formats 2'
+        expression: "hexstring(holding-register:0  ..400003)"
+      - id: 'Holding0_mix3'
+        description: 'Holding register Mixed formats 3'
+        expression: "hexstring(400001 .. 4x3)"
+      - id: 'Holding0_mix4'
+        description: 'Holding register Mixed formats 4'
+        expression: "hexstring(4x000000001.. holding-register:2)"
+
+tests:
+  - id: 'RegisterAddressing: Get single register'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'RegisterBlockSingle'
+        expected:
+          Holding0_short        : [ '0x01 0x02' ]
+          Holding0_long         : [ '0x01 0x02' ]
+          Holding0_x1           : [ '0x01 0x02' ]
+          Holding0_x2           : [ '0x01 0x02' ]
+          Holding0_modspec5     : [ '0x01 0x02' ]
+          Holding0_modspec6     : [ '0x01 0x02' ]
+
+  - id: 'RegisterAddressing: Get 3 registers using count'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'RegisterBlockThreeCount'
+        expected:
+          Holding0_short        : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_long         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_x1           : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_x2           : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_modspec5     : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_modspec6     : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+
+  - id: 'RegisterAddressing: Get 3 registers using range'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'RegisterBlockThreeRange'
+        expected:
+          Holding0_short        : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_long         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_x1           : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_x2           : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_modspec5     : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_modspec6     : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+
+  - id: 'RegisterAddressing: Get 3 registers using multiple explicit registers'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'RegisterBlockThree'
+        expected:
+          Holding0_short        : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_long         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_x1           : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_x2           : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_modspec5     : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_modspec6     : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+
+  - id: 'RegisterAddressing: Get 3 registers using multiple explicit registers in mixed formats'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'RegisterBlockThreeMixed'
+        expected:
+          Holding0_mix1         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_mix2         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_mix3         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_mix4         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+
+  - id: 'RegisterAddressing: Get 3 registers using ranges of registers in mixed formats'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'RegisterBlockThreeRangeMixed'
+        expected:
+          Holding0_mix1         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_mix2         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_mix3         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]
+          Holding0_mix4         : [ '0x01 0x02 0x03 0x04 0x05 0x06' ]

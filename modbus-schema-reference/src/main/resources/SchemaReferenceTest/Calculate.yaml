@@ -1,0 +1,314 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Expressions to verify all forms of calculations'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'SimpleValues'
+    description: 'Fields that are simple values'
+    fields:
+      - id: 'DoublePos'
+        expression: '  1234.11 '
+      - id: 'DoubleNeg'
+        expression: ' -1234.11 '
+      - id: 'DoublePosBraces'
+        expression: '( 1234.11)'
+      - id: 'DoubleNegBraces'
+        expression: '(-1234.11)'
+      - id: 'LongPos'
+        expression: '  1234 '
+      - id: 'LongNeg'
+        expression: ' -1234 '
+      - id: 'LongPosBraces'
+        expression: '( 1234)'
+      - id: 'LongNegBraces'
+        expression: '( -1234 )'
+
+  - id: 'BasicOperations'
+    description: 'Fields that are fixed values using basic operations'
+    fields:
+      - id: 'LongDoublePower'
+        expression: ' 5  ^3.3'
+      - id: 'DoubleLongPowerPos'
+        expression: ' 5.5^3'
+      - id: 'DoubleLongPowerNeg'
+        expression: '10  ^-3'
+      - id: 'DoubleDoublePower'
+        expression: '5.5 ^3.3'
+      - id: 'LongDoubleMultiply'
+        expression: '5  *3.3'
+      - id: 'DoubleLongMultiply'
+        expression: '5.5*3'
+      - id: 'DoubleDoubleMultiply'
+        expression: '5.5*3.3'
+      - id: 'LongDoubleImplicitMultiply'
+        expression: '5 (3.3)'
+      - id: 'LongDoubleLongImplicitMultiply'
+        expression: '5 (1.1)*3'
+      - id: 'LongLongDoubleImplicitMultiply'
+        expression: '5 (3)*1.1'
+      - id: 'DoubleLongImplicitMultiply1'
+        expression: '5.5(3)'
+      - id: 'DoubleLongImplicitMultiply2'
+        expression: '(5.5)*3'
+      - id: 'DoubleDoubleBracesImplicitMultiply'
+        expression: '(5.5)(3.3)'
+      - id: 'DoubleLongDoubleBracesImplicitMultiply'
+        expression: '(1.1)*5(3.3)'
+      - id: 'LongLongBracesImplicitMultiply'
+        expression: '5 (3)'
+      - id: 'LongLongDivide'
+        expression: '5  /3'
+      - id: 'LongDoubleDivide'
+        expression: '5  /3.3'
+      - id: 'DoubleLongDivide'
+        expression: '5.5/3'
+      - id: 'DoubleDoubleDivide'
+        expression: '5.5/3.3'
+      - id: 'LongDoubleAdd'
+        expression: '5  +3.3'
+      - id: 'DoubleLongAdd'
+        expression: '5.5+3'
+      - id: 'DoubleDoubleAdd'
+        expression: '5.5+3.3'
+      - id: 'LongDoubleMinus'
+        expression: '5  -3.3'
+      - id: 'DoubleLongMinus'
+        expression: '5.5-3'
+      - id: 'DoubleDoubleMinus'
+        expression: '5.5-3.3'
+      - id: 'LongLongMultiply'
+        expression: '5*3'
+      - id: 'LongLongAdd'
+        expression: '5+3'
+      - id: 'LongLongSubtract'
+        expression: '5-3'
+
+
+  - id: 'ComplexOperations'
+    description: 'Fields that are fixed values using complex operations where PEMDAS is relevant'
+    fields:
+      - id: 'Pemdas1'
+        expression: '  12 / 3 *  4 '
+      - id: 'Pemdas2'
+        expression: '   4 * 3 / 12 '
+
+      # https://youtu.be/2hsW8_Wpffk
+      - id: 'Pemdas3'
+        expression: '3^3+4*(8-5)/6'
+
+      # https://www.chilimath.com/lessons/introductory-algebra/order-of-operations-practice-problems/
+      - id: 'Pemdas4'
+        expression: '7-24/8*4+6'
+      - id: 'Pemdas5'
+        expression: '18/3-7+2*5'
+      - id: 'Pemdas6'
+        expression: '6*4/12+72/8-9'
+      - id: 'Pemdas7'
+        expression: '(17-6/2)+4*3'
+      - id: 'Pemdas8'
+        expression: '-2(1*4-2/2)+(6+2-3)'
+      - id: 'Pemdas9'
+        expression: '-1((3-4*7)/5)-2*24/6'
+      - id: 'Pemdas10'
+        expression: '(3*5^2/15)-(5-2^2)'
+      - id: 'Pemdas11'
+        expression: '(1^4*2^2+3^3)-2^5/4'
+      - id: 'Pemdas12'
+        expression: '(22/2-2*5)^2+(4-6/6)^2'
+
+      # https://leverageedu.com/blog/pemdas/
+      - id: 'Pemdas13'
+        expression: '9 + (12 + 1)^2'
+      - id: 'Pemdas14'
+        expression: '7 + (-5(-10 - 1))^3'
+      - id: 'Pemdas15'
+        expression: '12 / 6 * 3 / 2'
+      - id: 'Pemdas16'
+        expression: '8 + (16 * 5^2 - 10)'
+      - id: 'Pemdas17'
+        expression: '7 * 3 + 10 * (25 / 5)'
+
+      - id: 'Pemdas18'
+        expression: '((-1 - (-21)) * 2) / (9 + 1) - (-15)^2'
+      - id: 'Pemdas19'
+        expression: '-24 + 3 + 8 - ((-1 + 13)^2 - (2 + 13))'
+      - id: 'Pemdas20'
+        expression: '(-30 * 2) / ((28 - 26) * (-19 - (-13)))'
+      - id: 'Pemdas21'
+        expression: '((-18 + 9) * 3) / (-10 - 22 + 18 + 5 )'
+      - id: 'Pemdas22'
+        expression: '(-23 - (8 + (-12) * 2 - 1 - 12)) / (-21 - (-20)) '
+
+
+  - id: 'FieldCalculations'
+    description: 'Calculations that combine the values of several fields'
+    fields:
+      - id: 'One'
+        expression: "ieee754_32(hr:0#2)"
+      - id: 'Two'
+        expression: "ieee754_64(hr:2#4)"
+      - id: 'Three'
+        expression: "uint16(hr:6)"
+      - id: 'Four'
+        expression: "int16(hr:7)"
+      - id: 'Factor'
+        expression: "int16(swapendian(hr:8))"
+      - id: 'Combined'
+        expression: "(One+Two+Three+Four)*10^Factor"
+
+
+  - id: 'PemdasFieldCalculations'
+    description: 'Calculations that combine the values of several fields'
+    fields:
+      - id: 'Eight'
+        expression: "int16(hr:0)"
+      - id: 'Sixteen'
+        expression: "int16(hr:1)"
+      - id: 'Five'
+        expression: "int16(hr:2)"
+      - id: 'Two'
+        expression: "int16(hr:3)"
+      - id: 'Ten'
+        expression: "int16(hr:4)"
+      - id: 'Pemdas'
+        # '8 + (16 * 5^2 - 10) = 398'
+        expression: "Eight + (Sixteen * Five^Two - Ten)"
+
+
+tests:
+  - id: 'Calculations: Simple values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0000
+    blocks:
+    - id: 'SimpleValues'
+      expected:
+        DoublePos                               : [  1234.110 ]
+        DoubleNeg                               : [ -1234.110 ]
+        DoublePosBraces                         : [  1234.110 ]
+        DoubleNegBraces                         : [ -1234.110 ]
+        LongPos                                 : [  1234     ]
+        LongNeg                                 : [ -1234     ]
+        LongPosBraces                           : [  1234     ]
+        LongNegBraces                           : [ -1234     ]
+
+  - id: 'Calculations: Basic operations'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0000
+    blocks:
+    - id: 'BasicOperations'
+      expected:
+        LongDoublePower                         : [ 202.582 ]
+        DoubleLongPowerPos                      : [ 166.375 ]
+        DoubleLongPowerNeg                      : [   0.001 ]
+        DoubleDoublePower                       : [ 277.458 ]
+        LongDoubleMultiply                      : [  16.500 ]
+        DoubleLongMultiply                      : [  16.500 ]
+        DoubleDoubleMultiply                    : [  18.150 ]
+        LongDoubleImplicitMultiply              : [  16.500 ]
+        LongDoubleLongImplicitMultiply          : [  16.500 ]
+        LongLongDoubleImplicitMultiply          : [  16.500 ]
+        DoubleLongImplicitMultiply1             : [  16.500 ]
+        DoubleLongImplicitMultiply2             : [  16.500 ]
+        DoubleDoubleBracesImplicitMultiply      : [  18.150 ]
+        DoubleLongDoubleBracesImplicitMultiply  : [  18.150 ]
+        LongLongBracesImplicitMultiply          : [  15     ]
+        LongLongDivide                          : [   1.667 ]
+        LongDoubleDivide                        : [   1.515 ]
+        DoubleLongDivide                        : [   1.833 ]
+        DoubleDoubleDivide                      : [   1.667 ]
+        LongDoubleAdd                           : [   8.300 ]
+        DoubleLongAdd                           : [   8.500 ]
+        DoubleDoubleAdd                         : [   8.800 ]
+        LongDoubleMinus                         : [   1.700 ]
+        DoubleLongMinus                         : [   2.500 ]
+        DoubleDoubleMinus                       : [   2.200 ]
+        LongLongMultiply                        : [  15     ]
+        LongLongAdd                             : [   8     ]
+        LongLongSubtract                        : [   2     ]
+
+  - id: 'Calculations: Complex operations (PEMDAS)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0000
+    blocks:
+    - id: 'ComplexOperations'
+      expected:
+        Pemdas1                                 : [ 16.000 ]
+        Pemdas2                                 : [  1.000 ]
+
+        # https://youtu.be/2hsW8_Wpffk
+        Pemdas3                                 : [ 29.000     ]
+
+        # https://www.chilimath.com/lessons/introductory-algebra/order-of-operations-practice-problems/
+        Pemdas4                                 : [  1.000     ]
+        Pemdas5                                 : [  9.000     ]
+        Pemdas6                                 : [  2.000     ]
+        Pemdas7                                 : [ 26.000     ]
+        Pemdas8                                 : [ -1.000     ]
+        Pemdas9                                 : [ -3.000     ]
+        Pemdas10                                : [  4.000     ]
+        Pemdas11                                : [ 23.000     ]
+        Pemdas12                                : [ 10.000     ]
+
+        # https://leverageedu.com/blog/pemdas/    [            ]
+        Pemdas13                                : [    178     ]
+        Pemdas14                                : [ 166382     ]
+        Pemdas15                                : [      3.000 ]
+        Pemdas16                                : [    398     ]
+        Pemdas17                                : [     71.000 ]
+
+        Pemdas18                                : [ -221.000   ]
+        Pemdas19                                : [ -142       ]
+        Pemdas20                                : [ 5.000      ]
+        Pemdas21                                : [ 3.000      ]
+        Pemdas22                                : [ -6.000     ]
+
+  - id: 'Field Calculations: Simple'
+    description: 'Calculations that combine the values of several fields'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers:  449A 5225 4093 4A45 84FC D47C 3039   CFC7     8000
+        #         | float32  | float64           |uint16| int16 | int16
+        #         | 1234.567 | 1234.568          |12345 |-12345 | 1 (after endian change)
+    blocks:
+      - id: 'FieldCalculations'
+        expected:
+          One        : [   1234.567 ]
+          Two        : [   1234.568 ]
+          Three      : [  12345     ]
+          Four       : [ -12345     ]
+          Factor     : [      1     ]
+          Combined   : [  24691.349 ]
+
+  - id: 'Field Calculations: Pemdas'
+    description: 'Calculations that combine the values of several fields'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers:  0008 0010 0005 0002 000A
+    blocks:
+      - id: 'PemdasFieldCalculations'
+        expected:
+          Eight      : [ 8       ]
+          Sixteen    : [ 16      ]
+          Five       : [ 5       ]
+          Two        : [ 2       ]
+          Ten        : [ 10      ]
+          Pemdas     : [ 398.000 ]

@@ -1,0 +1,202 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Expressions for Bitset'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'BitsetBlock'
+    description: 'Fields that are a Bitset'
+    fields:
+      - id:          'Bitset1'
+        description: 'Bitset 1 register'
+        expression:  "bitset(hr:0                                  ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
+      - id:          'Bitset1_NI'
+        description: 'Bitset 1 register with "Not Implemented" value'
+        expression:  "bitset(hr:0   ; 0xDEAD                       ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
+      - id:          'Bitset2'
+        description: 'Bitset 2 registers'
+        expression:  "bitset(hr:0#2                                ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )"
+      - id:          'Bitset2_NI'
+        description: 'Bitset 2 registers with "Not Implemented" value'
+        expression:  "bitset(hr:0#2 ; 0xDEAD 0xDEAD                ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )"
+      - id:          'Bitset3'
+        description: 'Bitset 3 registers'
+        expression:  "bitset(hr:0#3                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' )"
+      - id:          'Bitset3_NI'
+        description: 'Bitset 3 registers with "Not Implemented" value'
+        expression:  "bitset(hr:0#3 ; 0xDEAD 0xDEAD 0xDEAD         ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' )"
+      - id:          'Bitset4'
+        description: 'Bitset 4 registers'
+        expression:  "bitset(hr:0#4                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50' )"
+      - id:          'Bitset4_NI'
+        description: 'Bitset 4 registers with "Not Implemented" value'
+        expression:  "bitset(hr:0#4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD  ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50' )"
+
+tests:
+  - id: 'Bitset: Single register value check Not Implemented'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1     : ['Zero', 'Two', 'Bit 3', 'Bit 5', 'Bit 7', 'Bit 9', 'Bit 10', 'Bit 11', 'Bit 12', 'Bit 14', 'Bit 15']
+          Bitset1_NI  : []
+
+  - id: 'Bitset: Single register value check 0000'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0000
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    []
+          Bitset1_NI: []
+
+  - id: 'Bitset: Single register value check 0001'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0001
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Zero']
+          Bitset1_NI: ['Zero']
+
+  - id: 'Bitset: Single register value check 0002'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0002
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['One']
+          Bitset1_NI: ['One']
+
+  - id: 'Bitset: Single register value check 0003'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0003
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Zero', 'One']
+          Bitset1_NI: ['Zero', 'One']
+
+  - id: 'Bitset: Single register value check 0004'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0004
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Two']
+          Bitset1_NI: ['Two']
+
+  - id: 'Bitset: Single register value check 0005'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0005
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Zero', 'Two']
+          Bitset1_NI: ['Zero', 'Two']
+
+  - id: 'Bitset: Single register value check 0006'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0006
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['One', 'Two']
+          Bitset1_NI: ['One', 'Two']
+
+  - id: 'Bitset: Single register value check 0007'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0007
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Zero', 'One', 'Two']
+          Bitset1_NI: ['Zero', 'One', 'Two']
+
+  - id: 'Bitset: Single register value check 000F'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 000F
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Zero', 'One', 'Two', 'Bit 3']
+          Bitset1_NI: ['Zero', 'One', 'Two', 'Bit 3']
+
+  - id: 'Bitset: Single register value check 100F'
+    description: 'Checking output of single register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 100F
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset1:    ['Zero', 'One', 'Two', 'Bit 3', 'Bit 12']
+          Bitset1_NI: ['Zero', 'One', 'Two', 'Bit 3', 'Bit 12']
+
+# -----
+
+  - id: 'Bitset: Multiple registers'
+    description: 'Checking output of multiple register bits'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 100F 100F 100F 100F
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset2:    ['Zero', 'One', 'Two', 'Bit 3', 'Bit 12', 'Sixteen', 'Seventeen', 'Eighteen', 'Bit 19', 'Bit 28']
+          Bitset2_NI: ['Zero', 'One', 'Two', 'Bit 3', 'Bit 12', 'Sixteen', 'Seventeen', 'Eighteen', 'Bit 19', 'Bit 28']
+          Bitset3:    ['0', '1', '2', 'Bit 3', 'Bit 12', '16', '17', '18', 'Bit 19', 'Bit 28', '32', '33', '34', 'Bit 35', 'Bit 44']
+          Bitset3_NI: ['0', '1', '2', 'Bit 3', 'Bit 12', '16', '17', '18', 'Bit 19', 'Bit 28', '32', '33', '34', 'Bit 35', 'Bit 44']
+          Bitset4:    ['0', '1', '2', 'Bit 3', 'Bit 12', '16', '17', '18', 'Bit 19', 'Bit 28', '32', '33', '34', 'Bit 35', 'Bit 44', '48', '49', '50', 'Bit 51', 'Bit 60']
+          Bitset4_NI: ['0', '1', '2', 'Bit 3', 'Bit 12', '16', '17', '18', 'Bit 19', 'Bit 28', '32', '33', '34', 'Bit 35', 'Bit 44', '48', '49', '50', 'Bit 51', 'Bit 60']
+
+  - id: 'Bitset: Multiple registers Not Implemented'
+    description: 'Checking output of 2 register bits Not Implemented'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD DEAD DEAD DEAD
+    blocks:
+      - id: 'BitsetBlock'
+        expected:
+          Bitset2:    ['Zero', 'Two', 'Bit 3', 'Bit 5', 'Bit 7', 'Bit 9', 'Bit 10', 'Bit 11', 'Bit 12', 'Bit 14', 'Bit 15', 'Sixteen', 'Eighteen', 'Bit 19', 'Bit 21', 'Bit 23', 'Bit 25', 'Bit 26', 'Bit 27', 'Bit 28', 'Bit 30', 'Bit 31']
+          Bitset2_NI: []
+          Bitset3:    ['0', '2', 'Bit 3', 'Bit 5', 'Bit 7', 'Bit 9', 'Bit 10', 'Bit 11', 'Bit 12', 'Bit 14', 'Bit 15', '16', '18', 'Bit 19', 'Bit 21', 'Bit 23', 'Bit 25', 'Bit 26', 'Bit 27', 'Bit 28', 'Bit 30', 'Bit 31', '32', '34', 'Bit 35', 'Bit 37', 'Bit 39', 'Bit 41', 'Bit 42', 'Bit 43', 'Bit 44', 'Bit 46', 'Bit 47']
+          Bitset3_NI: []
+          Bitset4:    ['0', '2', 'Bit 3', 'Bit 5', 'Bit 7', 'Bit 9', 'Bit 10', 'Bit 11', 'Bit 12', 'Bit 14', 'Bit 15', '16', '18', 'Bit 19', 'Bit 21', 'Bit 23', 'Bit 25', 'Bit 26', 'Bit 27', 'Bit 28', 'Bit 30', 'Bit 31', '32', '34', 'Bit 35', 'Bit 37', 'Bit 39', 'Bit 41', 'Bit 42', 'Bit 43', 'Bit 44', 'Bit 46', 'Bit 47', '48', '50', 'Bit 51', 'Bit 53', 'Bit 55', 'Bit 57', 'Bit 58', 'Bit 59', 'Bit 60', 'Bit 62', 'Bit 63']
+          Bitset4_NI: []

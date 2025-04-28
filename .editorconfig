@@ -1,0 +1,54 @@
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_size = 2
+indent_style = space
+
+[*.{java,kt,kts}]
+indent_size = 4
+
+# Tab indentation (no size specified)
+[Makefile]
+indent_style = tab
+
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+ktlint_standard = enabled
+ktlint_experimental = enabled
+
+# Allow names of unit tests to exceed the max_line_length when wrapped between backticks
+ktlint_ignore_back_ticked_identifier = true
+
+#  - High count is to make sure it never convert to start import
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+
+# Don't allow any wildcard imports
+ij_kotlin_packages_to_use_import_on_demand = unset
+
+# Allow a table like layout of the code using extra spaces
+ktlint_standard_no-multi-spaces = disabled
+
+# Readability above all
+ktlint_standard_no-blank-lines-in-chained-method-calls = disabled

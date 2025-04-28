@@ -1,0 +1,3594 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'A Schema specifically for the SUNSPEC device MADE by SMA model SB3.6-1AV-41 using version 4.01.15.R (SN: 3005067415)'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'SunSpecHeader'
+    description: 'The header that starts the SunSpec model list'
+    fields:
+      - id: 'SunS'
+        description: 'The SunS header'
+        immutable: true
+        system: true
+        expression: 'utf8(hr:40000 # 2)'
+  - id: 'Model_1'
+    description: '[Model 1]:Common: All SunSpec compliant devices must include this as the first model'
+    fields:
+      - id: 'ID'
+        description: '[Model_1](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40002 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_1](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40003 ; 0xFFFF ; 0x8000)'
+      - id: 'Mn'
+        description: '[Model_1](Manufacturer): Well known value registered with SunSpec for compliance.'
+        immutable: true
+        expression: 'utf8(hr:40004 # 16)'
+      - id: 'Md'
+        description: '[Model_1](Model): Manufacturer specific value (32 chars).'
+        immutable: true
+        expression: 'utf8(hr:40020 # 16)'
+      - id: 'Opt'
+        description: '[Model_1](Options): Manufacturer specific value (16 chars).'
+        immutable: true
+        expression: 'utf8(hr:40036 # 8)'
+      - id: 'Vr'
+        description: '[Model_1](Version): Manufacturer specific value (16 chars).'
+        immutable: true
+        expression: 'utf8(hr:40044 # 8)'
+      - id: 'SN'
+        description: '[Model_1](Serial Number): Manufacturer specific value (32 chars).'
+        immutable: true
+        expression: 'utf8(hr:40052 # 16)'
+      - id: 'DA'
+        description: '[Model_1](Device Address): Modbus device address.'
+        expression: 'uint16(hr:40068 ; 0xFFFF ; 0x8000)'
+      - id: 'Pad'
+        description: '[Model_1](Pad): Force even alignment.'
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40069)'
+  - id: 'Model_11'
+    description: '[Model 11]:Ethernet Link Layer: Include to support a wired ethernet port'
+    fields:
+      - id: 'ID'
+        description: '[Model_11](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40070 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_11](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40071 ; 0xFFFF ; 0x8000)'
+      - id: 'Spd'
+        description: '[Model_11](Ethernet Link Speed): Interface speed in Mb/s.'
+        expression: 'uint16(hr:40072 ; 0xFFFF ; 0x8000)'
+        unit: 'Mbps'
+      - id: 'CfgSt'
+        description: '[Model_11](Interface Status Flags): S Interface flags.'
+        expression: 'bitset(hr:40073 ; 0xFFFF ; 0->''LINK'' ; 1->''FULL_DUPLEX'' ; 2->''AUTO_NEG1'' ; 3->''AUTO_NEG2'' ; 4->''AUTO_NEG3'' ; 5->''RESET_REQUIRED'' ; 6->''HW_FAULT'')'
+      - id: 'St'
+        description: '[Model_11](Link State): State information for this interface.'
+        expression: 'enum(hr:40074 ; 0xFFFF ; 0->''UNKNOWN'' ; 1->''ENABLED'' ; 2->''DISABLED'' ; 3->''TESTING'')'
+      - id: 'MAC'
+        description: '[Model_11](MAC): IEEE MAC address of this interface.'
+        expression: 'eui48(hr:40075 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+      - id: 'Nam'
+        description: '[Model_11](Name): Interface name (8 chars).'
+        expression: 'utf8(hr:40079 # 4)'
+      - id: 'Ctl'
+        description: '[Model_11](Control): Control flags.'
+        expression: 'bitset(hr:40083 ; 0xFFFF ; 0->''AUTO'' ; 1->''FULL_DUPLEX'')'
+      - id: 'FrcSpd'
+        description: '[Model_11](Forced Speed): Forced interface speed in Mb/s when AUTO is disabled.'
+        expression: 'uint16(hr:40084 ; 0xFFFF ; 0x8000)'
+        unit: 'Mbps'
+  - id: 'Model_12'
+    description: '[Model 12]:IPv4: Include to support an IPv4 protocol stack on this interface'
+    fields:
+      - id: 'ID'
+        description: '[Model_12](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40085 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_12](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40086 ; 0xFFFF ; 0x8000)'
+      - id: 'Nam'
+        description: '[Model_12](Name): Interface name.'
+        expression: 'utf8(hr:40087 # 4)'
+      - id: 'CfgSt'
+        description: '[Model_12](Config Status): Configuration status.'
+        expression: 'enum(hr:40091 ; 0xFFFF ; 0->''NOT_CONFIGURED'' ; 1->''VALID_SETTING'' ; 2->''VALID_HW'')'
+      - id: 'ChgSt'
+        description: '[Model_12](Change Status): A configuration change is pending.'
+        expression: 'bitset(hr:40092 ; 0xFFFF ; 0->''PENDING'')'
+      - id: 'Cap'
+        description: '[Model_12](Config Capability): Identify capable sources of configuration.'
+        expression: 'bitset(hr:40093 ; 0xFFFF ; 0->''DHCP'' ; 1->''BOOTP'' ; 2->''ZEROCONF'' ; 3->''DNS'' ; 4->''CFG_SETTABLE'' ; 5->''HW_CONFIG'' ; 6->''NTP_CLIENT'' ; 7->''RESET_REQUIRED'')'
+      - id: 'Cfg'
+        description: '[Model_12](IPv4 Config): Configuration method used.'
+        expression: 'enum(hr:40094 ; 0xFFFF ; 0->''STATIC'' ; 1->''DHCP'' ; 2->''BOOTP'' ; 3->''ZEROCONF'')'
+      - id: 'Ctl'
+        description: '[Model_12](Control): Configure use of services.'
+        expression: 'enum(hr:40095 ; 0xFFFF ; 0->''ENABLE_DNS'' ; 1->''ENABLE_NTP'')'
+      - id: 'Addr'
+        description: '[Model_12](IP): IPv4 numeric address as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40096 # 8)'
+      - id: 'Msk'
+        description: '[Model_12](Netmask): IPv4 numeric netmask as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40104 # 8)'
+      - id: 'Gw'
+        description: '[Model_12](Gateway): IPv4 numeric gateway address as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40112 # 8)'
+      - id: 'DNS1'
+        description: '[Model_12](DNS1): IPv4 numeric DNS address as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40120 # 8)'
+      - id: 'DNS2'
+        description: '[Model_12](DNS2): IPv4 numeric DNS address as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40128 # 8)'
+      - id: 'NTP1'
+        description: '[Model_12](NTP1): IPv4 numeric NTP address as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40136 # 12)'
+      - id: 'NTP2'
+        description: '[Model_12](NTP2): IPv4 numeric NTP address as a dotted string xxx.xxx.xxx.xxx.'
+        expression: 'utf8(hr:40148 # 12)'
+      - id: 'DomNam'
+        description: '[Model_12](Domain): Domain name (24 chars max).'
+        expression: 'utf8(hr:40160 # 12)'
+      - id: 'HostNam'
+        description: '[Model_12](Host Name): Host name (24 chars max).'
+        expression: 'utf8(hr:40172 # 12)'
+      - id: 'Pad'
+        description: '[Model_12](Pad): '
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40184)'
+  - id: 'Model_101'
+    description: '[Model 101]:Inverter (Single Phase): Include this model for single phase inverter monitoring'
+    fields:
+      - id: 'ID'
+        description: '[Model_101](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40185 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_101](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40186 ; 0xFFFF ; 0x8000)'
+      - id: 'A'
+        description: '[Model_101](Amps): AC Current.'
+        expression: 'uint16(hr:40187 ; 0xFFFF ; 0x8000)*(10^A_SF)'
+        unit: 'A'
+      - id: 'AphA'
+        description: '[Model_101](Amps PhaseA): Phase A Current.'
+        expression: 'uint16(hr:40188 ; 0xFFFF ; 0x8000)*(10^A_SF)'
+        unit: 'A'
+      - id: 'AphB'
+        description: '[Model_101](Amps PhaseB): Phase B Current.'
+        expression: 'uint16(hr:40189 ; 0xFFFF ; 0x8000)*(10^A_SF)'
+        unit: 'A'
+      - id: 'AphC'
+        description: '[Model_101](Amps PhaseC): Phase C Current.'
+        expression: 'uint16(hr:40190 ; 0xFFFF ; 0x8000)*(10^A_SF)'
+        unit: 'A'
+      - id: 'A_SF'
+        description: '[Model_101](A_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40191 ; 0x8000)'
+      - id: 'PPVphAB'
+        description: '[Model_101](Phase Voltage AB): Phase Voltage AB.'
+        expression: 'uint16(hr:40192 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: 'V'
+      - id: 'PPVphBC'
+        description: '[Model_101](Phase Voltage BC): Phase Voltage BC.'
+        expression: 'uint16(hr:40193 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: 'V'
+      - id: 'PPVphCA'
+        description: '[Model_101](Phase Voltage CA): Phase Voltage CA.'
+        expression: 'uint16(hr:40194 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: 'V'
+      - id: 'PhVphA'
+        description: '[Model_101](Phase Voltage AN): Phase Voltage AN.'
+        expression: 'uint16(hr:40195 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: 'V'
+      - id: 'PhVphB'
+        description: '[Model_101](Phase Voltage BN): Phase Voltage BN.'
+        expression: 'uint16(hr:40196 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: 'V'
+      - id: 'PhVphC'
+        description: '[Model_101](Phase Voltage CN): Phase Voltage CN.'
+        expression: 'uint16(hr:40197 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: 'V'
+      - id: 'V_SF'
+        description: '[Model_101](V_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40198 ; 0x8000)'
+      - id: 'W'
+        description: '[Model_101](Watts): AC Power.'
+        expression: 'int16(hr:40199 ; 0x8000)*(10^W_SF)'
+        unit: 'W'
+      - id: 'W_SF'
+        description: '[Model_101](W_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40200 ; 0x8000)'
+      - id: 'Hz'
+        description: '[Model_101](Hz): Line Frequency.'
+        expression: 'uint16(hr:40201 ; 0xFFFF ; 0x8000)*(10^Hz_SF)'
+        unit: 'Hz'
+      - id: 'Hz_SF'
+        description: '[Model_101](Hz_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40202 ; 0x8000)'
+      - id: 'VA'
+        description: '[Model_101](VA): AC Apparent Power.'
+        expression: 'int16(hr:40203 ; 0x8000)*(10^VA_SF)'
+        unit: 'VA'
+      - id: 'VA_SF'
+        description: '[Model_101](VA_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40204 ; 0x8000)'
+      - id: 'VAr'
+        description: '[Model_101](VAr): AC Reactive Power.'
+        expression: 'int16(hr:40205 ; 0x8000)*(10^VAr_SF)'
+        unit: 'var'
+      - id: 'VAr_SF'
+        description: '[Model_101](VAr_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40206 ; 0x8000)'
+      - id: 'PF'
+        description: '[Model_101](PF): AC Power Factor.'
+        expression: 'int16(hr:40207 ; 0x8000)*(10^PF_SF)'
+        unit: 'Pct'
+      - id: 'PF_SF'
+        description: '[Model_101](PF_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40208 ; 0x8000)'
+      - id: 'WH'
+        description: '[Model_101](WattHours): AC Energy.'
+        expression: 'uint32(hr:40209 # 2 ; 0x0000 0x0000)*(10^WH_SF)'
+        unit: 'Wh'
+      - id: 'WH_SF'
+        description: '[Model_101](WH_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40211 ; 0x8000)'
+      - id: 'DCA'
+        description: '[Model_101](DC Amps): DC Current.'
+        expression: 'uint16(hr:40212 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'DCA_SF'
+        description: '[Model_101](DCA_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40213 ; 0x8000)'
+      - id: 'DCV'
+        description: '[Model_101](DC Voltage): DC Voltage.'
+        expression: 'uint16(hr:40214 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'DCV_SF'
+        description: '[Model_101](DCV_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40215 ; 0x8000)'
+      - id: 'DCW'
+        description: '[Model_101](DC Watts): DC Power.'
+        expression: 'int16(hr:40216 ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'DCW_SF'
+        description: '[Model_101](DCW_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40217 ; 0x8000)'
+      - id: 'TmpCab'
+        description: '[Model_101](Cabinet Temperature): Cabinet Temperature.'
+        expression: 'int16(hr:40218 ; 0x8000)*(10^Tmp_SF)'
+        unit: 'C'
+      - id: 'TmpSnk'
+        description: '[Model_101](Heat Sink Temperature): Heat Sink Temperature.'
+        expression: 'int16(hr:40219 ; 0x8000)*(10^Tmp_SF)'
+        unit: 'C'
+      - id: 'TmpTrns'
+        description: '[Model_101](Transformer Temperature): Transformer Temperature.'
+        expression: 'int16(hr:40220 ; 0x8000)*(10^Tmp_SF)'
+        unit: 'C'
+      - id: 'TmpOt'
+        description: '[Model_101](Other Temperature): Other Temperature.'
+        expression: 'int16(hr:40221 ; 0x8000)*(10^Tmp_SF)'
+        unit: 'C'
+      - id: 'Tmp_SF'
+        description: '[Model_101](Tmp_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40222 ; 0x8000)'
+      - id: 'St'
+        description: '[Model_101](Operating State): Operating state.'
+        expression: 'enum(hr:40223 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'')'
+      - id: 'StVnd'
+        description: '[Model_101](Vendor Operating State): Vendor specific operating state code.'
+        expression: 'int16(hr:40224 ; 0xFFFF)'
+      - id: 'Evt1'
+        description: '[Model_101](Event1): Event fields.'
+        expression: 'bitset(hr:40225 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''DC_OVER_VOLT'' ; 2->''AC_DISCONNECT'' ; 3->''DC_DISCONNECT'' ; 4->''GRID_DISCONNECT'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''OVER_FREQUENCY'' ; 9->''UNDER_FREQUENCY'' ; 10->''AC_OVER_VOLT'' ; 11->''AC_UNDER_VOLT'' ; 12->''BLOWN_STRING_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''HW_TEST_FAILURE'')'
+      - id: 'Evt2'
+        description: '[Model_101](Event Bitfield 2): Reserved for future use.'
+        expression: 'int32(hr:40227 # 2 ; 0xFFFF 0xFFFF)'
+      - id: 'EvtVnd1'
+        description: '[Model_101](Vendor Event Bitfield 1): Vendor defined events.'
+        expression: 'int32(hr:40229 # 2 ; 0xFFFF 0xFFFF)'
+      - id: 'EvtVnd2'
+        description: '[Model_101](Vendor Event Bitfield 2): Vendor defined events.'
+        expression: 'int32(hr:40231 # 2 ; 0xFFFF 0xFFFF)'
+      - id: 'EvtVnd3'
+        description: '[Model_101](Vendor Event Bitfield 3): Vendor defined events.'
+        expression: 'int32(hr:40233 # 2 ; 0xFFFF 0xFFFF)'
+      - id: 'EvtVnd4'
+        description: '[Model_101](Vendor Event Bitfield 4): Vendor defined events.'
+        expression: 'int32(hr:40235 # 2 ; 0xFFFF 0xFFFF)'
+  - id: 'Model_120'
+    description: '[Model 120]:Nameplate: Inverter Controls Nameplate Ratings '
+    fields:
+      - id: 'ID'
+        description: '[Model_120](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40237 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_120](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40238 ; 0xFFFF ; 0x8000)'
+      - id: 'DERTyp'
+        description: '[Model_120](DERTyp): Type of DER device. Default value is 4 to indicate PV device.'
+        expression: 'enum(hr:40239 ; 0xFFFF ; 4->''PV'' ; 82->''PV_STOR'')'
+      - id: 'WRtg'
+        description: '[Model_120](WRtg): Continuous power output capability of the inverter.'
+        expression: 'uint16(hr:40240 ; 0xFFFF ; 0x8000)*(10^WRtg_SF)'
+        unit: 'W'
+      - id: 'WRtg_SF'
+        description: '[Model_120](WRtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40241 ; 0x8000)'
+      - id: 'VARtg'
+        description: '[Model_120](VARtg): Continuous Volt-Ampere capability of the inverter.'
+        expression: 'uint16(hr:40242 ; 0xFFFF ; 0x8000)*(10^VARtg_SF)'
+        unit: 'VA'
+      - id: 'VARtg_SF'
+        description: '[Model_120](VARtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40243 ; 0x8000)'
+      - id: 'VArRtgQ1'
+        description: '[Model_120](VArRtgQ1): Continuous VAR capability of the inverter in quadrant 1.'
+        expression: 'int16(hr:40244 ; 0x8000)*(10^VArRtg_SF)'
+        unit: 'var'
+      - id: 'VArRtgQ2'
+        description: '[Model_120](VArRtgQ2): Continuous VAR capability of the inverter in quadrant 2.'
+        expression: 'int16(hr:40245 ; 0x8000)*(10^VArRtg_SF)'
+        unit: 'var'
+      - id: 'VArRtgQ3'
+        description: '[Model_120](VArRtgQ3): Continuous VAR capability of the inverter in quadrant 3.'
+        expression: 'int16(hr:40246 ; 0x8000)*(10^VArRtg_SF)'
+        unit: 'var'
+      - id: 'VArRtgQ4'
+        description: '[Model_120](VArRtgQ4): Continuous VAR capability of the inverter in quadrant 4.'
+        expression: 'int16(hr:40247 ; 0x8000)*(10^VArRtg_SF)'
+        unit: 'var'
+      - id: 'VArRtg_SF'
+        description: '[Model_120](VArRtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40248 ; 0x8000)'
+      - id: 'ARtg'
+        description: '[Model_120](ARtg): Maximum RMS AC current level capability of the inverter.'
+        expression: 'uint16(hr:40249 ; 0xFFFF ; 0x8000)*(10^ARtg_SF)'
+        unit: 'A'
+      - id: 'ARtg_SF'
+        description: '[Model_120](ARtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40250 ; 0x8000)'
+      - id: 'PFRtgQ1'
+        description: '[Model_120](PFRtgQ1): Minimum power factor capability of the inverter in quadrant 1.'
+        expression: 'int16(hr:40251 ; 0x8000)*(10^PFRtg_SF)'
+        unit: 'cos()'
+      - id: 'PFRtgQ2'
+        description: '[Model_120](PFRtgQ2): Minimum power factor capability of the inverter in quadrant 2.'
+        expression: 'int16(hr:40252 ; 0x8000)*(10^PFRtg_SF)'
+        unit: 'cos()'
+      - id: 'PFRtgQ3'
+        description: '[Model_120](PFRtgQ3): Minimum power factor capability of the inverter in quadrant 3.'
+        expression: 'int16(hr:40253 ; 0x8000)*(10^PFRtg_SF)'
+        unit: 'cos()'
+      - id: 'PFRtgQ4'
+        description: '[Model_120](PFRtgQ4): Minimum power factor capability of the inverter in quadrant 4.'
+        expression: 'int16(hr:40254 ; 0x8000)*(10^PFRtg_SF)'
+        unit: 'cos()'
+      - id: 'PFRtg_SF'
+        description: '[Model_120](PFRtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40255 ; 0x8000)'
+      - id: 'WHRtg'
+        description: '[Model_120](WHRtg): Nominal energy rating of storage device.'
+        expression: 'uint16(hr:40256 ; 0xFFFF ; 0x8000)*(10^WHRtg_SF)'
+        unit: 'Wh'
+      - id: 'WHRtg_SF'
+        description: '[Model_120](WHRtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40257 ; 0x8000)'
+      - id: 'AhrRtg'
+        description: '[Model_120](AhrRtg): The usable capacity of the battery. Maximum charge minus minimum charge from a technology capability perspective (Amp-hour capacity rating).'
+        expression: 'uint16(hr:40258 ; 0xFFFF ; 0x8000)*(10^AhrRtg_SF)'
+        unit: 'AH'
+      - id: 'AhrRtg_SF'
+        description: '[Model_120](AhrRtg_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40259 ; 0x8000)'
+      - id: 'MaxChaRte'
+        description: '[Model_120](MaxChaRte): Maximum rate of energy transfer into the storage device.'
+        expression: 'uint16(hr:40260 ; 0xFFFF ; 0x8000)*(10^MaxChaRte_SF)'
+        unit: 'W'
+      - id: 'MaxChaRte_SF'
+        description: '[Model_120](MaxChaRte_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40261 ; 0x8000)'
+      - id: 'MaxDisChaRte'
+        description: '[Model_120](MaxDisChaRte): Maximum rate of energy transfer out of the storage device.'
+        expression: 'uint16(hr:40262 ; 0xFFFF ; 0x8000)*(10^MaxDisChaRte_SF)'
+        unit: 'W'
+      - id: 'MaxDisChaRte_SF'
+        description: '[Model_120](MaxDisChaRte_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40263 ; 0x8000)'
+      - id: 'Pad'
+        description: '[Model_120](Pad): Pad register.'
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40264)'
+  - id: 'Model_121'
+    description: '[Model 121]:Basic Settings: Inverter Controls Basic Settings '
+    fields:
+      - id: 'ID'
+        description: '[Model_121](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40265 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_121](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40266 ; 0xFFFF ; 0x8000)'
+      - id: 'WMax'
+        description: '[Model_121](WMax): Setting for maximum power output. Default to WRtg.'
+        expression: 'uint16(hr:40267 ; 0xFFFF ; 0x8000)*(10^WMax_SF)'
+        unit: 'W'
+      - id: 'VRef'
+        description: '[Model_121](VRef): Voltage at the PCC.'
+        expression: 'uint16(hr:40268 ; 0xFFFF ; 0x8000)*(10^VRef_SF)'
+        unit: 'V'
+      - id: 'VRefOfs'
+        description: '[Model_121](VRefOfs): Offset from PCC to inverter.'
+        expression: 'int16(hr:40269 ; 0x8000)*(10^VRefOfs_SF)'
+        unit: 'V'
+      - id: 'VMax'
+        description: '[Model_121](VMax): Setpoint for maximum voltage.'
+        expression: 'uint16(hr:40270 ; 0xFFFF ; 0x8000)*(10^VMinMax_SF)'
+        unit: 'V'
+      - id: 'VMin'
+        description: '[Model_121](VMin): Setpoint for minimum voltage.'
+        expression: 'uint16(hr:40271 ; 0xFFFF ; 0x8000)*(10^VMinMax_SF)'
+        unit: 'V'
+      - id: 'VAMax'
+        description: '[Model_121](VAMax): Setpoint for maximum apparent power. Default to VARtg.'
+        expression: 'uint16(hr:40272 ; 0xFFFF ; 0x8000)*(10^VAMax_SF)'
+        unit: 'VA'
+      - id: 'VArMaxQ1'
+        description: '[Model_121](VArMaxQ1): Setting for maximum reactive power in quadrant 1. Default to VArRtgQ1.'
+        expression: 'int16(hr:40273 ; 0x8000)*(10^VArMax_SF)'
+        unit: 'var'
+      - id: 'VArMaxQ2'
+        description: '[Model_121](VArMaxQ2): Setting for maximum reactive power in quadrant 2. Default to VArRtgQ2.'
+        expression: 'int16(hr:40274 ; 0x8000)*(10^VArMax_SF)'
+        unit: 'var'
+      - id: 'VArMaxQ3'
+        description: '[Model_121](VArMaxQ3): Setting for maximum reactive power in quadrant 3. Default to VArRtgQ3.'
+        expression: 'int16(hr:40275 ; 0x8000)*(10^VArMax_SF)'
+        unit: 'var'
+      - id: 'VArMaxQ4'
+        description: '[Model_121](VArMaxQ4): Setting for maximum reactive power in quadrant 4. Default to VArRtgQ4.'
+        expression: 'int16(hr:40276 ; 0x8000)*(10^VArMax_SF)'
+        unit: 'var'
+      - id: 'WGra'
+        description: '[Model_121](WGra): Default ramp rate of change of active power due to command or internal action.'
+        expression: 'uint16(hr:40277 ; 0xFFFF ; 0x8000)*(10^WGra_SF)'
+        unit: '% WMax/sec'
+      - id: 'PFMinQ1'
+        description: '[Model_121](PFMinQ1): Setpoint for minimum power factor value in quadrant 1. Default to PFRtgQ1.'
+        expression: 'int16(hr:40278 ; 0x8000)*(10^PFMin_SF)'
+        unit: 'cos()'
+      - id: 'PFMinQ2'
+        description: '[Model_121](PFMinQ2): Setpoint for minimum power factor value in quadrant 2. Default to PFRtgQ2.'
+        expression: 'int16(hr:40279 ; 0x8000)*(10^PFMin_SF)'
+        unit: 'cos()'
+      - id: 'PFMinQ3'
+        description: '[Model_121](PFMinQ3): Setpoint for minimum power factor value in quadrant 3. Default to PFRtgQ3.'
+        expression: 'int16(hr:40280 ; 0x8000)*(10^PFMin_SF)'
+        unit: 'cos()'
+      - id: 'PFMinQ4'
+        description: '[Model_121](PFMinQ4): Setpoint for minimum power factor value in quadrant 4. Default to PFRtgQ4.'
+        expression: 'int16(hr:40281 ; 0x8000)*(10^PFMin_SF)'
+        unit: 'cos()'
+      - id: 'VArAct'
+        description: '[Model_121](VArAct): VAR action on change between charging and discharging: 1=switch 2=maintain VAR characterization.'
+        expression: 'enum(hr:40282 ; 0xFFFF ; 1->''SWITCH'' ; 2->''MAINTAIN'')'
+      - id: 'ClcTotVA'
+        description: '[Model_121](ClcTotVA): Calculation method for total apparent power. 1=vector 2=arithmetic.'
+        expression: 'enum(hr:40283 ; 0xFFFF ; 1->''VECTOR'' ; 2->''ARITHMETIC'')'
+      - id: 'MaxRmpRte'
+        description: '[Model_121](MaxRmpRte): Setpoint for maximum ramp rate as percentage of nominal maximum ramp rate. This setting will limit the rate that watts delivery to the grid can increase or decrease in response to intermittent PV generation.'
+        expression: 'uint16(hr:40284 ; 0xFFFF ; 0x8000)*(10^MaxRmpRte_SF)'
+        unit: '% WGra'
+      - id: 'ECPNomHz'
+        description: '[Model_121](ECPNomHz): Setpoint for nominal frequency at the ECP.'
+        expression: 'uint16(hr:40285 ; 0xFFFF ; 0x8000)*(10^ECPNomHz_SF)'
+        unit: 'Hz'
+      - id: 'ConnPh'
+        description: '[Model_121](ConnPh): Identity of connected phase for single phase inverters. A=1 B=2 C=3.'
+        expression: 'enum(hr:40286 ; 0xFFFF ; 1->''A'' ; 2->''B'' ; 3->''C'')'
+      - id: 'WMax_SF'
+        description: '[Model_121](WMax_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40287 ; 0x8000)'
+      - id: 'VRef_SF'
+        description: '[Model_121](VRef_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40288 ; 0x8000)'
+      - id: 'VRefOfs_SF'
+        description: '[Model_121](VRefOfs_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40289 ; 0x8000)'
+      - id: 'VMinMax_SF'
+        description: '[Model_121](VMinMax_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40290 ; 0x8000)'
+      - id: 'VAMax_SF'
+        description: '[Model_121](VAMax_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40291 ; 0x8000)'
+      - id: 'VArMax_SF'
+        description: '[Model_121](VArMax_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40292 ; 0x8000)'
+      - id: 'WGra_SF'
+        description: '[Model_121](WGra_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40293 ; 0x8000)'
+      - id: 'PFMin_SF'
+        description: '[Model_121](PFMin_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40294 ; 0x8000)'
+      - id: 'MaxRmpRte_SF'
+        description: '[Model_121](MaxRmpRte_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40295 ; 0x8000)'
+      - id: 'ECPNomHz_SF'
+        description: '[Model_121](ECPNomHz_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40296 ; 0x8000)'
+  - id: 'Model_122'
+    description: '[Model 122]:Measurements_Status: Inverter Controls Extended Measurements and Status '
+    fields:
+      - id: 'ID'
+        description: '[Model_122](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40297 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_122](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40298 ; 0xFFFF ; 0x8000)'
+      - id: 'PVConn'
+        description: '[Model_122](PVConn): PV inverter present/available status.'
+        expression: 'bitset(hr:40299 ; 0xFFFF ; 0->''CONNECTED'' ; 1->''AVAILABLE'' ; 2->''OPERATING'' ; 3->''TEST'')'
+      - id: 'StorConn'
+        description: '[Model_122](StorConn): Storage inverter present/available status.'
+        expression: 'bitset(hr:40300 ; 0xFFFF ; 0->''CONNECTED'' ; 1->''AVAILABLE'' ; 2->''OPERATING'' ; 3->''TEST'')'
+      - id: 'ECPConn'
+        description: '[Model_122](ECPConn): ECP connection status: disconnected=0 connected=1.'
+        expression: 'bitset(hr:40301 ; 0xFFFF ; 0->''CONNECTED'')'
+      - id: 'ActWh'
+        description: '[Model_122](ActWh): AC lifetime active (real) energy output.'
+        expression: 'uint64(hr:40302 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+        unit: 'Wh'
+      - id: 'ActVAh'
+        description: '[Model_122](ActVAh): AC lifetime apparent energy output.'
+        expression: 'uint64(hr:40306 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+        unit: 'VAh'
+      - id: 'ActVArhQ1'
+        description: '[Model_122](ActVArhQ1): AC lifetime reactive energy output in quadrant 1.'
+        expression: 'uint64(hr:40310 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+        unit: 'varh'
+      - id: 'ActVArhQ2'
+        description: '[Model_122](ActVArhQ2): AC lifetime reactive energy output in quadrant 2.'
+        expression: 'uint64(hr:40314 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+        unit: 'varh'
+      - id: 'ActVArhQ3'
+        description: '[Model_122](ActVArhQ3): AC lifetime negative energy output in quadrant 3.'
+        expression: 'uint64(hr:40318 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+        unit: 'varh'
+      - id: 'ActVArhQ4'
+        description: '[Model_122](ActVArhQ4): AC lifetime reactive energy output in quadrant 4.'
+        expression: 'uint64(hr:40322 # 4 ; 0x0000 0x0000 0x0000 0x0000)'
+        unit: 'varh'
+      - id: 'VArAval'
+        description: '[Model_122](VArAval): Amount of VARs available without impacting watts output.'
+        expression: 'int16(hr:40326 ; 0x8000)*(10^VArAval_SF)'
+        unit: 'var'
+      - id: 'VArAval_SF'
+        description: '[Model_122](VArAval_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40327 ; 0x8000)'
+      - id: 'WAval'
+        description: '[Model_122](WAval): Amount of Watts available.'
+        expression: 'uint16(hr:40328 ; 0xFFFF ; 0x8000)*(10^WAval_SF)'
+        unit: 'var'
+      - id: 'WAval_SF'
+        description: '[Model_122](WAval_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40329 ; 0x8000)'
+      - id: 'StSetLimMsk'
+        description: '[Model_122](StSetLimMsk): Setpoint limit(s) reached. (Bitmask).'
+        expression: 'bitset(hr:40330 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''WMax'' ; 1->''VAMax'' ; 2->''VArAval'' ; 3->''VArMaxQ1'' ; 4->''VArMaxQ2'' ; 5->''VArMaxQ3'' ; 6->''VArMaxQ4'' ; 7->''PFMinQ1'' ; 8->''PFMinQ2'' ; 9->''PFMinQ3'' ; 10->''PFMinQ4'')'
+      - id: 'StActCtl'
+        description: '[Model_122](StActCtl): Which inverter controls are currently active. (Bitmask).'
+        expression: 'bitset(hr:40332 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''FixedW'' ; 1->''FixedVAR'' ; 2->''FixedPF'' ; 3->''Volt_VAr'' ; 4->''Freq_Watt_Param'' ; 5->''Freq_Watt_Curve'' ; 6->''Dyn_Reactive_Current'' ; 7->''LVRT'' ; 8->''HVRT'' ; 9->''Watt_PF'' ; 10->''Volt_Watt'' ; 12->''Scheduled'' ; 13->''LFRT'' ; 14->''HFRT'')'
+      - id: 'TmSrc'
+        description: '[Model_122](TmSrc): Source of time synchronization.'
+        expression: 'utf8(hr:40334 # 4)'
+      - id: 'Tms'
+        description: '[Model_122](Tms): Seconds since 01-01-2000 00:00 UTC.'
+        expression: '(uint32(hr:40338 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)*1000)+946684800000'
+        unit: 'Secs'
+      - id: 'RtSt'
+        description: '[Model_122](RtSt): Active ride-through status. (Bitmask).'
+        expression: 'bitset(hr:40340 ; 0xFFFF ; 0->''LVRT_ACTIVE'' ; 1->''HVRT_ACTIVE'' ; 2->''LFRT_ACTIVE'' ; 3->''HFRT_ACTIVE'')'
+      - id: 'Ris'
+        description: '[Model_122](Ris): Isolation resistance.'
+        expression: 'uint16(hr:40341 ; 0xFFFF ; 0x8000)*(10^Ris_SF)'
+        unit: 'ohms'
+      - id: 'Ris_SF'
+        description: '[Model_122](Ris_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40342 ; 0x8000)'
+  - id: 'Model_123'
+    description: '[Model 123]:Immediate Controls: Immediate Inverter Controls '
+    fields:
+      - id: 'ID'
+        description: '[Model_123](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40343 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_123](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40344 ; 0xFFFF ; 0x8000)'
+      - id: 'Conn_WinTms'
+        description: '[Model_123](Conn_WinTms): Time window for connect/disconnect.'
+        expression: 'uint16(hr:40345 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'Conn_RvrtTms'
+        description: '[Model_123](Conn_RvrtTms): Timeout period for connect/disconnect.'
+        expression: 'uint16(hr:40346 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'Conn'
+        description: '[Model_123](Conn): Connection control.'
+        expression: 'enum(hr:40347 ; 0xFFFF ; 0->''DISCONNECT'' ; 1->''CONNECT'')'
+      - id: 'WMaxLimPct'
+        description: '[Model_123](WMaxLimPct): Set power output to specified level.'
+        expression: 'uint16(hr:40348 ; 0xFFFF ; 0x8000)*(10^WMaxLimPct_SF)'
+        unit: '% WMax'
+      - id: 'WMaxLimPct_WinTms'
+        description: '[Model_123](WMaxLimPct_WinTms): Time window for power limit change.'
+        expression: 'uint16(hr:40349 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'WMaxLimPct_RvrtTms'
+        description: '[Model_123](WMaxLimPct_RvrtTms): Timeout period for power limit.'
+        expression: 'uint16(hr:40350 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'WMaxLimPct_RmpTms'
+        description: '[Model_123](WMaxLimPct_RmpTms): Ramp time for moving from current setpoint to new setpoint.'
+        expression: 'uint16(hr:40351 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'WMaxLim_Ena'
+        description: '[Model_123](WMaxLim_Ena): Throttle enable/disable control.'
+        expression: 'enum(hr:40352 ; 0xFFFF ; 0->''DISABLED'' ; 1->''ENABLED'')'
+      - id: 'OutPFSet'
+        description: '[Model_123](OutPFSet): Set power factor to specific value - cosine of angle.'
+        expression: 'int16(hr:40353 ; 0x8000)*(10^OutPFSet_SF)'
+        unit: 'cos()'
+      - id: 'OutPFSet_WinTms'
+        description: '[Model_123](OutPFSet_WinTms): Time window for power factor change.'
+        expression: 'uint16(hr:40354 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'OutPFSet_RvrtTms'
+        description: '[Model_123](OutPFSet_RvrtTms): Timeout period for power factor.'
+        expression: 'uint16(hr:40355 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'OutPFSet_RmpTms'
+        description: '[Model_123](OutPFSet_RmpTms): Ramp time for moving from current setpoint to new setpoint.'
+        expression: 'uint16(hr:40356 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'OutPFSet_Ena'
+        description: '[Model_123](OutPFSet_Ena): Fixed power factor enable/disable control.'
+        expression: 'enum(hr:40357 ; 0xFFFF ; 0->''DISABLED'' ; 1->''ENABLED'')'
+      - id: 'VArWMaxPct'
+        description: '[Model_123](VArWMaxPct): Reactive power in percent of WMax.'
+        expression: 'int16(hr:40358 ; 0x8000)*(10^VArPct_SF)'
+        unit: '% WMax'
+      - id: 'VArMaxPct'
+        description: '[Model_123](VArMaxPct): Reactive power in percent of VArMax.'
+        expression: 'int16(hr:40359 ; 0x8000)*(10^VArPct_SF)'
+        unit: '% VArMax'
+      - id: 'VArAvalPct'
+        description: '[Model_123](VArAvalPct): Reactive power in percent of VArAval.'
+        expression: 'int16(hr:40360 ; 0x8000)*(10^VArPct_SF)'
+        unit: '% VArAval'
+      - id: 'VArPct_WinTms'
+        description: '[Model_123](VArPct_WinTms): Time window for VAR limit change.'
+        expression: 'uint16(hr:40361 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'VArPct_RvrtTms'
+        description: '[Model_123](VArPct_RvrtTms): Timeout period for VAR limit.'
+        expression: 'uint16(hr:40362 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'VArPct_RmpTms'
+        description: '[Model_123](VArPct_RmpTms): Ramp time for moving from current setpoint to new setpoint.'
+        expression: 'uint16(hr:40363 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'VArPct_Mod'
+        description: '[Model_123](VArPct_Mod): VAR percent limit mode.'
+        expression: 'enum(hr:40364 ; 0xFFFF ; 0->''NONE'' ; 1->''WMax'' ; 2->''VArMax'' ; 3->''VArAval'')'
+      - id: 'VArPct_Ena'
+        description: '[Model_123](VArPct_Ena): Percent limit VAr enable/disable control.'
+        expression: 'enum(hr:40365 ; 0xFFFF ; 0->''DISABLED'' ; 1->''ENABLED'')'
+      - id: 'WMaxLimPct_SF'
+        description: '[Model_123](WMaxLimPct_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40366 ; 0x8000)'
+      - id: 'OutPFSet_SF'
+        description: '[Model_123](OutPFSet_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40367 ; 0x8000)'
+      - id: 'VArPct_SF'
+        description: '[Model_123](VArPct_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40368 ; 0x8000)'
+  - id: 'Model_124'
+    description: '[Model 124]:Storage: Basic Storage Controls '
+    fields:
+      - id: 'ID'
+        description: '[Model_124](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40369 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_124](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40370 ; 0xFFFF ; 0x8000)'
+      - id: 'WChaMax'
+        description: '[Model_124](WChaMax): Setpoint for maximum charge.'
+        expression: 'uint16(hr:40371 ; 0xFFFF ; 0x8000)*(10^WChaMax_SF)'
+        unit: 'W'
+      - id: 'WChaGra'
+        description: '[Model_124](WChaGra): Setpoint for maximum charging rate. Default is MaxChaRte.'
+        expression: 'uint16(hr:40372 ; 0xFFFF ; 0x8000)*(10^WChaDisChaGra_SF)'
+        unit: '% WChaMax/sec'
+      - id: 'WDisChaGra'
+        description: '[Model_124](WDisChaGra): Setpoint for maximum discharge rate. Default is MaxDisChaRte.'
+        expression: 'uint16(hr:40373 ; 0xFFFF ; 0x8000)*(10^WChaDisChaGra_SF)'
+        unit: '% WChaMax/sec'
+      - id: 'StorCtl_Mod'
+        description: '[Model_124](StorCtl_Mod): Activate hold/discharge/charge storage control mode.'
+        expression: 'bitset(hr:40374 ; 0xFFFF ; 0->''CHARGE'' ; 1->''DiSCHARGE'')'
+      - id: 'VAChaMax'
+        description: '[Model_124](VAChaMax): Setpoint for maximum charging VA.'
+        expression: 'uint16(hr:40375 ; 0xFFFF ; 0x8000)*(10^VAChaMax_SF)'
+        unit: 'VA'
+      - id: 'MinRsvPct'
+        description: '[Model_124](MinRsvPct): Setpoint for minimum reserve for storage as a percentage of the nominal maximum storage.'
+        expression: 'uint16(hr:40376 ; 0xFFFF ; 0x8000)*(10^MinRsvPct_SF)'
+        unit: '% WChaMax'
+      - id: 'ChaState'
+        description: '[Model_124](ChaState): Currently available energy as a percent of the capacity rating.'
+        expression: 'uint16(hr:40377 ; 0xFFFF ; 0x8000)*(10^ChaState_SF)'
+        unit: '% AhrRtg'
+      - id: 'StorAval'
+        description: '[Model_124](StorAval): State of charge (ChaState) minus storage reserve (MinRsvPct) times capacity rating (AhrRtg).'
+        expression: 'uint16(hr:40378 ; 0xFFFF ; 0x8000)*(10^StorAval_SF)'
+        unit: 'AH'
+      - id: 'InBatV'
+        description: '[Model_124](InBatV): Internal battery voltage.'
+        expression: 'uint16(hr:40379 ; 0xFFFF ; 0x8000)*(10^InBatV_SF)'
+        unit: 'V'
+      - id: 'ChaSt'
+        description: '[Model_124](ChaSt): Charge status of storage device.'
+        expression: 'enum(hr:40380 ; 0xFFFF ; 1->''OFF'' ; 2->''EMPTY'' ; 3->''DISCHARGING'' ; 4->''CHARGING'' ; 5->''FULL'' ; 6->''HOLDING'' ; 7->''TESTING'')'
+      - id: 'OutWRte'
+        description: '[Model_124](OutWRte): Percent of max discharge rate.'
+        expression: 'int16(hr:40381 ; 0x8000)*(10^InOutWRte_SF)'
+        unit: '% WDisChaMax'
+      - id: 'InWRte'
+        description: '[Model_124](InWRte): Percent of max charging rate.'
+        expression: 'int16(hr:40382 ; 0x8000)*(10^InOutWRte_SF)'
+        unit: ' % WChaMax'
+      - id: 'InOutWRte_WinTms'
+        description: '[Model_124](InOutWRte_WinTms): Time window for charge/discharge rate change.'
+        expression: 'uint16(hr:40383 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'InOutWRte_RvrtTms'
+        description: '[Model_124](InOutWRte_RvrtTms): Timeout period for charge/discharge rate.'
+        expression: 'uint16(hr:40384 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'InOutWRte_RmpTms'
+        description: '[Model_124](InOutWRte_RmpTms): Ramp time for moving from current setpoint to new setpoint.'
+        expression: 'uint16(hr:40385 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'ChaGriSet'
+        description: '[Model_124](ChaGriSet): '
+        expression: 'enum(hr:40386 ; 0xFFFF ; 0->''PV'' ; 1->''GRID'')'
+      - id: 'WChaMax_SF'
+        description: '[Model_124](WChaMax_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40387 ; 0x8000)'
+      - id: 'WChaDisChaGra_SF'
+        description: '[Model_124](WChaDisChaGra_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40388 ; 0x8000)'
+      - id: 'VAChaMax_SF'
+        description: '[Model_124](VAChaMax_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40389 ; 0x8000)'
+      - id: 'MinRsvPct_SF'
+        description: '[Model_124](MinRsvPct_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40390 ; 0x8000)'
+      - id: 'ChaState_SF'
+        description: '[Model_124](ChaState_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40391 ; 0x8000)'
+      - id: 'StorAval_SF'
+        description: '[Model_124](StorAval_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40392 ; 0x8000)'
+      - id: 'InBatV_SF'
+        description: '[Model_124](InBatV_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40393 ; 0x8000)'
+      - id: 'InOutWRte_SF'
+        description: '[Model_124](InOutWRte_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40394 ; 0x8000)'
+  - id: 'Model_126'
+    description: '[Model 126]:Static Volt-VAR: Static Volt-VAR Arrays '
+    fields:
+      - id: 'ID'
+        description: '[Model_126](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40395 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_126](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40396 ; 0xFFFF ; 0x8000)'
+      - id: 'ActCrv'
+        description: '[Model_126](ActCrv): Index of active curve. 0=no active curve.'
+        expression: 'uint16(hr:40397 ; 0xFFFF ; 0x8000)'
+      - id: 'ModEna'
+        description: '[Model_126](ModEna): Is Volt-VAR control active.'
+        expression: 'bitset(hr:40398 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'WinTms'
+        description: '[Model_126](WinTms): Time window for volt-VAR change.'
+        expression: 'uint16(hr:40399 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RvrtTms'
+        description: '[Model_126](RvrtTms): Timeout period for volt-VAR curve selection.'
+        expression: 'uint16(hr:40400 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RmpTms'
+        description: '[Model_126](RmpTms): The time of the PT1 in seconds (time to accomplish a change of 95%).'
+        expression: 'uint16(hr:40401 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'NCrv'
+        description: '[Model_126](NCrv): Number of curves supported (recommend 4).'
+        expression: 'uint16(hr:40402 ; 0xFFFF ; 0x8000)'
+      - id: 'NPt'
+        description: '[Model_126](NPt): Number of curve points supported (maximum of 20).'
+        expression: 'uint16(hr:40403 ; 0xFFFF ; 0x8000)'
+      - id: 'V_SF'
+        description: '[Model_126](V_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40404 ; 0x8000)'
+      - id: 'DeptRef_SF'
+        description: '[Model_126](DeptRef_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40405 ; 0x8000)'
+      - id: 'RmpIncDec_SF'
+        description: '[Model_126](RmpIncDec_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40406 ; 0x8000)'
+      - id: 'R0_ActPt'
+        description: '[Model_126](ActPt): Number of active points in array.'
+        expression: 'uint16(hr:40405 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_DeptRef'
+        description: '[Model_126](DeptRef): Meaning of dependent variable: 1=%WMax 2=%VArMax 3=%VArAval.'
+        expression: 'enum(hr:40406 ; 0xFFFF ; 1->''WMax'' ; 2->''VArMax'' ; 3->''VArAval'')'
+      - id: 'R0_V1'
+        description: '[Model_126](V1): Point 1 Volts.'
+        expression: 'uint16(hr:40407 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr1'
+        description: '[Model_126](VAr1): Point 1 VARs.'
+        expression: 'int16(hr:40408 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V2'
+        description: '[Model_126](V2): Point 2 Volts.'
+        expression: 'uint16(hr:40409 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr2'
+        description: '[Model_126](VAr2): Point 2 VARs.'
+        expression: 'int16(hr:40410 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V3'
+        description: '[Model_126](V3): Point 2 Volts.'
+        expression: 'uint16(hr:40411 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr3'
+        description: '[Model_126](VAr3): Point 3 VARs.'
+        expression: 'int16(hr:40412 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V4'
+        description: '[Model_126](V4): Point 4 Volts.'
+        expression: 'uint16(hr:40413 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr4'
+        description: '[Model_126](VAr4): Point 4 VARs.'
+        expression: 'int16(hr:40414 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V5'
+        description: '[Model_126](V5): Point 5 Volts.'
+        expression: 'uint16(hr:40415 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr5'
+        description: '[Model_126](VAr5): Point 5 VARs.'
+        expression: 'int16(hr:40416 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V6'
+        description: '[Model_126](V6): Point 6 Volts.'
+        expression: 'uint16(hr:40417 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr6'
+        description: '[Model_126](VAr6): Point 6 VARs.'
+        expression: 'int16(hr:40418 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V7'
+        description: '[Model_126](V7): Point 7 Volts.'
+        expression: 'uint16(hr:40419 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr7'
+        description: '[Model_126](VAr7): Point 7 VARs.'
+        expression: 'int16(hr:40420 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V8'
+        description: '[Model_126](V8): Point 8 Volts.'
+        expression: 'uint16(hr:40421 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr8'
+        description: '[Model_126](VAr8): Point 8 VARs.'
+        expression: 'int16(hr:40422 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V9'
+        description: '[Model_126](V9): Point 9 Volts.'
+        expression: 'uint16(hr:40423 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr9'
+        description: '[Model_126](VAr9): Point 9 VARs.'
+        expression: 'int16(hr:40424 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V10'
+        description: '[Model_126](V10): Point 10 Volts.'
+        expression: 'uint16(hr:40425 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr10'
+        description: '[Model_126](VAr10): Point 10 VARs.'
+        expression: 'int16(hr:40426 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V11'
+        description: '[Model_126](V11): Point 11 Volts.'
+        expression: 'uint16(hr:40427 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr11'
+        description: '[Model_126](VAr11): Point 11 VARs.'
+        expression: 'int16(hr:40428 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V12'
+        description: '[Model_126](V12): Point 12 Volts.'
+        expression: 'uint16(hr:40429 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr12'
+        description: '[Model_126](VAr12): Point 12 VARs.'
+        expression: 'int16(hr:40430 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V13'
+        description: '[Model_126](V13): Point 13 Volts.'
+        expression: 'uint16(hr:40431 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr13'
+        description: '[Model_126](VAr13): Point 13 VARs.'
+        expression: 'int16(hr:40432 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V14'
+        description: '[Model_126](V14): Point 14 Volts.'
+        expression: 'uint16(hr:40433 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr14'
+        description: '[Model_126](VAr14): Point 14 VARs.'
+        expression: 'int16(hr:40434 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V15'
+        description: '[Model_126](V15): Point 15 Volts.'
+        expression: 'uint16(hr:40435 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr15'
+        description: '[Model_126](VAr15): Point 15 VARs.'
+        expression: 'int16(hr:40436 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V16'
+        description: '[Model_126](V16): Point 16 Volts.'
+        expression: 'uint16(hr:40437 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr16'
+        description: '[Model_126](VAr16): Point 16 VARs.'
+        expression: 'int16(hr:40438 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V17'
+        description: '[Model_126](V17): Point 17 Volts.'
+        expression: 'uint16(hr:40439 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr17'
+        description: '[Model_126](VAr17): Point 17 VARs.'
+        expression: 'int16(hr:40440 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V18'
+        description: '[Model_126](V18): Point 18 Volts.'
+        expression: 'uint16(hr:40441 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr18'
+        description: '[Model_126](VAr18): Point 18 VARs.'
+        expression: 'int16(hr:40442 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V19'
+        description: '[Model_126](V19): Point 19 Volts.'
+        expression: 'uint16(hr:40443 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr19'
+        description: '[Model_126](VAr19): Point 19 VARs.'
+        expression: 'int16(hr:40444 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_V20'
+        description: '[Model_126](V20): Point 20 Volts.'
+        expression: 'uint16(hr:40445 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_VAr20'
+        description: '[Model_126](VAr20): Point 20 VARs.'
+        expression: 'int16(hr:40446 ; 0x8000)*(10^DeptRef_SF)'
+      - id: 'R0_CrvNam'
+        description: '[Model_126](CrvNam): Optional description for curve. (Max 16 chars).'
+        expression: 'utf8(hr:40447 # 8)'
+      - id: 'R0_RmpTms'
+        description: '[Model_126](RmpTms): The time of the PT1 in seconds (time to accomplish a change of 95%).'
+        expression: 'uint16(hr:40455 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'R0_RmpDecTmm'
+        description: '[Model_126](RmpDecTmm): The maximum rate at which the VAR value may be reduced in response to changes in the voltage value. %refVal is %WMax %VArMax or %VArAval depending on value of DeptRef.'
+        expression: 'uint16(hr:40456 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% ref_value/min'
+      - id: 'R0_RmpIncTmm'
+        description: '[Model_126](RmpIncTmm): The maximum rate at which the VAR value may be increased in response to changes in the voltage value. %refVal is %WMax %VArMax or %VArAval depending on value of DeptRef.'
+        expression: 'uint16(hr:40457 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% ref_value/min'
+      - id: 'R0_ReadOnly'
+        description: '[Model_126](ReadOnly): Boolean flag indicates if curve is read-only or can be modified.'
+        expression: 'enum(hr:40458 ; 0xFFFF ; 0->''READWRITE'' ; 1->''READONLY'')'
+  - id: 'Model_127'
+    description: '[Model 127]:Freq-Watt Param: Parameterized Frequency-Watt '
+    fields:
+      - id: 'ID'
+        description: '[Model_127](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40461 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_127](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40462 ; 0xFFFF ; 0x8000)'
+      - id: 'WGra'
+        description: '[Model_127](WGra): The slope of the reduction in the maximum allowed watts output as a function of frequency.'
+        expression: 'uint16(hr:40463 ; 0xFFFF ; 0x8000)*(10^WGra_SF)'
+        unit: '% PM/Hz'
+      - id: 'HzStr'
+        description: '[Model_127](HzStr): The frequency deviation from nominal frequency (ECPNomHz) at which a snapshot of the instantaneous power output is taken to act as the CAPPED power level (PM) and above which reduction in power output occurs.'
+        expression: 'int16(hr:40464 ; 0x8000)*(10^HzStrStop_SF)'
+        unit: 'Hz'
+      - id: 'HzStop'
+        description: '[Model_127](HzStop): The frequency deviation from nominal frequency (ECPNomHz) at which curtailed power output may return to normal and the cap on the power level value is removed.'
+        expression: 'int16(hr:40465 ; 0x8000)*(10^HzStrStop_SF)'
+        unit: 'Hz'
+      - id: 'HysEna'
+        description: '[Model_127](HysEna): Enable hysteresis.'
+        expression: 'bitset(hr:40466 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'ModEna'
+        description: '[Model_127](ModEna): Is Parameterized Frequency-Watt control active.'
+        expression: 'bitset(hr:40467 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'HzStopWGra'
+        description: '[Model_127](HzStopWGra): The maximum time-based rate of change at which power output returns to normal after having been capped by an over frequency event.'
+        expression: 'uint16(hr:40468 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% WMax/min'
+      - id: 'WGra_SF'
+        description: '[Model_127](WGra_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40469 ; 0x8000)'
+      - id: 'HzStrStop_SF'
+        description: '[Model_127](HzStrStop_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40470 ; 0x8000)'
+      - id: 'RmpIncDec_SF'
+        description: '[Model_127](RmpIncDec_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40471 ; 0x8000)'
+      - id: 'Pad'
+        description: '[Model_127](Pad): '
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40472)'
+  - id: 'Model_128'
+    description: '[Model 128]:Dynamic Reactive Current: Dynamic Reactive Current '
+    fields:
+      - id: 'ID'
+        description: '[Model_128](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40473 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_128](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40474 ; 0xFFFF ; 0x8000)'
+      - id: 'ArGraMod'
+        description: '[Model_128](ArGraMod): Indicates if gradients trend toward zero at the edges of the deadband or trend toward zero at the center of the deadband.'
+        expression: 'enum(hr:40475 ; 0xFFFF ; 0->''EDGE'' ; 1->''CENTER'')'
+      - id: 'ArGraSag'
+        description: '[Model_128](ArGraSag): The gradient used to increase capacitive dynamic current. A value of 0 indicates no additional reactive current support.'
+        expression: 'uint16(hr:40476 ; 0xFFFF ; 0x8000)*(10^ArGra_SF)'
+        unit: '%ARtg/%dV'
+      - id: 'ArGraSwell'
+        description: '[Model_128](ArGraSwell): The gradient used to increase inductive dynamic current. A value of 0 indicates no additional reactive current support.'
+        expression: 'uint16(hr:40477 ; 0xFFFF ; 0x8000)*(10^ArGra_SF)'
+        unit: '%ARtg/%dV'
+      - id: 'ModEna'
+        description: '[Model_128](ModEna): Activate dynamic reactive current model.'
+        expression: 'bitset(hr:40478 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'FilTms'
+        description: '[Model_128](FilTms): The time window used to calculate the moving average voltage.'
+        expression: 'uint16(hr:40479 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'DbVMin'
+        description: '[Model_128](DbVMin): The lower delta voltage limit for which negative voltage deviations less than this value no dynamic vars are produced.'
+        expression: 'uint16(hr:40480 ; 0xFFFF ; 0x8000)*(10^VRefPct_SF)'
+        unit: '% VRef'
+      - id: 'DbVMax'
+        description: '[Model_128](DbVMax): The upper delta voltage limit for which positive voltage deviations less than this value no dynamic current produced.'
+        expression: 'uint16(hr:40481 ; 0xFFFF ; 0x8000)*(10^VRefPct_SF)'
+        unit: '% VRef'
+      - id: 'BlkZnV'
+        description: '[Model_128](BlkZnV): Block zone voltage which defines a lower voltage boundary below which no dynamic current is produced.'
+        expression: 'uint16(hr:40482 ; 0xFFFF ; 0x8000)*(10^VRefPct_SF)'
+        unit: '% VRef'
+      - id: 'HysBlkZnV'
+        description: '[Model_128](HysBlkZnV): Hysteresis voltage used with BlkZnV.'
+        expression: 'uint16(hr:40483 ; 0xFFFF ; 0x8000)*(10^VRefPct_SF)'
+        unit: '% VRef'
+      - id: 'BlkZnTmms'
+        description: '[Model_128](BlkZnTmms): Block zone time the time before which reactive current support remains active regardless of how low the voltage drops.'
+        expression: 'uint16(hr:40484 ; 0xFFFF ; 0x8000)'
+        unit: 'mSecs'
+      - id: 'HoldTmms'
+        description: '[Model_128](HoldTmms): Hold time during which reactive current support continues after the average voltage has entered the dead zone.'
+        expression: 'uint16(hr:40485 ; 0xFFFF ; 0x8000)'
+        unit: 'mSecs'
+      - id: 'ArGra_SF'
+        description: '[Model_128](ArGra_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40486 ; 0x8000)'
+      - id: 'VRefPct_SF'
+        description: '[Model_128](VRefPct_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40487 ; 0x8000)'
+      - id: 'Pad'
+        description: '[Model_128](Pad): '
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40488)'
+  - id: 'Model_131'
+    description: '[Model 131]:Watt-PF: Watt-Power Factor '
+    fields:
+      - id: 'ID'
+        description: '[Model_131](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40489 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_131](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40490 ; 0xFFFF ; 0x8000)'
+      - id: 'ActCrv'
+        description: '[Model_131](ActCrv): Index of active curve. 0=no active curve.'
+        expression: 'uint16(hr:40491 ; 0xFFFF ; 0x8000)'
+      - id: 'ModEna'
+        description: '[Model_131](ModEna): Is watt-PF mode active.'
+        expression: 'bitset(hr:40492 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'WinTms'
+        description: '[Model_131](WinTms): Time window for watt-PF change.'
+        expression: 'uint16(hr:40493 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RvrtTms'
+        description: '[Model_131](RvrtTms): Timeout period for watt-PF curve selection.'
+        expression: 'uint16(hr:40494 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RmpTms'
+        description: '[Model_131](RmpTms): Ramp time for moving from current mode to new mode.'
+        expression: 'uint16(hr:40495 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'NCrv'
+        description: '[Model_131](NCrv): Number of curves supported (recommend 4).'
+        expression: 'uint16(hr:40496 ; 0xFFFF ; 0x8000)'
+      - id: 'NPt'
+        description: '[Model_131](NPt): Max number of points in array.'
+        expression: 'uint16(hr:40497 ; 0xFFFF ; 0x8000)'
+      - id: 'W_SF'
+        description: '[Model_131](W_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40498 ; 0x8000)'
+      - id: 'PF_SF'
+        description: '[Model_131](PF_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40499 ; 0x8000)'
+      - id: 'RmpIncDec_SF'
+        description: '[Model_131](RmpIncDec_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40500 ; 0x8000)'
+      - id: 'R0_ActPt'
+        description: '[Model_131](ActPt): Number of active points in array.'
+        expression: 'uint16(hr:40499 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_W1'
+        description: '[Model_131](W1): Point 1 Watts.'
+        expression: 'int16(hr:40500 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF1'
+        description: '[Model_131](PF1): Point 1 PF in EEI notation.'
+        expression: 'int16(hr:40501 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W2'
+        description: '[Model_131](W2): Point 2 Watts.'
+        expression: 'int16(hr:40502 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF2'
+        description: '[Model_131](PF2): Point 2 PF in EEI notation.'
+        expression: 'int16(hr:40503 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W3'
+        description: '[Model_131](W3): Point 3 Watts.'
+        expression: 'int16(hr:40504 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF3'
+        description: '[Model_131](PF3): Point 3 PF in EEI notation.'
+        expression: 'int16(hr:40505 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W4'
+        description: '[Model_131](W4): Point 4 Watts.'
+        expression: 'int16(hr:40506 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF4'
+        description: '[Model_131](PF4): Point 4 PF in EEI notation.'
+        expression: 'int16(hr:40507 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W5'
+        description: '[Model_131](W5): Point 5 Watts.'
+        expression: 'int16(hr:40508 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF5'
+        description: '[Model_131](PF5): Point 5 PF in EEI notation.'
+        expression: 'int16(hr:40509 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W6'
+        description: '[Model_131](W6): Point 6 Watts.'
+        expression: 'int16(hr:40510 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF6'
+        description: '[Model_131](PF6): Point 6 PF in EEI notation.'
+        expression: 'int16(hr:40511 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W7'
+        description: '[Model_131](W7): Point 7 Watts.'
+        expression: 'int16(hr:40512 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF7'
+        description: '[Model_131](PF7): Point 7 PF in EEI notation.'
+        expression: 'int16(hr:40513 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W8'
+        description: '[Model_131](W8): Point 8 Watts.'
+        expression: 'int16(hr:40514 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF8'
+        description: '[Model_131](PF8): Point 8 PF in EEI notation.'
+        expression: 'int16(hr:40515 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W9'
+        description: '[Model_131](W9): Point 9 Watts.'
+        expression: 'int16(hr:40516 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF9'
+        description: '[Model_131](PF9): Point 9 PF in EEI notation.'
+        expression: 'int16(hr:40517 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W10'
+        description: '[Model_131](W10): Point 10 Watts.'
+        expression: 'int16(hr:40518 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF10'
+        description: '[Model_131](PF10): Point 10 PF in EEI notation.'
+        expression: 'int16(hr:40519 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W11'
+        description: '[Model_131](W11): Point 11 Watts.'
+        expression: 'int16(hr:40520 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF11'
+        description: '[Model_131](PF11): Point 11 PF in EEI notation.'
+        expression: 'int16(hr:40521 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W12'
+        description: '[Model_131](W12): Point 12 Watts.'
+        expression: 'int16(hr:40522 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF12'
+        description: '[Model_131](PF12): Point 12 PF in EEI notation.'
+        expression: 'int16(hr:40523 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W13'
+        description: '[Model_131](W13): Point 13 Watts.'
+        expression: 'int16(hr:40524 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF13'
+        description: '[Model_131](PF13): Point 13 PF in EEI notation.'
+        expression: 'int16(hr:40525 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W14'
+        description: '[Model_131](W14): Point 14 Watts.'
+        expression: 'int16(hr:40526 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF14'
+        description: '[Model_131](PF14): Point 14 PF in EEI notation.'
+        expression: 'int16(hr:40527 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W15'
+        description: '[Model_131](W15): Point 15 Watts.'
+        expression: 'int16(hr:40528 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF15'
+        description: '[Model_131](PF15): Point 15 PF in EEI notation.'
+        expression: 'int16(hr:40529 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W16'
+        description: '[Model_131](W16): Point 16 Watts.'
+        expression: 'int16(hr:40530 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF16'
+        description: '[Model_131](PF16): Point 16 PF in EEI notation.'
+        expression: 'int16(hr:40531 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W17'
+        description: '[Model_131](W17): Point 17 Watts.'
+        expression: 'int16(hr:40532 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF17'
+        description: '[Model_131](PF17): Point 17 PF in EEI notation.'
+        expression: 'int16(hr:40533 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W18'
+        description: '[Model_131](W18): Point 18 Watts.'
+        expression: 'int16(hr:40534 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF18'
+        description: '[Model_131](PF18): Point 18 PF in EEI notation.'
+        expression: 'int16(hr:40535 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W19'
+        description: '[Model_131](W19): Point 19 Watts.'
+        expression: 'int16(hr:40536 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF19'
+        description: '[Model_131](PF19): Point 19 PF in EEI notation.'
+        expression: 'int16(hr:40537 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_W20'
+        description: '[Model_131](W20): Point 20 Watts.'
+        expression: 'int16(hr:40538 ; 0x8000)*(10^W_SF)'
+        unit: '% WMax'
+      - id: 'R0_PF20'
+        description: '[Model_131](PF20): Point 20 PF in EEI notation.'
+        expression: 'int16(hr:40539 ; 0x8000)*(10^PF_SF)'
+        unit: 'cos()'
+      - id: 'R0_CrvNam'
+        description: '[Model_131](CrvNam): Optional description for curve.'
+        expression: 'utf8(hr:40540 # 8)'
+      - id: 'R0_RmpPT1Tms'
+        description: '[Model_131](RmpPT1Tms): The time of the PT1 in seconds (time to accomplish a change of 95%).'
+        expression: 'uint16(hr:40548 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'R0_RmpDecTmm'
+        description: '[Model_131](RmpDecTmm): The maximum rate at which the power factor may be reduced in response to changes in the power value.'
+        expression: 'uint16(hr:40549 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% PF/min'
+      - id: 'R0_RmpIncTmm'
+        description: '[Model_131](RmpIncTmm): The maximum rate at which the power factor may be increased in response to changes in the power value.'
+        expression: 'uint16(hr:40550 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% PF/min'
+      - id: 'R0_ReadOnly'
+        description: '[Model_131](ReadOnly): Curve is read-only or can be modified.'
+        expression: 'enum(hr:40551 ; 0xFFFF ; 0->''READWRITE'' ; 1->''READONLY'')'
+      - id: 'R0_Pad'
+        description: '[Model_131](Pad): '
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40552)'
+  - id: 'Model_132'
+    description: '[Model 132]:Volt-Watt: Volt-Watt '
+    fields:
+      - id: 'ID'
+        description: '[Model_132](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40555 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_132](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40556 ; 0xFFFF ; 0x8000)'
+      - id: 'ActCrv'
+        description: '[Model_132](ActCrv): Index of active curve. 0=no active curve.'
+        expression: 'uint16(hr:40557 ; 0xFFFF ; 0x8000)'
+      - id: 'ModEna'
+        description: '[Model_132](ModEna): Is Volt-Watt control active.'
+        expression: 'bitset(hr:40558 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'WinTms'
+        description: '[Model_132](WinTms): Time window for volt-watt change.'
+        expression: 'uint16(hr:40559 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RvrtTms'
+        description: '[Model_132](RvrtTms): Timeout period for volt-watt curve selection.'
+        expression: 'uint16(hr:40560 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RmpTms'
+        description: '[Model_132](RmpTms): Ramp time for moving from current mode to new mode.'
+        expression: 'uint16(hr:40561 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'NCrv'
+        description: '[Model_132](NCrv): Number of curves supported (recommend min. 4).'
+        expression: 'uint16(hr:40562 ; 0xFFFF ; 0x8000)'
+      - id: 'NPt'
+        description: '[Model_132](NPt): Number of points in array (maximum 20).'
+        expression: 'uint16(hr:40563 ; 0xFFFF ; 0x8000)'
+      - id: 'V_SF'
+        description: '[Model_132](V_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40564 ; 0x8000)'
+      - id: 'DeptRef_SF'
+        description: '[Model_132](DeptRef_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40565 ; 0x8000)'
+      - id: 'RmpIncDec_SF'
+        description: '[Model_132](RmpIncDec_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40566 ; 0x8000)'
+      - id: 'R0_ActPt'
+        description: '[Model_132](ActPt): Number of active points in array.'
+        expression: 'uint16(hr:40565 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_DeptRef'
+        description: '[Model_132](DeptRef): Defines the meaning of the Watts DeptRef. 1=% WMax 2=% WAvail.'
+        expression: 'enum(hr:40566 ; 0xFFFF ; 1->''%WMax'' ; 2->''%WAval'')'
+      - id: 'R0_V1'
+        description: '[Model_132](V1): Point 1 Volts.'
+        expression: 'uint16(hr:40567 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W1'
+        description: '[Model_132](W1): Point 1 Watts.'
+        expression: 'int16(hr:40568 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V2'
+        description: '[Model_132](V2): Point 2 Volts.'
+        expression: 'uint16(hr:40569 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W2'
+        description: '[Model_132](W2): Point 2 Watts.'
+        expression: 'int16(hr:40570 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V3'
+        description: '[Model_132](V3): Point 3 Volts.'
+        expression: 'uint16(hr:40571 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W3'
+        description: '[Model_132](W3): Point 3 Watts.'
+        expression: 'int16(hr:40572 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V4'
+        description: '[Model_132](V4): Point 4 Volts.'
+        expression: 'uint16(hr:40573 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W4'
+        description: '[Model_132](W4): Point 4 Watts.'
+        expression: 'int16(hr:40574 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V5'
+        description: '[Model_132](V5): Point 5 Volts.'
+        expression: 'uint16(hr:40575 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W5'
+        description: '[Model_132](W5): Point 5 Watts.'
+        expression: 'int16(hr:40576 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V6'
+        description: '[Model_132](V6): Point 6 Volts.'
+        expression: 'uint16(hr:40577 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W6'
+        description: '[Model_132](W6): Point 6 Watts.'
+        expression: 'int16(hr:40578 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V7'
+        description: '[Model_132](V7): Point 7 Volts.'
+        expression: 'uint16(hr:40579 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W7'
+        description: '[Model_132](W7): Point 7 Watts.'
+        expression: 'int16(hr:40580 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V8'
+        description: '[Model_132](V8): Point 8 Volts.'
+        expression: 'uint16(hr:40581 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W8'
+        description: '[Model_132](W8): Point 8 Watts.'
+        expression: 'int16(hr:40582 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V9'
+        description: '[Model_132](V9): Point 9 Volts.'
+        expression: 'uint16(hr:40583 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W9'
+        description: '[Model_132](W9): Point 9 Watts.'
+        expression: 'int16(hr:40584 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V10'
+        description: '[Model_132](V10): Point 10 Volts.'
+        expression: 'uint16(hr:40585 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W10'
+        description: '[Model_132](W10): Point 10 Watts.'
+        expression: 'int16(hr:40586 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V11'
+        description: '[Model_132](V11): Point 11 Volts.'
+        expression: 'uint16(hr:40587 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W11'
+        description: '[Model_132](W11): Point 11 Watts.'
+        expression: 'int16(hr:40588 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V12'
+        description: '[Model_132](V12): Point 12 Volts.'
+        expression: 'uint16(hr:40589 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W12'
+        description: '[Model_132](W12): Point 12 Watts.'
+        expression: 'int16(hr:40590 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V13'
+        description: '[Model_132](V13): Point 13 Volts.'
+        expression: 'uint16(hr:40591 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W13'
+        description: '[Model_132](W13): Point 13 Watts.'
+        expression: 'int16(hr:40592 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V14'
+        description: '[Model_132](V14): Point 14 Volts.'
+        expression: 'uint16(hr:40593 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W14'
+        description: '[Model_132](W14): Point 14 Watts.'
+        expression: 'int16(hr:40594 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V15'
+        description: '[Model_132](V15): Point 15 Volts.'
+        expression: 'uint16(hr:40595 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W15'
+        description: '[Model_132](W15): Point 15 Watts.'
+        expression: 'int16(hr:40596 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V16'
+        description: '[Model_132](V16): Point 16 Volts.'
+        expression: 'uint16(hr:40597 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W16'
+        description: '[Model_132](W16): Point 16 Watts.'
+        expression: 'int16(hr:40598 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V17'
+        description: '[Model_132](V17): Point 17 Volts.'
+        expression: 'uint16(hr:40599 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W17'
+        description: '[Model_132](W17): Point 17 Watts.'
+        expression: 'int16(hr:40600 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V18'
+        description: '[Model_132](V18): Point 18 Volts.'
+        expression: 'uint16(hr:40601 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W18'
+        description: '[Model_132](W18): Point 18 Watts.'
+        expression: 'int16(hr:40602 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V19'
+        description: '[Model_132](V19): Point 19 Volts.'
+        expression: 'uint16(hr:40603 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W19'
+        description: '[Model_132](W19): Point 19 Watts.'
+        expression: 'int16(hr:40604 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_V20'
+        description: '[Model_132](V20): Point 20 Volts.'
+        expression: 'uint16(hr:40605 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_W20'
+        description: '[Model_132](W20): Point 20 Watts.'
+        expression: 'int16(hr:40606 ; 0x8000)*(10^DeptRef_SF)'
+        unit: '% VRef'
+      - id: 'R0_CrvNam'
+        description: '[Model_132](CrvNam): Optional description for curve.'
+        expression: 'utf8(hr:40607 # 8)'
+      - id: 'R0_RmpPt1Tms'
+        description: '[Model_132](RmpPt1Tms): The time of the PT1 in seconds (time to accomplish a change of 95%).'
+        expression: 'uint16(hr:40615 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'R0_RmpDecTmm'
+        description: '[Model_132](RmpDecTmm): The maximum rate at which the watt value may be reduced in response to changes in the voltage value.'
+        expression: 'uint16(hr:40616 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% WMax/min'
+      - id: 'R0_RmpIncTmm'
+        description: '[Model_132](RmpIncTmm): The maximum rate at which the watt value may be increased in response to changes in the voltage value.'
+        expression: 'uint16(hr:40617 ; 0xFFFF ; 0x8000)*(10^RmpIncDec_SF)'
+        unit: '% WMax/min'
+      - id: 'R0_ReadOnly'
+        description: '[Model_132](ReadOnly): Curve is read-only or can be modified.'
+        expression: 'enum(hr:40618 ; 0xFFFF ; 0->''READWRITE'' ; 1->''READONLY'')'
+  - id: 'Model_160'
+    description: '[Model 160]:Multiple MPPT Inverter Extension Model'
+    fields:
+      - id: 'ID'
+        description: '[Model_160](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40621 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_160](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40622 ; 0xFFFF ; 0x8000)'
+      - id: 'DCA_SF'
+        description: '[Model_160](DCA_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40623 ; 0x8000)'
+      - id: 'DCV_SF'
+        description: '[Model_160](DCV_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40624 ; 0x8000)'
+      - id: 'DCW_SF'
+        description: '[Model_160](DCW_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40625 ; 0x8000)'
+      - id: 'DCWH_SF'
+        description: '[Model_160](DCWH_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40626 ; 0x8000)'
+      - id: 'Evt'
+        description: '[Model_160](Global Events): '
+        expression: 'bitset(hr:40627 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+      - id: 'N'
+        description: '[Model_160](Number of Modules): '
+        expression: 'uint16(hr:40629 ; 0x0000)'
+      - id: 'TmsPer'
+        description: '[Model_160](Timestamp Period): '
+        expression: 'uint16(hr:40630 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_ID'
+        description: '[Model_160](Input ID): '
+        expression: 'uint16(hr:40629 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_IDStr'
+        description: '[Model_160](Input ID String): '
+        expression: 'utf8(hr:40630 # 8)'
+      - id: 'R0_DCA'
+        description: '[Model_160](DC Current): '
+        expression: 'uint16(hr:40638 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'R0_DCV'
+        description: '[Model_160](DC Voltage): '
+        expression: 'uint16(hr:40639 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'R0_DCW'
+        description: '[Model_160](DC Power): '
+        expression: 'uint16(hr:40640 ; 0xFFFF ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'R0_DCWH'
+        description: '[Model_160](Lifetime Energy): '
+        expression: 'uint32(hr:40641 # 2 ; 0x0000 0x0000)*(10^DCWH_SF)'
+        unit: 'Wh'
+      - id: 'R0_Tms'
+        description: '[Model_160](Timestamp): '
+        expression: 'uint32(hr:40643 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)'
+        unit: 'Secs'
+      - id: 'R0_Tmp'
+        description: '[Model_160](Temperature): '
+        expression: 'int16(hr:40645 ; 0x8000)'
+        unit: 'C'
+      - id: 'R0_DCSt'
+        description: '[Model_160](Operating State): '
+        expression: 'enum(hr:40646 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'' ; 9->''TEST'' ; 10->''RESERVED_10'')'
+      - id: 'R0_DCEvt'
+        description: '[Model_160](Module Events): '
+        expression: 'bitset(hr:40647 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+      - id: 'R1_ID'
+        description: '[Model_160](Input ID): '
+        expression: 'uint16(hr:40649 ; 0xFFFF ; 0x8000)'
+      - id: 'R1_IDStr'
+        description: '[Model_160](Input ID String): '
+        expression: 'utf8(hr:40650 # 8)'
+      - id: 'R1_DCA'
+        description: '[Model_160](DC Current): '
+        expression: 'uint16(hr:40658 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'R1_DCV'
+        description: '[Model_160](DC Voltage): '
+        expression: 'uint16(hr:40659 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'R1_DCW'
+        description: '[Model_160](DC Power): '
+        expression: 'uint16(hr:40660 ; 0xFFFF ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'R1_DCWH'
+        description: '[Model_160](Lifetime Energy): '
+        expression: 'uint32(hr:40661 # 2 ; 0x0000 0x0000)*(10^DCWH_SF)'
+        unit: 'Wh'
+      - id: 'R1_Tms'
+        description: '[Model_160](Timestamp): '
+        expression: 'uint32(hr:40663 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)'
+        unit: 'Secs'
+      - id: 'R1_Tmp'
+        description: '[Model_160](Temperature): '
+        expression: 'int16(hr:40665 ; 0x8000)'
+        unit: 'C'
+      - id: 'R1_DCSt'
+        description: '[Model_160](Operating State): '
+        expression: 'enum(hr:40666 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'' ; 9->''TEST'' ; 10->''RESERVED_10'')'
+      - id: 'R1_DCEvt'
+        description: '[Model_160](Module Events): '
+        expression: 'bitset(hr:40667 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+      - id: 'R2_ID'
+        description: '[Model_160](Input ID): '
+        expression: 'uint16(hr:40669 ; 0xFFFF ; 0x8000)'
+      - id: 'R2_IDStr'
+        description: '[Model_160](Input ID String): '
+        expression: 'utf8(hr:40670 # 8)'
+      - id: 'R2_DCA'
+        description: '[Model_160](DC Current): '
+        expression: 'uint16(hr:40678 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'R2_DCV'
+        description: '[Model_160](DC Voltage): '
+        expression: 'uint16(hr:40679 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'R2_DCW'
+        description: '[Model_160](DC Power): '
+        expression: 'uint16(hr:40680 ; 0xFFFF ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'R2_DCWH'
+        description: '[Model_160](Lifetime Energy): '
+        expression: 'uint32(hr:40681 # 2 ; 0x0000 0x0000)*(10^DCWH_SF)'
+        unit: 'Wh'
+      - id: 'R2_Tms'
+        description: '[Model_160](Timestamp): '
+        expression: 'uint32(hr:40683 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)'
+        unit: 'Secs'
+      - id: 'R2_Tmp'
+        description: '[Model_160](Temperature): '
+        expression: 'int16(hr:40685 ; 0x8000)'
+        unit: 'C'
+      - id: 'R2_DCSt'
+        description: '[Model_160](Operating State): '
+        expression: 'enum(hr:40686 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'' ; 9->''TEST'' ; 10->''RESERVED_10'')'
+      - id: 'R2_DCEvt'
+        description: '[Model_160](Module Events): '
+        expression: 'bitset(hr:40687 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+      - id: 'R3_ID'
+        description: '[Model_160](Input ID): '
+        expression: 'uint16(hr:40689 ; 0xFFFF ; 0x8000)'
+      - id: 'R3_IDStr'
+        description: '[Model_160](Input ID String): '
+        expression: 'utf8(hr:40690 # 8)'
+      - id: 'R3_DCA'
+        description: '[Model_160](DC Current): '
+        expression: 'uint16(hr:40698 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'R3_DCV'
+        description: '[Model_160](DC Voltage): '
+        expression: 'uint16(hr:40699 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'R3_DCW'
+        description: '[Model_160](DC Power): '
+        expression: 'uint16(hr:40700 ; 0xFFFF ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'R3_DCWH'
+        description: '[Model_160](Lifetime Energy): '
+        expression: 'uint32(hr:40701 # 2 ; 0x0000 0x0000)*(10^DCWH_SF)'
+        unit: 'Wh'
+      - id: 'R3_Tms'
+        description: '[Model_160](Timestamp): '
+        expression: 'uint32(hr:40703 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)'
+        unit: 'Secs'
+      - id: 'R3_Tmp'
+        description: '[Model_160](Temperature): '
+        expression: 'int16(hr:40705 ; 0x8000)'
+        unit: 'C'
+      - id: 'R3_DCSt'
+        description: '[Model_160](Operating State): '
+        expression: 'enum(hr:40706 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'' ; 9->''TEST'' ; 10->''RESERVED_10'')'
+      - id: 'R3_DCEvt'
+        description: '[Model_160](Module Events): '
+        expression: 'bitset(hr:40707 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+      - id: 'R4_ID'
+        description: '[Model_160](Input ID): '
+        expression: 'uint16(hr:40709 ; 0xFFFF ; 0x8000)'
+      - id: 'R4_IDStr'
+        description: '[Model_160](Input ID String): '
+        expression: 'utf8(hr:40710 # 8)'
+      - id: 'R4_DCA'
+        description: '[Model_160](DC Current): '
+        expression: 'uint16(hr:40718 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'R4_DCV'
+        description: '[Model_160](DC Voltage): '
+        expression: 'uint16(hr:40719 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'R4_DCW'
+        description: '[Model_160](DC Power): '
+        expression: 'uint16(hr:40720 ; 0xFFFF ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'R4_DCWH'
+        description: '[Model_160](Lifetime Energy): '
+        expression: 'uint32(hr:40721 # 2 ; 0x0000 0x0000)*(10^DCWH_SF)'
+        unit: 'Wh'
+      - id: 'R4_Tms'
+        description: '[Model_160](Timestamp): '
+        expression: 'uint32(hr:40723 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)'
+        unit: 'Secs'
+      - id: 'R4_Tmp'
+        description: '[Model_160](Temperature): '
+        expression: 'int16(hr:40725 ; 0x8000)'
+        unit: 'C'
+      - id: 'R4_DCSt'
+        description: '[Model_160](Operating State): '
+        expression: 'enum(hr:40726 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'' ; 9->''TEST'' ; 10->''RESERVED_10'')'
+      - id: 'R4_DCEvt'
+        description: '[Model_160](Module Events): '
+        expression: 'bitset(hr:40727 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+      - id: 'R5_ID'
+        description: '[Model_160](Input ID): '
+        expression: 'uint16(hr:40729 ; 0xFFFF ; 0x8000)'
+      - id: 'R5_IDStr'
+        description: '[Model_160](Input ID String): '
+        expression: 'utf8(hr:40730 # 8)'
+      - id: 'R5_DCA'
+        description: '[Model_160](DC Current): '
+        expression: 'uint16(hr:40738 ; 0xFFFF ; 0x8000)*(10^DCA_SF)'
+        unit: 'A'
+      - id: 'R5_DCV'
+        description: '[Model_160](DC Voltage): '
+        expression: 'uint16(hr:40739 ; 0xFFFF ; 0x8000)*(10^DCV_SF)'
+        unit: 'V'
+      - id: 'R5_DCW'
+        description: '[Model_160](DC Power): '
+        expression: 'uint16(hr:40740 ; 0xFFFF ; 0x8000)*(10^DCW_SF)'
+        unit: 'W'
+      - id: 'R5_DCWH'
+        description: '[Model_160](Lifetime Energy): '
+        expression: 'uint32(hr:40741 # 2 ; 0x0000 0x0000)*(10^DCWH_SF)'
+        unit: 'Wh'
+      - id: 'R5_Tms'
+        description: '[Model_160](Timestamp): '
+        expression: 'uint32(hr:40743 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0x0000)'
+        unit: 'Secs'
+      - id: 'R5_Tmp'
+        description: '[Model_160](Temperature): '
+        expression: 'int16(hr:40745 ; 0x8000)'
+        unit: 'C'
+      - id: 'R5_DCSt'
+        description: '[Model_160](Operating State): '
+        expression: 'enum(hr:40746 ; 0xFFFF ; 1->''OFF'' ; 2->''SLEEPING'' ; 3->''STARTING'' ; 4->''MPPT'' ; 5->''THROTTLED'' ; 6->''SHUTTING_DOWN'' ; 7->''FAULT'' ; 8->''STANDBY'' ; 9->''TEST'' ; 10->''RESERVED_10'')'
+      - id: 'R5_DCEvt'
+        description: '[Model_160](Module Events): '
+        expression: 'bitset(hr:40747 # 2 ; 0xFFFF 0xFFFF ; 0x8000 0xFFFF ; 0->''GROUND_FAULT'' ; 1->''INPUT_OVER_VOLTAGE'' ; 2->''RESERVED_2'' ; 3->''DC_DISCONNECT'' ; 4->''RESERVED_4'' ; 5->''CABINET_OPEN'' ; 6->''MANUAL_SHUTDOWN'' ; 7->''OVER_TEMP'' ; 8->''RESERVED_8'' ; 9->''RESERVED_9'' ; 10->''RESERVED_10'' ; 11->''RESERVED_11'' ; 12->''BLOWN_FUSE'' ; 13->''UNDER_TEMP'' ; 14->''MEMORY_LOSS'' ; 15->''ARC_DETECTION'' ; 16->''RESERVED_16'' ; 17->''RESERVED_17'' ; 18->''RESERVED_18'' ; 19->''RESERVED_19'' ; 20->''TEST_FAILED'' ; 21->''INPUT_UNDER_VOLTAGE'' ; 22->''INPUT_OVER_CURRENT'')'
+  - id: 'Model_129'
+    description: '[Model 129]:LVRTD: LVRT Must Disconnect'
+    fields:
+      - id: 'ID'
+        description: '[Model_129](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40751 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_129](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40752 ; 0xFFFF ; 0x8000)'
+      - id: 'ActCrv'
+        description: '[Model_129](ActCrv): Index of active curve. 0=no active curve.'
+        expression: 'uint16(hr:40753 ; 0xFFFF ; 0x8000)'
+      - id: 'ModEna'
+        description: '[Model_129](ModEna): LVRT control mode. Enable active curve.'
+        expression: 'bitset(hr:40754 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'WinTms'
+        description: '[Model_129](WinTms): Time window for LVRT change.'
+        expression: 'uint16(hr:40755 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RvrtTms'
+        description: '[Model_129](RvrtTms): Timeout period for LVRT curve selection.'
+        expression: 'uint16(hr:40756 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RmpTms'
+        description: '[Model_129](RmpTms): Ramp time for moving from current mode to new mode.'
+        expression: 'uint16(hr:40757 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'NCrv'
+        description: '[Model_129](NCrv): Number of curves supported (recommend 4).'
+        expression: 'uint16(hr:40758 ; 0xFFFF ; 0x8000)'
+      - id: 'NPt'
+        description: '[Model_129](NPt): Number of curve points supported (maximum of 20).'
+        expression: 'uint16(hr:40759 ; 0xFFFF ; 0x8000)'
+      - id: 'Tms_SF'
+        description: '[Model_129](Tms_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40760 ; 0x8000)'
+      - id: 'V_SF'
+        description: '[Model_129](V_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40761 ; 0x8000)'
+      - id: 'Pad'
+        description: '[Model_129](Pad): '
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40762)'
+      - id: 'R0_ActPt'
+        description: '[Model_129](ActPt): Number of active points in array.'
+        expression: 'uint16(hr:40761 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_Tms1'
+        description: '[Model_129](Tms1): Point 1 must disconnect duration.'
+        expression: 'uint16(hr:40762 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V1'
+        description: '[Model_129](V1): Point 1 must disconnect voltage.'
+        expression: 'uint16(hr:40763 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms2'
+        description: '[Model_129](Tms2): Point 2 must disconnect duration.'
+        expression: 'uint16(hr:40764 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V2'
+        description: '[Model_129](V2): Point 2 must disconnect voltage.'
+        expression: 'uint16(hr:40765 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms3'
+        description: '[Model_129](Tms3): Point 3 must disconnect duration.'
+        expression: 'uint16(hr:40766 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V3'
+        description: '[Model_129](V3): Point 3 must disconnect voltage.'
+        expression: 'uint16(hr:40767 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms4'
+        description: '[Model_129](Tms4): Point 4 must disconnect duration.'
+        expression: 'uint16(hr:40768 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V4'
+        description: '[Model_129](V4): Point 4 must disconnect voltage.'
+        expression: 'uint16(hr:40769 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms5'
+        description: '[Model_129](Tms5): Point 5 must disconnect duration.'
+        expression: 'uint16(hr:40770 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V5'
+        description: '[Model_129](V5): Point 5 must disconnect voltage.'
+        expression: 'uint16(hr:40771 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms6'
+        description: '[Model_129](Tms6): Point 6 must disconnect duration.'
+        expression: 'uint16(hr:40772 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V6'
+        description: '[Model_129](V6): Point 6 must disconnect voltage.'
+        expression: 'uint16(hr:40773 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms7'
+        description: '[Model_129](Tms7): Point 7 must disconnect duration.'
+        expression: 'uint16(hr:40774 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V7'
+        description: '[Model_129](V7): Point 7 must disconnect voltage.'
+        expression: 'uint16(hr:40775 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms8'
+        description: '[Model_129](Tms8): Point 8 must disconnect duration.'
+        expression: 'uint16(hr:40776 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V8'
+        description: '[Model_129](V8): Point 8 must disconnect voltage.'
+        expression: 'uint16(hr:40777 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms9'
+        description: '[Model_129](Tms9): Point 9 must disconnect duration.'
+        expression: 'uint16(hr:40778 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V9'
+        description: '[Model_129](V9): Point 9 must disconnect voltage.'
+        expression: 'uint16(hr:40779 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms10'
+        description: '[Model_129](Tms10): Point 10 must disconnect duration.'
+        expression: 'uint16(hr:40780 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V10'
+        description: '[Model_129](V10): Point 10 must disconnect voltage.'
+        expression: 'uint16(hr:40781 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms11'
+        description: '[Model_129](Tms11): Point 11 must disconnect duration.'
+        expression: 'uint16(hr:40782 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V11'
+        description: '[Model_129](V11): Point 11 must disconnect voltage.'
+        expression: 'uint16(hr:40783 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms12'
+        description: '[Model_129](Tms12): Point 12 must disconnect duration.'
+        expression: 'uint16(hr:40784 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V12'
+        description: '[Model_129](V12): Point 12 must disconnect voltage.'
+        expression: 'uint16(hr:40785 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms13'
+        description: '[Model_129](Tms13): Point 13 must disconnect duration.'
+        expression: 'uint16(hr:40786 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V13'
+        description: '[Model_129](V13): Point 13 must disconnect voltage.'
+        expression: 'uint16(hr:40787 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms14'
+        description: '[Model_129](Tms14): Point 14 must disconnect duration.'
+        expression: 'uint16(hr:40788 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V14'
+        description: '[Model_129](V14): Point 14 must disconnect voltage.'
+        expression: 'uint16(hr:40789 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms15'
+        description: '[Model_129](Tms15): Point 15 must disconnect duration.'
+        expression: 'uint16(hr:40790 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V15'
+        description: '[Model_129](V15): Point 15 must disconnect voltage.'
+        expression: 'uint16(hr:40791 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms16'
+        description: '[Model_129](Tms16): Point 16 must disconnect duration.'
+        expression: 'uint16(hr:40792 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V16'
+        description: '[Model_129](V16): Point 16 must disconnect voltage.'
+        expression: 'uint16(hr:40793 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms17'
+        description: '[Model_129](Tms17): Point 17 must disconnect duration.'
+        expression: 'uint16(hr:40794 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V17'
+        description: '[Model_129](V17): Point 17 must disconnect voltage.'
+        expression: 'uint16(hr:40795 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms18'
+        description: '[Model_129](Tms18): Point 18 must disconnect duration.'
+        expression: 'uint16(hr:40796 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V18'
+        description: '[Model_129](V18): Point 18 must disconnect voltage.'
+        expression: 'uint16(hr:40797 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms19'
+        description: '[Model_129](Tms19): Point 19 must disconnect duration.'
+        expression: 'uint16(hr:40798 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V19'
+        description: '[Model_129](V19): Point 19 must disconnect voltage.'
+        expression: 'uint16(hr:40799 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms20'
+        description: '[Model_129](Tms20): Point 20 must disconnect duration.'
+        expression: 'uint16(hr:40800 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V20'
+        description: '[Model_129](V20): Point 20 must disconnect voltage.'
+        expression: 'uint16(hr:40801 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_CrvNam'
+        description: '[Model_129](CrvNam): Optional description for curve.'
+        expression: 'utf8(hr:40802 # 8)'
+      - id: 'R0_ReadOnly'
+        description: '[Model_129](ReadOnly): Curve is read-only or can be modified.'
+        expression: 'enum(hr:40810 ; 0xFFFF ; 0->''READWRITE'' ; 1->''READONLY'')'
+  - id: 'Model_130'
+    description: '[Model 130]:HVRTD: HVRT Must Disconnect'
+    fields:
+      - id: 'ID'
+        description: '[Model_130](Model ID): Model identifier.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40813 ; 0xFFFF ; 0x8000)'
+      - id: 'L'
+        description: '[Model_130](Model Length): Model length.'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40814 ; 0xFFFF ; 0x8000)'
+      - id: 'ActCrv'
+        description: '[Model_130](ActCrv): Index of active curve. 0=no active curve.'
+        expression: 'uint16(hr:40815 ; 0xFFFF ; 0x8000)'
+      - id: 'ModEna'
+        description: '[Model_130](ModEna): HVRT control mode. Enable active curve.'
+        expression: 'bitset(hr:40816 ; 0xFFFF ; 0->''ENABLED'')'
+      - id: 'WinTms'
+        description: '[Model_130](WinTms): Time window for HVRT change.'
+        expression: 'uint16(hr:40817 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RvrtTms'
+        description: '[Model_130](RvrtTms): Timeout period for HVRT curve selection.'
+        expression: 'uint16(hr:40818 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'RmpTms'
+        description: '[Model_130](RmpTms): Ramp time for moving from current mode to new mode.'
+        expression: 'uint16(hr:40819 ; 0xFFFF ; 0x8000)'
+        unit: 'Secs'
+      - id: 'NCrv'
+        description: '[Model_130](NCrv): Number of curves supported (recommend 4).'
+        expression: 'uint16(hr:40820 ; 0xFFFF ; 0x8000)'
+      - id: 'NPt'
+        description: '[Model_130](NPt): Number of curve points supported (maximum of 20).'
+        expression: 'uint16(hr:40821 ; 0xFFFF ; 0x8000)'
+      - id: 'Tms_SF'
+        description: '[Model_130](Tms_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40822 ; 0x8000)'
+      - id: 'V_SF'
+        description: '[Model_130](V_SF): Scaling factor'
+        immutable: true
+        system: true
+        expression: 'int16(hr:40823 ; 0x8000)'
+      - id: 'Pad'
+        description: '[Model_130](Pad): '
+        immutable: true
+        system: true
+        expression: 'hexstring(hr:40824)'
+      - id: 'R0_ActPt'
+        description: '[Model_130](ActPt): Number of active points in array.'
+        expression: 'uint16(hr:40823 ; 0xFFFF ; 0x8000)'
+      - id: 'R0_Tms1'
+        description: '[Model_130](Tms1): Point 1 must disconnect duration.'
+        expression: 'uint16(hr:40824 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V1'
+        description: '[Model_130](V1): Point 1 must disconnect voltage.'
+        expression: 'uint16(hr:40825 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms2'
+        description: '[Model_130](Tms2): Point 2 must disconnect duration.'
+        expression: 'uint16(hr:40826 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V2'
+        description: '[Model_130](V2): Point 2 must disconnect voltage.'
+        expression: 'uint16(hr:40827 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms3'
+        description: '[Model_130](Tms3): Point 3 must disconnect duration.'
+        expression: 'uint16(hr:40828 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V3'
+        description: '[Model_130](V3): Point 3 must disconnect voltage.'
+        expression: 'uint16(hr:40829 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms4'
+        description: '[Model_130](Tms4): Point 4 must disconnect duration.'
+        expression: 'uint16(hr:40830 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V4'
+        description: '[Model_130](V4): Point 4 must disconnect voltage.'
+        expression: 'uint16(hr:40831 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms5'
+        description: '[Model_130](Tms5): Point 5 must disconnect duration.'
+        expression: 'uint16(hr:40832 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V5'
+        description: '[Model_130](V5): Point 5 must disconnect voltage.'
+        expression: 'uint16(hr:40833 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms6'
+        description: '[Model_130](Tms6): Point 6 must disconnect duration.'
+        expression: 'uint16(hr:40834 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V6'
+        description: '[Model_130](V6): Point 6 must disconnect voltage.'
+        expression: 'uint16(hr:40835 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms7'
+        description: '[Model_130](Tms7): Point 7 must disconnect duration.'
+        expression: 'uint16(hr:40836 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V7'
+        description: '[Model_130](V7): Point 7 must disconnect voltage.'
+        expression: 'uint16(hr:40837 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms8'
+        description: '[Model_130](Tms8): Point 8 must disconnect duration.'
+        expression: 'uint16(hr:40838 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V8'
+        description: '[Model_130](V8): Point 8 must disconnect voltage.'
+        expression: 'uint16(hr:40839 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms9'
+        description: '[Model_130](Tms9): Point 9 must disconnect duration.'
+        expression: 'uint16(hr:40840 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V9'
+        description: '[Model_130](V9): Point 9 must disconnect voltage.'
+        expression: 'uint16(hr:40841 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms10'
+        description: '[Model_130](Tms10): Point 10 must disconnect duration.'
+        expression: 'uint16(hr:40842 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V10'
+        description: '[Model_130](V10): Point 10 must disconnect voltage.'
+        expression: 'uint16(hr:40843 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms11'
+        description: '[Model_130](Tms11): Point 11 must disconnect duration.'
+        expression: 'uint16(hr:40844 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V11'
+        description: '[Model_130](V11): Point 11 must disconnect voltage.'
+        expression: 'uint16(hr:40845 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms12'
+        description: '[Model_130](Tms12): Point 12 must disconnect duration.'
+        expression: 'uint16(hr:40846 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V12'
+        description: '[Model_130](V12): Point 12 must disconnect voltage.'
+        expression: 'uint16(hr:40847 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms13'
+        description: '[Model_130](Tms13): Point 13 must disconnect duration.'
+        expression: 'uint16(hr:40848 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V13'
+        description: '[Model_130](V13): Point 13 must disconnect voltage.'
+        expression: 'uint16(hr:40849 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms14'
+        description: '[Model_130](Tms14): Point 14 must disconnect duration.'
+        expression: 'uint16(hr:40850 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V14'
+        description: '[Model_130](V14): Point 14 must disconnect voltage.'
+        expression: 'uint16(hr:40851 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms15'
+        description: '[Model_130](Tms15): Point 15 must disconnect duration.'
+        expression: 'uint16(hr:40852 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V15'
+        description: '[Model_130](V15): Point 15 must disconnect voltage.'
+        expression: 'uint16(hr:40853 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms16'
+        description: '[Model_130](Tms16): Point 16 must disconnect duration.'
+        expression: 'uint16(hr:40854 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V16'
+        description: '[Model_130](V16): Point 16 must disconnect voltage.'
+        expression: 'uint16(hr:40855 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms17'
+        description: '[Model_130](Tms17): Point 17 must disconnect duration.'
+        expression: 'uint16(hr:40856 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V17'
+        description: '[Model_130](V17): Point 17 must disconnect voltage.'
+        expression: 'uint16(hr:40857 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms18'
+        description: '[Model_130](Tms18): Point 18 must disconnect duration.'
+        expression: 'uint16(hr:40858 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V18'
+        description: '[Model_130](V18): Point 18 must disconnect voltage.'
+        expression: 'uint16(hr:40859 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms19'
+        description: '[Model_130](Tms19): Point 19 must disconnect duration.'
+        expression: 'uint16(hr:40860 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V19'
+        description: '[Model_130](V19): Point 19 must disconnect voltage.'
+        expression: 'uint16(hr:40861 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_Tms20'
+        description: '[Model_130](Tms20): Point 20 must disconnect duration.'
+        expression: 'uint16(hr:40862 ; 0xFFFF ; 0x8000)*(10^Tms_SF)'
+        unit: 'Secs'
+      - id: 'R0_V20'
+        description: '[Model_130](V20): Point 20 must disconnect voltage.'
+        expression: 'uint16(hr:40863 ; 0xFFFF ; 0x8000)*(10^V_SF)'
+        unit: '% VRef'
+      - id: 'R0_CrvNam'
+        description: '[Model_130](CrvNam): Optional description for curve.'
+        expression: 'utf8(hr:40864 # 8)'
+      - id: 'R0_ReadOnly'
+        description: '[Model_130](ReadOnly): Curve is read-only or can be modified.'
+        expression: 'enum(hr:40872 ; 0xFFFF ; 0->''READWRITE'' ; 1->''READONLY'')'
+  - id: 'EndOfModelChain'
+    description: 'The final marker that closes the SunSpec model list'
+    fields:
+      - id: 'ID'
+        description: 'Model identifier'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40875)'
+      - id: 'L'
+        description: 'Model length'
+        immutable: true
+        system: true
+        expression: 'uint16(hr:40876)'
+tests:
+  - id: 'TestAt_2025_04_21_12_19_15'
+    description: 'Test generated from device data at 2025-04-21T12:19:15.019Z'
+    input:
+      - firstRegisterAddress: 'hr:40000'
+        registers: |2-
+
+
+          # SunS header
+          5375 6E53
+
+          # --------------------------------------
+          # Model 1 [Header @ hr:40002]: Common
+          0001 0042
+
+          # Model 1 [Data @ hr:40004 - hr:40070]: 66 registers
+          534D 4100 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 5342 332E 362D 3141
+          562D 3431 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          342E 3031 2E31 352E 5200 0000 0000 0000 3330 3035
+          3036 3734 3135 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 FFFF 8000
+
+          # --------------------------------------
+          # Model 11 [Header @ hr:40070]: Ethernet Link Layer
+          000B 000D
+
+          # Model 11 [Data @ hr:40072 - hr:40085]: 13 registers
+          0000 0000 0002 0000 0040 ADA9 9576 0000 0000 0000
+          0000 FFFF FFFF
+
+          # --------------------------------------
+          # Model 12 [Header @ hr:40085]: IPv4
+          000C 0062
+
+          # Model 12 [Data @ hr:40087 - hr:40185]: 98 registers
+          0000 0000 0000 0000 0001 0000 0005 0001 0000 3139
+          322E 3136 382E 302E 3137 3000 0000 3235 352E 3235
+          352E 3235 352E 3000 0000 3139 322E 3136 382E 302E
+          3100 0000 0000 3139 322E 3136 382E 302E 3100 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 8000
+
+          # --------------------------------------
+          # Model 101 [Header @ hr:40185]: Inverter (Single Phase)
+          0065 0032
+
+          # Model 101 [Data @ hr:40187 - hr:40237]: 50 registers
+          0029 0029 FFFF FFFF FFFF FFFF FFFF FFFF 0959 FFFF
+          FFFF FFFF 0061 0001 1387 FFFE 0062 0001 000A 0001
+          FC1D FFFD 002D 54FC 0001 FFFF 8000 FFFF 8000 8000
+          0001 0029 8000 8000 8000 0000 0004 FFFF 0000 0000
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF
+
+
+          # --------------------------------------
+          # Model 120 [Header @ hr:40237]: Nameplate
+          0078 001A
+
+          # Model 120 [Data @ hr:40239 - hr:40265]: 26 registers
+          0004 0170 0001 0170 0001 00B8 8000 8000 00B8 0001
+          00A0 FFFF 0320 8000 8000 0320 FFFD FFFF 0002 FFFF
+          0000 FFFF 0001 FFFF 0001 8000
+
+          # --------------------------------------
+          # Model 121 [Header @ hr:40265]: Basic Settings
+          0079 001E
+
+          # Model 121 [Data @ hr:40267 - hr:40297]: 30 registers
+          0170 00E6 0000 FFFF FFFF 0170 8000 8000 8000 8000
+          0014 8000 8000 8000 8000 FFFF FFFF 0341 0032 0001
+          0001 0000 0000 8000 0001 8000 0000 8000 0000 0000
+
+
+          # --------------------------------------
+          # Model 122 [Header @ hr:40297]: Measurements_Status
+          007A 002C
+
+          # Model 122 [Data @ hr:40299 - hr:40343]: 44 registers
+          0005 0000 0001 0000 0000 01C5 51DA 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+          0000 0000 0000 0000 0000 0000 0000 8000 8000 FFFF
+          8000 FFFF FFFF FFFF FFFF 0000 0000 0000 0000 FFFF
+          FFFF FFFF 010B 0004
+
+          # --------------------------------------
+          # Model 123 [Header @ hr:40343]: Immediate Controls
+          007B 0018
+
+          # Model 123 [Data @ hr:40345 - hr:40369]: 24 registers
+          FFFF FFFF 0000 0000 FFFF FFFF FFFF 0001 0000 FFFF
+          FFFF FFFF 0000 0000 8000 8000 FFFF FFFF FFFF 0001
+          0000 FFFE FFFC FFFE
+
+          # --------------------------------------
+          # Model 124 [Header @ hr:40369]: Storage
+          007C 0018
+
+          # Model 124 [Data @ hr:40371 - hr:40395]: 24 registers
+          FFFF FFFF FFFF 0000 FFFF FFFF FFFF FFFF FFFF FFFF
+          8000 8000 FFFF FFFF FFFF FFFF 0000 8000 8000 8000
+          0000 8000 FFFE 8000
+
+          # --------------------------------------
+          # Model 126 [Header @ hr:40395]: Static Volt-VAR
+          007E 0040
+
+          # Model 126 [Data @ hr:40397 - hr:40461]: 64 registers
+          0001 0000 FFFF FFFF FFFF 0001 0008 FFFE FFFE 0000
+          0004 0002 2710 0000 2710 0000 2710 0000 2710 0000
+          2710 0000 2710 0000 2710 0000 2710 0000 FFFF 8000
+          FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000
+          FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000
+          ---- ---- ---- ---- ---- ---- ---- ---- FFFF FFFF
+          000A 04B0 ---- ----
+
+          # --------------------------------------
+          # Model 127 [Header @ hr:40461]: Freq-Watt Param
+          007F 000A
+
+          # Model 127 [Data @ hr:40463 - hr:40473]: 10 registers
+          0028 0014 0014 0000 0001 000A 0000 FFFE 0000 8000
+
+
+          # --------------------------------------
+          # Model 128 [Header @ hr:40473]: Dynamic Reactive Current
+          0080 000E
+
+          # Model 128 [Data @ hr:40475 - hr:40489]: 14 registers
+          FFFF FFFF FFFF 0000 003C 8000 FFFF 0046 0005 0000
+          FFFF FFFE 0000 8000
+
+          # --------------------------------------
+          # Model 131 [Header @ hr:40489]: Watt-PF
+          0083 0040
+
+          # Model 131 [Data @ hr:40491 - hr:40555]: 64 registers
+          0001 0000 FFFF FFFF FFFF 0001 0008 FFFE FFFE 0000
+          0004 2710 0000 2710 0000 2710 0000 2710 0000 2710
+          0000 2710 0000 2710 0000 2710 0000 8000 8000 8000
+          8000 8000 8000 8000 8000 8000 8000 8000 8000 8000
+          8000 8000 8000 8000 8000 8000 8000 8000 8000 ----
+          ---- ---- ---- ---- ---- ---- ---- FFFF FFFF 000A
+          04B0 04B0 ---- ----
+
+          # --------------------------------------
+          # Model 132 [Header @ hr:40555]: Volt-Watt
+          0084 0040
+
+          # Model 132 [Data @ hr:40557 - hr:40621]: 64 registers
+          0001 0000 FFFF FFFF FFFF 0001 0008 FFFE FFFE 0000
+          0002 0001 2710 2710 2710 2710 2710 0000 2710 0000
+          2710 0000 2710 0000 2710 0000 2710 0000 FFFF 8000
+          FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000
+          FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000 FFFF 8000
+          ---- ---- ---- ---- ---- ---- ---- ---- FFFF FFFF
+          000A 04B0 ---- ----
+
+          # --------------------------------------
+          # Model 160 [Header @ hr:40621]: Multiple MPPT Inverter Extension Model
+          00A0 0080
+
+          # Model 160 [Data @ hr:40623 - hr:40751]: 128 registers
+          FFFF 0000 0001 8000 0000 0000 0006 FFFF ---- ----
+          ---- ---- ---- ---- ---- FFFF FFFF 0012 014A 003D
+          0000 0000 ---- FFFF 8000 FFFF ---- ---- ---- ----
+          ---- ---- ---- ---- ---- FFFF FFFF 0013 00E7 002C
+          0000 0000 ---- FFFF 8000 FFFF ---- ---- ---- ----
+          ---- ---- ---- ---- ---- FFFF FFFF FFFF FFFF FFFF
+          0000 0000 ---- FFFF 8000 FFFF ---- ---- ---- ----
+          ---- ---- ---- ---- ---- FFFF FFFF FFFF FFFF FFFF
+          0000 0000 ---- FFFF 8000 FFFF ---- ---- ---- ----
+          ---- ---- ---- ---- ---- FFFF FFFF FFFF FFFF FFFF
+          0000 0000 ---- FFFF 8000 FFFF ---- ---- ---- ----
+          ---- ---- ---- ---- ---- FFFF FFFF FFFF FFFF FFFF
+          0000 0000 ---- FFFF 8000 FFFF ---- ----
+
+          # --------------------------------------
+          # Model 129 [Header @ hr:40751]: LVRTD
+          0081 003C
+
+          # Model 129 [Data @ hr:40753 - hr:40813]: 60 registers
+          0001 0001 FFFF FFFF FFFF 0001 0003 FFFD 0000 8000
+          0003 07D0 0050 2710 0014 2710 0014 FFFF FFFF FFFF
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF ----
+          ---- ---- ---- ---- ---- ---- ---- FFFF ---- ----
+
+
+          # --------------------------------------
+          # Model 130 [Header @ hr:40813]: HVRTD
+          0082 003C
+
+          # Model 130 [Data @ hr:40815 - hr:40875]: 60 registers
+          0001 0001 FFFF FFFF FFFF 0001 0003 FFFD 0000 8000
+          0003 07D0 006E 2710 007A 2710 007A FFFF FFFF FFFF
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF
+          FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF FFFF ----
+          ---- ---- ---- ---- ---- ---- ---- FFFF ---- ----
+
+
+          # NO MORE MODELS
+          FFFF 0000
+    blocks:
+      - id: 'SunSpecHeader'
+        expected:
+          'SunS':
+            - 'SunS'
+      - id: 'Model_1'
+        expected:
+          'ID':
+            - '1'
+          'L':
+            - '66'
+          'Mn':
+            - 'SMA'
+          'Md':
+            - 'SB3.6-1AV-41'
+          'Opt':
+            - ''
+          'Vr':
+            - '4.01.15.R'
+          'SN':
+            - '3005067415'
+          'DA': []
+          'Pad':
+            - '0x80 0x00'
+      - id: 'Model_11'
+        expected:
+          'ID':
+            - '11'
+          'L':
+            - '13'
+          'Spd':
+            - '0'
+          'CfgSt': []
+          'St':
+            - 'DISABLED'
+          'MAC':
+            - '00:40:AD:A9:95:76'
+          'Nam':
+            - ''
+          'Ctl': []
+          'FrcSpd': []
+      - id: 'Model_12'
+        expected:
+          'ID':
+            - '12'
+          'L':
+            - '98'
+          'Nam':
+            - ''
+          'CfgSt':
+            - 'VALID_SETTING'
+          'ChgSt': []
+          'Cap':
+            - 'DHCP'
+            - 'ZEROCONF'
+          'Cfg':
+            - 'DHCP'
+          'Ctl':
+            - 'ENABLE_DNS'
+          'Addr':
+            - '192.168.0.170'
+          'Msk':
+            - '255.255.255.0'
+          'Gw':
+            - '192.168.0.1'
+          'DNS1':
+            - '192.168.0.1'
+          'DNS2':
+            - ''
+          'NTP1':
+            - ''
+          'NTP2':
+            - ''
+          'DomNam':
+            - ''
+          'HostNam':
+            - ''
+          'Pad':
+            - '0x80 0x00'
+      - id: 'Model_101'
+        expected:
+          'ID':
+            - '101'
+          'L':
+            - '50'
+          'A':
+            - '4.100'
+          'AphA':
+            - '4.100'
+          'AphB': []
+          'AphC': []
+          'A_SF':
+            - '-1'
+          'PPVphAB': []
+          'PPVphBC': []
+          'PPVphCA': []
+          'PhVphA':
+            - '239.300'
+          'PhVphB': []
+          'PhVphC': []
+          'V_SF':
+            - '-1'
+          'W':
+            - '970.000'
+          'W_SF':
+            - '1'
+          'Hz':
+            - '49.990'
+          'Hz_SF':
+            - '-2'
+          'VA':
+            - '980.000'
+          'VA_SF':
+            - '1'
+          'VAr':
+            - '100.000'
+          'VAr_SF':
+            - '1'
+          'PF':
+            - '-0.995'
+          'PF_SF':
+            - '-3'
+          'WH':
+            - '29708760.000'
+          'WH_SF':
+            - '1'
+          'DCA': []
+          'DCA_SF': []
+          'DCV': []
+          'DCV_SF': []
+          'DCW': []
+          'DCW_SF':
+            - '1'
+          'TmpCab':
+            - '41.000'
+          'TmpSnk': []
+          'TmpTrns': []
+          'TmpOt': []
+          'Tmp_SF':
+            - '0'
+          'St':
+            - 'MPPT'
+          'StVnd': []
+          'Evt1': []
+          'Evt2': []
+          'EvtVnd1': []
+          'EvtVnd2': []
+          'EvtVnd3': []
+          'EvtVnd4': []
+      - id: 'Model_120'
+        expected:
+          'ID':
+            - '120'
+          'L':
+            - '26'
+          'DERTyp':
+            - 'PV'
+          'WRtg':
+            - '3680.000'
+          'WRtg_SF':
+            - '1'
+          'VARtg':
+            - '3680.000'
+          'VARtg_SF':
+            - '1'
+          'VArRtgQ1':
+            - '1840.000'
+          'VArRtgQ2': []
+          'VArRtgQ3': []
+          'VArRtgQ4':
+            - '1840.000'
+          'VArRtg_SF':
+            - '1'
+          'ARtg':
+            - '16.000'
+          'ARtg_SF':
+            - '-1'
+          'PFRtgQ1':
+            - '0.800'
+          'PFRtgQ2': []
+          'PFRtgQ3': []
+          'PFRtgQ4':
+            - '0.800'
+          'PFRtg_SF':
+            - '-3'
+          'WHRtg': []
+          'WHRtg_SF':
+            - '2'
+          'AhrRtg': []
+          'AhrRtg_SF':
+            - '0'
+          'MaxChaRte': []
+          'MaxChaRte_SF':
+            - '1'
+          'MaxDisChaRte': []
+          'MaxDisChaRte_SF':
+            - '1'
+          'Pad':
+            - '0x80 0x00'
+      - id: 'Model_121'
+        expected:
+          'ID':
+            - '121'
+          'L':
+            - '30'
+          'WMax':
+            - '3680.000'
+          'VRef':
+            - '230.000'
+          'VRefOfs':
+            - '0.000'
+          'VMax': []
+          'VMin': []
+          'VAMax':
+            - '3680.000'
+          'VArMaxQ1': []
+          'VArMaxQ2': []
+          'VArMaxQ3': []
+          'VArMaxQ4': []
+          'WGra':
+            - '20.000'
+          'PFMinQ1': []
+          'PFMinQ2': []
+          'PFMinQ3': []
+          'PFMinQ4': []
+          'VArAct': []
+          'ClcTotVA': []
+          'MaxRmpRte':
+            - '833.000'
+          'ECPNomHz':
+            - '50.000'
+          'ConnPh':
+            - 'A'
+          'WMax_SF':
+            - '1'
+          'VRef_SF':
+            - '0'
+          'VRefOfs_SF':
+            - '0'
+          'VMinMax_SF': []
+          'VAMax_SF':
+            - '1'
+          'VArMax_SF': []
+          'WGra_SF':
+            - '0'
+          'PFMin_SF': []
+          'MaxRmpRte_SF':
+            - '0'
+          'ECPNomHz_SF':
+            - '0'
+      - id: 'Model_122'
+        expected:
+          'ID':
+            - '122'
+          'L':
+            - '44'
+          'PVConn':
+            - 'CONNECTED'
+            - 'OPERATING'
+          'StorConn': []
+          'ECPConn':
+            - 'CONNECTED'
+          'ActWh':
+            - '29708762'
+          'ActVAh': []
+          'ActVArhQ1': []
+          'ActVArhQ2': []
+          'ActVArhQ3': []
+          'ActVArhQ4': []
+          'VArAval': []
+          'VArAval_SF': []
+          'WAval': []
+          'WAval_SF': []
+          'StSetLimMsk': []
+          'StActCtl': []
+          'TmSrc':
+            - ''
+          'Tms': []
+          'RtSt': []
+          'Ris':
+            - '2670000.000'
+          'Ris_SF':
+            - '4'
+      - id: 'Model_123'
+        expected:
+          'ID':
+            - '123'
+          'L':
+            - '24'
+          'Conn_WinTms': []
+          'Conn_RvrtTms': []
+          'Conn':
+            - 'DISCONNECT'
+          'WMaxLimPct':
+            - '0.000'
+          'WMaxLimPct_WinTms': []
+          'WMaxLimPct_RvrtTms': []
+          'WMaxLimPct_RmpTms': []
+          'WMaxLim_Ena':
+            - 'ENABLED'
+          'OutPFSet':
+            - '0.000'
+          'OutPFSet_WinTms': []
+          'OutPFSet_RvrtTms': []
+          'OutPFSet_RmpTms': []
+          'OutPFSet_Ena':
+            - 'DISABLED'
+          'VArWMaxPct':
+            - '0.000'
+          'VArMaxPct': []
+          'VArAvalPct': []
+          'VArPct_WinTms': []
+          'VArPct_RvrtTms': []
+          'VArPct_RmpTms': []
+          'VArPct_Mod':
+            - 'WMax'
+          'VArPct_Ena':
+            - 'DISABLED'
+          'WMaxLimPct_SF':
+            - '-2'
+          'OutPFSet_SF':
+            - '-4'
+          'VArPct_SF':
+            - '-2'
+      - id: 'Model_124'
+        expected:
+          'ID':
+            - '124'
+          'L':
+            - '24'
+          'WChaMax': []
+          'WChaGra': []
+          'WDisChaGra': []
+          'StorCtl_Mod': []
+          'VAChaMax': []
+          'MinRsvPct': []
+          'ChaState': []
+          'StorAval': []
+          'InBatV': []
+          'ChaSt': []
+          'OutWRte': []
+          'InWRte': []
+          'InOutWRte_WinTms': []
+          'InOutWRte_RvrtTms': []
+          'InOutWRte_RmpTms': []
+          'ChaGriSet': []
+          'WChaMax_SF':
+            - '0'
+          'WChaDisChaGra_SF': []
+          'VAChaMax_SF': []
+          'MinRsvPct_SF': []
+          'ChaState_SF':
+            - '0'
+          'StorAval_SF': []
+          'InBatV_SF':
+            - '-2'
+          'InOutWRte_SF': []
+      - id: 'Model_126'
+        expected:
+          'ID':
+            - '126'
+          'L':
+            - '64'
+          'ActCrv':
+            - '1'
+          'ModEna': []
+          'WinTms': []
+          'RvrtTms': []
+          'RmpTms': []
+          'NCrv':
+            - '1'
+          'NPt':
+            - '8'
+          'V_SF':
+            - '-2'
+          'DeptRef_SF':
+            - '-2'
+          'RmpIncDec_SF':
+            - '0'
+          'R0_ActPt':
+            - '65534'
+          'R0_DeptRef':
+            - 'No mapping for value 0x00 0x00'
+          'R0_V1':
+            - '0.040'
+          'R0_VAr1':
+            - '0.020'
+          'R0_V2':
+            - '100.000'
+          'R0_VAr2':
+            - '0.000'
+          'R0_V3':
+            - '100.000'
+          'R0_VAr3':
+            - '0.000'
+          'R0_V4':
+            - '100.000'
+          'R0_VAr4':
+            - '0.000'
+          'R0_V5':
+            - '100.000'
+          'R0_VAr5':
+            - '0.000'
+          'R0_V6':
+            - '100.000'
+          'R0_VAr6':
+            - '0.000'
+          'R0_V7':
+            - '100.000'
+          'R0_VAr7':
+            - '0.000'
+          'R0_V8':
+            - '100.000'
+          'R0_VAr8':
+            - '0.000'
+          'R0_V9':
+            - '100.000'
+          'R0_VAr9':
+            - '0.000'
+          'R0_V10': []
+          'R0_VAr10': []
+          'R0_V11': []
+          'R0_VAr11': []
+          'R0_V12': []
+          'R0_VAr12': []
+          'R0_V13': []
+          'R0_VAr13': []
+          'R0_V14': []
+          'R0_VAr14': []
+          'R0_V15': []
+          'R0_VAr15': []
+          'R0_V16': []
+          'R0_VAr16': []
+          'R0_V17': []
+          'R0_VAr17': []
+          'R0_V18': []
+          'R0_VAr18': []
+          'R0_V19': []
+          'R0_VAr19': []
+          'R0_V20': []
+          'R0_VAr20': []
+          'R0_CrvNam': []
+          'R0_RmpTms': []
+          'R0_RmpDecTmm': []
+          'R0_RmpIncTmm':
+            - '10.000'
+          'R0_ReadOnly':
+            - 'No mapping for value 0x04 0xB0'
+      - id: 'Model_127'
+        expected:
+          'ID':
+            - '127'
+          'L':
+            - '10'
+          'WGra':
+            - '40.000'
+          'HzStr':
+            - '0.200'
+          'HzStop':
+            - '0.200'
+          'HysEna': []
+          'ModEna':
+            - 'ENABLED'
+          'HzStopWGra':
+            - '10.000'
+          'WGra_SF':
+            - '0'
+          'HzStrStop_SF':
+            - '-2'
+          'RmpIncDec_SF':
+            - '0'
+          'Pad':
+            - '0x80 0x00'
+      - id: 'Model_128'
+        expected:
+          'ID':
+            - '128'
+          'L':
+            - '14'
+          'ArGraMod': []
+          'ArGraSag': []
+          'ArGraSwell': []
+          'ModEna': []
+          'FilTms':
+            - '60'
+          'DbVMin': []
+          'DbVMax': []
+          'BlkZnV':
+            - '70.000'
+          'HysBlkZnV':
+            - '5.000'
+          'BlkZnTmms':
+            - '0'
+          'HoldTmms': []
+          'ArGra_SF':
+            - '-2'
+          'VRefPct_SF':
+            - '0'
+          'Pad':
+            - '0x80 0x00'
+      - id: 'Model_131'
+        expected:
+          'ID':
+            - '131'
+          'L':
+            - '64'
+          'ActCrv':
+            - '1'
+          'ModEna': []
+          'WinTms': []
+          'RvrtTms': []
+          'RmpTms': []
+          'NCrv':
+            - '1'
+          'NPt':
+            - '8'
+          'W_SF':
+            - '-2'
+          'PF_SF':
+            - '-2'
+          'RmpIncDec_SF':
+            - '0'
+          'R0_ActPt':
+            - '65534'
+          'R0_W1':
+            - '0.000'
+          'R0_PF1':
+            - '0.040'
+          'R0_W2':
+            - '100.000'
+          'R0_PF2':
+            - '0.000'
+          'R0_W3':
+            - '100.000'
+          'R0_PF3':
+            - '0.000'
+          'R0_W4':
+            - '100.000'
+          'R0_PF4':
+            - '0.000'
+          'R0_W5':
+            - '100.000'
+          'R0_PF5':
+            - '0.000'
+          'R0_W6':
+            - '100.000'
+          'R0_PF6':
+            - '0.000'
+          'R0_W7':
+            - '100.000'
+          'R0_PF7':
+            - '0.000'
+          'R0_W8':
+            - '100.000'
+          'R0_PF8':
+            - '0.000'
+          'R0_W9':
+            - '100.000'
+          'R0_PF9':
+            - '0.000'
+          'R0_W10': []
+          'R0_PF10': []
+          'R0_W11': []
+          'R0_PF11': []
+          'R0_W12': []
+          'R0_PF12': []
+          'R0_W13': []
+          'R0_PF13': []
+          'R0_W14': []
+          'R0_PF14': []
+          'R0_W15': []
+          'R0_PF15': []
+          'R0_W16': []
+          'R0_PF16': []
+          'R0_W17': []
+          'R0_PF17': []
+          'R0_W18': []
+          'R0_PF18': []
+          'R0_W19': []
+          'R0_PF19': []
+          'R0_W20': []
+          'R0_PF20': []
+          'R0_CrvNam': []
+          'R0_RmpPT1Tms': []
+          'R0_RmpDecTmm': []
+          'R0_RmpIncTmm':
+            - '10.000'
+          'R0_ReadOnly':
+            - 'No mapping for value 0x04 0xB0'
+          'R0_Pad':
+            - '0x04 0xB0'
+      - id: 'Model_132'
+        expected:
+          'ID':
+            - '132'
+          'L':
+            - '64'
+          'ActCrv':
+            - '1'
+          'ModEna': []
+          'WinTms': []
+          'RvrtTms': []
+          'RmpTms': []
+          'NCrv':
+            - '1'
+          'NPt':
+            - '8'
+          'V_SF':
+            - '-2'
+          'DeptRef_SF':
+            - '-2'
+          'RmpIncDec_SF':
+            - '0'
+          'R0_ActPt':
+            - '65534'
+          'R0_DeptRef':
+            - 'No mapping for value 0x00 0x00'
+          'R0_V1':
+            - '0.020'
+          'R0_W1':
+            - '0.010'
+          'R0_V2':
+            - '100.000'
+          'R0_W2':
+            - '100.000'
+          'R0_V3':
+            - '100.000'
+          'R0_W3':
+            - '100.000'
+          'R0_V4':
+            - '100.000'
+          'R0_W4':
+            - '0.000'
+          'R0_V5':
+            - '100.000'
+          'R0_W5':
+            - '0.000'
+          'R0_V6':
+            - '100.000'
+          'R0_W6':
+            - '0.000'
+          'R0_V7':
+            - '100.000'
+          'R0_W7':
+            - '0.000'
+          'R0_V8':
+            - '100.000'
+          'R0_W8':
+            - '0.000'
+          'R0_V9':
+            - '100.000'
+          'R0_W9':
+            - '0.000'
+          'R0_V10': []
+          'R0_W10': []
+          'R0_V11': []
+          'R0_W11': []
+          'R0_V12': []
+          'R0_W12': []
+          'R0_V13': []
+          'R0_W13': []
+          'R0_V14': []
+          'R0_W14': []
+          'R0_V15': []
+          'R0_W15': []
+          'R0_V16': []
+          'R0_W16': []
+          'R0_V17': []
+          'R0_W17': []
+          'R0_V18': []
+          'R0_W18': []
+          'R0_V19': []
+          'R0_W19': []
+          'R0_V20': []
+          'R0_W20': []
+          'R0_CrvNam': []
+          'R0_RmpPt1Tms': []
+          'R0_RmpDecTmm': []
+          'R0_RmpIncTmm':
+            - '10.000'
+          'R0_ReadOnly':
+            - 'No mapping for value 0x04 0xB0'
+      - id: 'Model_160'
+        expected:
+          'ID':
+            - '160'
+          'L':
+            - '128'
+          'DCA_SF':
+            - '-1'
+          'DCV_SF':
+            - '0'
+          'DCW_SF':
+            - '1'
+          'DCWH_SF': []
+          'Evt': []
+          'N':
+            - '6'
+          'TmsPer': []
+          'R0_ID':
+            - '6'
+          'R0_IDStr': []
+          'R0_DCA': []
+          'R0_DCV': []
+          'R0_DCW':
+            - '180.000'
+          'R0_DCWH': []
+          'R0_Tms':
+            - '0'
+          'R0_Tmp': []
+          'R0_DCSt': []
+          'R0_DCEvt': []
+          'R1_ID': []
+          'R1_IDStr': []
+          'R1_DCA': []
+          'R1_DCV': []
+          'R1_DCW':
+            - '190.000'
+          'R1_DCWH': []
+          'R1_Tms':
+            - '0'
+          'R1_Tmp': []
+          'R1_DCSt': []
+          'R1_DCEvt': []
+          'R2_ID': []
+          'R2_IDStr': []
+          'R2_DCA': []
+          'R2_DCV': []
+          'R2_DCW': []
+          'R2_DCWH': []
+          'R2_Tms':
+            - '0'
+          'R2_Tmp': []
+          'R2_DCSt': []
+          'R2_DCEvt': []
+          'R3_ID': []
+          'R3_IDStr': []
+          'R3_DCA': []
+          'R3_DCV': []
+          'R3_DCW': []
+          'R3_DCWH': []
+          'R3_Tms':
+            - '0'
+          'R3_Tmp': []
+          'R3_DCSt': []
+          'R3_DCEvt': []
+          'R4_ID': []
+          'R4_IDStr': []
+          'R4_DCA': []
+          'R4_DCV': []
+          'R4_DCW': []
+          'R4_DCWH': []
+          'R4_Tms':
+            - '0'
+          'R4_Tmp': []
+          'R4_DCSt': []
+          'R4_DCEvt': []
+          'R5_ID': []
+          'R5_IDStr': []
+          'R5_DCA': []
+          'R5_DCV': []
+          'R5_DCW': []
+          'R5_DCWH': []
+          'R5_Tms':
+            - '0'
+          'R5_Tmp': []
+          'R5_DCSt': []
+          'R5_DCEvt': []
+      - id: 'Model_129'
+        expected:
+          'ID':
+            - '129'
+          'L':
+            - '60'
+          'ActCrv':
+            - '1'
+          'ModEna':
+            - 'ENABLED'
+          'WinTms': []
+          'RvrtTms': []
+          'RmpTms': []
+          'NCrv':
+            - '1'
+          'NPt':
+            - '3'
+          'Tms_SF':
+            - '-3'
+          'V_SF':
+            - '0'
+          'Pad':
+            - '0x80 0x00'
+          'R0_ActPt':
+            - '0'
+          'R0_Tms1': []
+          'R0_V1':
+            - '3.000'
+          'R0_Tms2':
+            - '2.000'
+          'R0_V2':
+            - '80.000'
+          'R0_Tms3':
+            - '10.000'
+          'R0_V3':
+            - '20.000'
+          'R0_Tms4':
+            - '10.000'
+          'R0_V4':
+            - '20.000'
+          'R0_Tms5': []
+          'R0_V5': []
+          'R0_Tms6': []
+          'R0_V6': []
+          'R0_Tms7': []
+          'R0_V7': []
+          'R0_Tms8': []
+          'R0_V8': []
+          'R0_Tms9': []
+          'R0_V9': []
+          'R0_Tms10': []
+          'R0_V10': []
+          'R0_Tms11': []
+          'R0_V11': []
+          'R0_Tms12': []
+          'R0_V12': []
+          'R0_Tms13': []
+          'R0_V13': []
+          'R0_Tms14': []
+          'R0_V14': []
+          'R0_Tms15': []
+          'R0_V15': []
+          'R0_Tms16': []
+          'R0_V16': []
+          'R0_Tms17': []
+          'R0_V17': []
+          'R0_Tms18': []
+          'R0_V18': []
+          'R0_Tms19': []
+          'R0_V19': []
+          'R0_Tms20': []
+          'R0_V20': []
+          'R0_CrvNam': []
+          'R0_ReadOnly': []
+      - id: 'Model_130'
+        expected:
+          'ID':
+            - '130'
+          'L':
+            - '60'
+          'ActCrv':
+            - '1'
+          'ModEna':
+            - 'ENABLED'
+          'WinTms': []
+          'RvrtTms': []
+          'RmpTms': []
+          'NCrv':
+            - '1'
+          'NPt':
+            - '3'
+          'Tms_SF':
+            - '-3'
+          'V_SF':
+            - '0'
+          'Pad':
+            - '0x80 0x00'
+          'R0_ActPt':
+            - '0'
+          'R0_Tms1': []
+          'R0_V1':
+            - '3.000'
+          'R0_Tms2':
+            - '2.000'
+          'R0_V2':
+            - '110.000'
+          'R0_Tms3':
+            - '10.000'
+          'R0_V3':
+            - '122.000'
+          'R0_Tms4':
+            - '10.000'
+          'R0_V4':
+            - '122.000'
+          'R0_Tms5': []
+          'R0_V5': []
+          'R0_Tms6': []
+          'R0_V6': []
+          'R0_Tms7': []
+          'R0_V7': []
+          'R0_Tms8': []
+          'R0_V8': []
+          'R0_Tms9': []
+          'R0_V9': []
+          'R0_Tms10': []
+          'R0_V10': []
+          'R0_Tms11': []
+          'R0_V11': []
+          'R0_Tms12': []
+          'R0_V12': []
+          'R0_Tms13': []
+          'R0_V13': []
+          'R0_Tms14': []
+          'R0_V14': []
+          'R0_Tms15': []
+          'R0_V15': []
+          'R0_Tms16': []
+          'R0_V16': []
+          'R0_Tms17': []
+          'R0_V17': []
+          'R0_Tms18': []
+          'R0_V18': []
+          'R0_Tms19': []
+          'R0_V19': []
+          'R0_Tms20': []
+          'R0_V20': []
+          'R0_CrvNam': []
+          'R0_ReadOnly': []
+      - id: 'EndOfModelChain'
+        expected:
+          'ID':
+            - '65535'
+          'L':
+            - '0'

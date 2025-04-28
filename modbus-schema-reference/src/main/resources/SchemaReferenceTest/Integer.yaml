@@ -1,0 +1,258 @@
+# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Expressions for Integer'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'Integer16Block'
+    description: 'Fields that are a 16 bit integer'
+    fields:
+      - id:          'Int16'
+        description: 'Int 16'
+        expression:  'int16(hr:0)'
+      - id:          'Int16_NI'
+        description: 'Int 16 with "Not Implemented" value'
+        expression:  'int16(hr:0; 0xDEAD)'
+      - id:          'UnsignedInt16'
+        description: 'Unsigned Int 16'
+        expression:  'uint16(hr:0)'
+      - id:          'UnsignedInt16_NI'
+        description: 'Unsigned Int 16 with "Not Implemented" value'
+        expression:  'uint16(hr:0; 0xDEAD)'
+      - id:          'Int16Constant'
+        description: 'Int 16'
+        expression:  'int16("0xCFC7")'
+      - id:          'UnsignedInt16Constant'
+        description: 'Unsigned Int 16 Constant'
+        expression:  'uint16("0xCFC7")'
+      - id:          'Int16String'
+        description: 'Int 16 converted to String'
+        expression:   "concat('>' , Int16Constant - UnsignedInt16 , '<')"
+
+  - id: 'Integer32Block'
+    description: 'Fields that are a 32 bit integer'
+    fields:
+      - id: 'Int32'
+        description:  'Int 32'
+        expression: 'int32(hr:0#2)'
+      - id: 'Int32_NI'
+        description:  'Int 32 with "Not Implemented" value'
+        expression: 'int32(hr:0#2; 0xDEAD 0xDEAD)'
+      - id: 'UnsignedInt32'
+        description:  'Unsigned Int 32'
+        expression: 'uint32(hr:0#2)'
+      - id: 'UnsignedInt32_NI'
+        description:  'Unsigned Int 32 with "Not Implemented" value'
+        expression: 'uint32(hr:0#2; 0xDEAD 0xDEAD)'
+      - id: 'Int32Constant'
+        description:  'Int 32'
+        expression: 'int32("0xB669 0xFD2E")'
+      - id: 'UnsignedInt32Constant'
+        description:  'Unsigned Int 32 Constant'
+        expression: 'uint32("0xB669 0xFD2E")'
+      - id:          'Int32String'
+        description: 'Int 32 converted to String'
+        expression:   "concat('>' , Int32Constant - UnsignedInt32 , '<')"
+
+  - id: 'Integer64Block'
+    description: 'Fields that are a 64 bit integer'
+    fields:
+      - id: 'Int64'
+        description:  'Int 64'
+        expression: 'int64(hr:0#4)'
+      - id: 'Int64_NI'
+        description:  'Int 64 with "Not Implemented" value'
+        expression: 'int64(hr:0#4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)'
+      - id: 'UnsignedInt64'
+        description:  'Unsigned Int 64'
+        expression: 'uint64(hr:0#4)'
+      - id: 'UnsignedInt64_NI'
+        description:  'Unsigned Int 64 with "Not Implemented" value'
+        expression: 'uint64(hr:0#4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)'
+      - id: 'Int64Constant'
+        description:  'Int 64'
+        expression: 'int64("0x1122 0x10F4 0x7DE9 0x8115")'
+      - id: 'UnsignedInt64Constant'
+        description:  'Unsigned Int 64 Constant'
+        expression: 'uint64("0x1122 0x10F4 0x7DE9 0x8115")'
+      - id:          'Int64String'
+        description: 'Int 64 converted to String'
+        expression:   "concat('>' , Int64Constant - UnsignedInt64 , '<')"
+
+# ===================================================================================================
+
+tests:
+  - id: 'Integer 16 bits: Normal Value (Positive)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 3039
+    blocks:
+      - id: 'Integer16Block'
+        expected:
+          Int16                                   : [ 12345 ]
+          Int16_NI                                : [ 12345 ]
+          UnsignedInt16                           : [ 12345 ]
+          UnsignedInt16_NI                        : [ 12345 ]
+          Int16String                             : [ '>-24690<' ]
+
+  - id: 'Integer 16 bits: Normal value (Negative)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: CFC7
+    blocks:
+      - id: 'Integer16Block'
+        expected:
+          Int16                                   : [ -12345 ]
+          Int16_NI                                : [ -12345 ]
+          UnsignedInt16                           : [  53191 ]
+          UnsignedInt16_NI                        : [  53191 ]
+          Int16String                             : [ '>-65536<' ]
+
+  - id: 'Integer 16 bits: Not Implemented'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD
+    blocks:
+      - id: 'Integer16Block'
+        expected:
+          Int16                                   :  [ -8531 ]
+          Int16_NI                                :  [ ]
+          UnsignedInt16                           :  [ 57005 ]
+          UnsignedInt16_NI                        :  [ ]
+          Int16String                             : [ '>-69350<' ]
+
+  - id: 'Integer 16 bits: Constants'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD # Not used
+    blocks:
+      - id: 'Integer16Block'
+        expected:
+          Int16Constant                           : [ -12345 ]
+          UnsignedInt16Constant                   : [  53191 ]
+          Int16String                             : [ '>-69350<' ]
+
+  # ===================================================================================================
+
+  - id: 'Integer 32 bits: Normal value (Positive)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 4996 02D2
+    blocks:
+      - id: 'Integer32Block'
+        expected:
+          Int32                                   : [ 1234567890 ]
+          Int32_NI                                : [ 1234567890 ]
+          UnsignedInt32                           : [ 1234567890 ]
+          UnsignedInt32_NI                        : [ 1234567890 ]
+          Int32String                             : [ '>-2469135780<' ]
+
+
+  - id: 'Integer 32 bits: Normal value (Negative)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: B669 FD2E
+    blocks:
+      - id: 'Integer32Block'
+        expected:
+          Int32                                   : [-1234567890 ]
+          Int32_NI                                : [-1234567890 ]
+          UnsignedInt32                           : [ 3060399406 ]
+          UnsignedInt32_NI                        : [ 3060399406 ]
+          Int32String                             : [ '>-4294967296<' ]
+
+
+  - id: 'Integer 32 bits: Not Implemented'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD DEAD
+    blocks:
+      - id: 'Integer32Block'
+        expected:
+          Int32                                   : [ -559030611  ]
+          Int32_NI                                : []
+          UnsignedInt32                           : [  3735936685 ]
+          UnsignedInt32_NI                        : []
+          Int32String                             : [ '>-4970504575<' ]
+
+  - id: 'Integer 32 bits: Constants'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD # Not used
+    blocks:
+      - id: 'Integer32Block'
+        expected:
+          Int32Constant                           : [ -1234567890 ]
+          UnsignedInt32Constant                   : [  3060399406 ]
+          Int32String                             : [ '><' ] # Because part of the required value failed
+
+# ===================================================================================================
+
+  - id: 'Integer 64 bits: Normal value (Positive)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 1122 10F4 7DE9 8115
+    blocks:
+      - id: 'Integer64Block'
+        expected:
+          Int64                                   : [ 1234567890123456789 ]
+          Int64_NI                                : [ 1234567890123456789 ]
+          UnsignedInt64                           : [ 1234567890123456789 ]
+          UnsignedInt64_NI                        : [ 1234567890123456789 ]
+          Int64String                             : [ '>0<' ]
+
+# Known problem; There is no unsigned 64 bit int in Java, so this is really an unsigned 63 bit int.
+# Any value that is a negative int64 is always an impossible value for an uint64.
+# If you get too big then I made it to simply fail.
+
+  - id: 'Integer 64 bits: Normal value (Negative)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: EEDD EF0B 8216 7EEB
+    blocks:
+      - id: 'Integer64Block'
+        expected:
+          Int64                                   : [ -1234567890123456789 ]
+          Int64_NI                                : [ -1234567890123456789 ]
+          UnsignedInt64                           : [] # Too large for unsigned 64 bit in JVM
+          UnsignedInt64_NI                        : [] # Too large for unsigned 64 bit in JVM
+          Int64String                             : [ '><' ] # Because part of the required value failed
+
+  - id: 'Integer 64 bits: Not Implemented'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD DEAD DEAD DEAD
+    blocks:
+      - id: 'Integer64Block'
+        expected:
+          Int64                                   : [ -2401018187971961171 ]
+          Int64_NI                                : []
+          UnsignedInt64                           : [] # Too large for unsigned 64 bit in JVM
+          UnsignedInt64_NI                        : []
+          Int64String                             : [ '><' ] # Because part of the required value failed
+
+  - id: 'Integer 64 bits: Constants'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: DEAD # Not used
+    blocks:
+      - id: 'Integer64Block'
+        expected:
+          Int64Constant                           : [ 1234567890123456789 ]
+          UnsignedInt64Constant                   : [ 1234567890123456789 ]
+          Int64String                             : [ '><' ] # Because part of the required value failed
