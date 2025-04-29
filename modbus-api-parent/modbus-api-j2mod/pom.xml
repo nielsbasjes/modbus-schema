@@ -44,15 +44,15 @@
     </dependency>
 
     <dependency>
+      <groupId>com.ghgande</groupId>
+      <artifactId>j2mod</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>nl.basjes.modbus</groupId>
       <artifactId>modbus-api-testing</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ghgande</groupId>
-      <artifactId>j2mod</artifactId>
     </dependency>
 
     <dependency>

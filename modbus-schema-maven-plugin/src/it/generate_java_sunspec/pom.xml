@@ -37,6 +37,7 @@
 
     <modbus-schema.version>@project.version@</modbus-schema.version>
     <junit5.version>@junit5.version@</junit5.version>
+    <log4j.version>@log4j.version@</log4j.version>
   </properties>
 
   <dependencyManagement>
@@ -59,6 +60,11 @@
     </dependency>
 
     <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api-plc4j</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>${junit5.version}</version>
@@ -68,13 +74,8 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.24.3</version>
-    </dependency>
-
-    <dependency>
-      <groupId>nl.basjes.modbus</groupId>
-      <artifactId>modbus-api-plc4j</artifactId>
-      <scope>compile</scope>
+      <version>@log4j.version@</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

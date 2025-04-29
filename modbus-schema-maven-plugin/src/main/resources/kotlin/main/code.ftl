@@ -38,7 +38,7 @@ import nl.basjes.modbus.schema.toSchemaDevice
 /**
  * ${schemaDevice.description}
  */
-class ${asClassName(className)} {
+open class ${asClassName(className)} {
     companion object {
         val schema = listOf("""
 ${breakStringBlock(yamlSchema(schemaDevice, "            "), "\"\"\",\"\"\"")}

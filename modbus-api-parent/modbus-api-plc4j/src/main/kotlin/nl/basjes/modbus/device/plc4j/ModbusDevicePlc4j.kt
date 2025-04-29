@@ -38,7 +38,6 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-
 /**
  * An instance of a ModbusDevice that uses the Apache Plc4J library for the Modbus connection
  */

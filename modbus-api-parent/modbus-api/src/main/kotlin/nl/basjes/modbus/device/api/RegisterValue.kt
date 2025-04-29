@@ -16,8 +16,6 @@
  */
 package nl.basjes.modbus.device.api
 
-import java.util.UUID
-
 /**
  * Holds the single value of a single modbus register
  */
@@ -31,7 +29,7 @@ class RegisterValue(
      * An identifier to that can be used to ensure some registers are retrieved together.
      * By default, filled with a random unique value because we assume they are all independent.
      */
-    var fetchGroup = UUID.randomUUID().toString()
+    var fetchGroup = "FG_"+ address.toCleanFormat()
 
     /**
      * Some registers will NEVER change and thus do not need to be retrieved a second time

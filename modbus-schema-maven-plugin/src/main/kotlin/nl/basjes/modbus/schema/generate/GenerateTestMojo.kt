@@ -26,7 +26,7 @@ import java.io.File
 
 @Mojo(name = "generate-test", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES, threadSafe = true)
 class GenerateTestMojo: AbstractMojo() {
-    @Parameter(defaultValue = "\${project.build.directory}/generated-test-sources/", required = true)
+    @Parameter(defaultValue = "\${project.build.directory}/generated-test-sources/modbus-schema/", required = true)
     private val outputDirectory: File? = null
 
     @Parameter(property = "language", defaultValue = "kotlin", required = true)
@@ -61,6 +61,7 @@ class GenerateTestMojo: AbstractMojo() {
         )
         if (project != null && outputDirectory != null) {
             project!!.addTestCompileSourceRoot(outputDirectory.absolutePath + File.separator + language)
+            log.info("Marked the directory $outputDirectory as a test sources directory in the maven build.")
         }
     }
 }

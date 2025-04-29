@@ -26,7 +26,7 @@ import kotlin.test.assertEquals
 
 class TestGenerateJava{
 
-    private val log = PluginLoggerToSlf4j()
+    private val log = PluginLoggerToLog4J()
 
     @Test
     fun checkOutputFileName() {

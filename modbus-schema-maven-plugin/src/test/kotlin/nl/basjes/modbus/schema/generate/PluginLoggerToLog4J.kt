@@ -16,12 +16,12 @@
  */
 package nl.basjes.modbus.schema.generate
 
+import org.apache.logging.log4j.LogManager
 import org.apache.maven.plugin.logging.Log
-import org.slf4j.LoggerFactory
 
-class PluginLoggerToSlf4j : Log {
+class PluginLoggerToLog4J : Log {
 
-    private val logger = LoggerFactory.getLogger(PluginLoggerToSlf4j::class.java)
+    private val logger = LogManager.getLogger(PluginLoggerToLog4J::class.java)
     override fun isDebugEnabled(): Boolean= logger.isDebugEnabled
 
     override fun debug(msg: CharSequence?) {

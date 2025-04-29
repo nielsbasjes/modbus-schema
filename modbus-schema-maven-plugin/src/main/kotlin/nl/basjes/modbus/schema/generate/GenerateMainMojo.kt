@@ -26,7 +26,7 @@ import java.io.File
 
 @Mojo(name = "generate-main", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
 class GenerateMainMojo: AbstractMojo() {
-    @Parameter(defaultValue = "\${project.build.directory}/generated-sources/", required = true)
+    @Parameter(defaultValue = "\${project.build.directory}/generated-sources/modbus-schema/", required = true)
     private val outputDirectory: File? = null
 
     @Parameter(property = "language", defaultValue = "kotlin", required = true)
@@ -61,6 +61,7 @@ class GenerateMainMojo: AbstractMojo() {
         )
         if (project != null && outputDirectory != null) {
             project!!.addCompileSourceRoot(outputDirectory.absolutePath + File.separator + language)
+            log.info("Marked the directory $outputDirectory as a sources directory in the maven build.")
         }
     }
 }

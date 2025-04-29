@@ -66,7 +66,7 @@
     <antlr.version>4.13.2</antlr.version>
 
     <plc4j.version>0.12.0</plc4j.version>
-
+    <log4j.version>2.24.3</log4j.version>
   </properties>
 
   <dependencyManagement>
@@ -97,7 +97,7 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-bom</artifactId>
-        <version>2.24.3</version>
+        <version>${log4j.version}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -253,6 +253,8 @@
       </build>
     </profile>
   </profiles>
+
+
   <build>
 
     <pluginManagement>
@@ -314,14 +316,14 @@
         </plugin>
 
         <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-artifact-plugin</artifactId>
-        <version>${maven-artifact-plugin.version}</version>
-        <configuration>
-          <skipModules>
-            <skipModule>nl.basjes.modbus/devtools</skipModule>
-          </skipModules>
-        </configuration>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-artifact-plugin</artifactId>
+          <version>${maven-artifact-plugin.version}</version>
+          <configuration>
+            <skipModules>
+              <skipModule>nl.basjes.modbus/devtools</skipModule>
+            </skipModules>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -347,59 +349,56 @@
         </executions>
       </plugin>
 
-            <plugin>
-              <groupId>org.apache.rat</groupId>
-              <artifactId>apache-rat-plugin</artifactId>
-              <version>${apache-rat-plugin.version}</version>
-              <inherited>false</inherited>
-              <executions>
-                <execution>
-                  <phase>validate</phase>
-                  <goals>
-                    <goal>check</goal>
-                  </goals>
-                </execution>
-              </executions>
-              <configuration>
-                <consoleOutput>true</consoleOutput>
-                <excludeSubProjects>false</excludeSubProjects>
-                <excludes>
-                  <!-- Build config files -->
-                  <exclude>.mvn/jvm.config</exclude>
-                  <!-- Version control files -->
-                  <exclude>**/.git/**</exclude>
-                  <exclude>**/.gitignore</exclude>
-                  <exclude>**/.gitmodules</exclude>
-                  <!-- IDE settings and files -->
-                  <exclude>**/.classpath</exclude>
-                  <exclude>**/.project</exclude>
-                  <exclude>**/.settings/**</exclude>
-                  <exclude>**/.idea/**</exclude>
-                  <exclude>**/*.iml</exclude>
-                  <exclude>**/.run/**</exclude>
-                  <exclude>**/*.patch</exclude>
-                  <exclude>**/*.diff</exclude>
-                  <!-- Test files that should not be 'polluted' -->
-<!--                  <exclude>gitignore-reader/src/test/resources/testtree/</exclude>-->
-<!--                  <exclude>enforcer/src/it/testtree/</exclude>-->
-                  <!-- Files that cannot be 'polluted' -->
-                  <exclude>docs/CNAME</exclude>
-                  <exclude>.git-hooks/commit-msg.d/sailr.*</exclude>
-                  <exclude>.github/**</exclude>
-                  <exclude>**/*.json</exclude>
-                  <exclude>**/*.ndjson</exclude>
-                  <!-- Files generated during build and/or development -->
-                  <exclude>**/target/**</exclude>
-                  <exclude>**/gen/**</exclude>
-                  <exclude>**/dependency-reduced-pom.xml</exclude>
-                  <!-- Test scripts -->
-                  <exclude>*.sh</exclude>
-                  <exclude>**/_*/**</exclude>
-                  <exclude>**/*_/**</exclude>
-                  <exclude>**/gitignore-reader/src/test/resources/**</exclude>
-                </excludes>
-              </configuration>
-            </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${apache-rat-plugin.version}</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <consoleOutput>true</consoleOutput>
+          <excludeSubProjects>false</excludeSubProjects>
+          <excludes>
+            <!-- Build config files -->
+            <exclude>.mvn/jvm.config</exclude>
+            <!-- Version control files -->
+            <exclude>**/.git/**</exclude>
+            <exclude>**/.gitignore</exclude>
+            <exclude>**/.gitmodules</exclude>
+            <!-- IDE settings and files -->
+            <exclude>**/.classpath</exclude>
+            <exclude>**/.project</exclude>
+            <exclude>**/.settings/**</exclude>
+            <exclude>**/.idea/**</exclude>
+            <exclude>**/*.iml</exclude>
+            <exclude>**/.run/**</exclude>
+            <exclude>**/*.patch</exclude>
+            <exclude>**/*.diff</exclude>
+            <!-- Files that cannot be 'polluted' -->
+            <exclude>docs/CNAME</exclude>
+            <exclude>.git-hooks/commit-msg.d/sailr.*</exclude>
+            <exclude>.github/**</exclude>
+            <exclude>**/*.json</exclude>
+            <exclude>**/*.ndjson</exclude>
+            <!-- Files generated during build and/or development -->
+            <exclude>**/target/**</exclude>
+            <exclude>**/gen/**</exclude>
+            <exclude>**/dependency-reduced-pom.xml</exclude>
+            <!-- Test scripts -->
+            <exclude>*.sh</exclude>
+            <exclude>**/_*/**</exclude>
+            <exclude>**/*_/**</exclude>
+            <exclude>**/gitignore-reader/src/test/resources/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

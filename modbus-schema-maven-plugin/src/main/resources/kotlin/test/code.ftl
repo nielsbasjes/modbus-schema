@@ -37,7 +37,7 @@ import kotlin.test.Test
 /**
  * Testing the ${asClassName(className)} class for: ${schemaDevice.description}
  */
-class Test${asClassName(className)} {
+internal class Test${asClassName(className)} {
 
     @Test
     fun ensureValidSchema() {

@@ -33,7 +33,6 @@ import java.io.Writer
 import java.util.TimeZone
 import java.util.regex.Pattern
 
-
 class Generator {
 
     companion object {
@@ -49,7 +48,7 @@ class Generator {
             type: String,
         ) {
             require(outputDirectory != null) {
-                throw MojoExecutionException("outputDirectory ia mandatory")
+                throw MojoExecutionException("outputDirectory is mandatory")
             }
             require(modbusSchemaFile != null && modbusSchemaFile.exists() && modbusSchemaFile.isFile) {
                 throw MojoExecutionException("modbusSchemaFile must be an existing file")
@@ -76,13 +75,13 @@ class Generator {
                 throw MojoExecutionException("The specified Schema file does not exist $modbusSchemaFile")
             }
 
+            val outputFileName = buildFullFileName(
+                languageSpecificOutputDirectoryPath,
+                fileName(templateDirectory, language, type, packageName, className)
+            )
+
             try {
-                val outputFile = File(
-                    buildFullFileName(
-                        languageSpecificOutputDirectoryPath,
-                        fileName(templateDirectory, language, type, packageName, className)
-                    )
-                )
+                val outputFile = File(outputFileName)
                 outputFile.parentFile.mkdirs()
                 if (outputFile.exists() && outputFile.isFile) {
                     outputFile.delete()
@@ -99,7 +98,7 @@ class Generator {
                     className,
                     output
                 )
-                log.info("File $modbusSchemaFile generated")
+                log.info("Generated ($language ; $type): $outputFileName")
             }
             catch (e: ModbusSchemaParseException) {
                 throw MojoExecutionException(e.message)

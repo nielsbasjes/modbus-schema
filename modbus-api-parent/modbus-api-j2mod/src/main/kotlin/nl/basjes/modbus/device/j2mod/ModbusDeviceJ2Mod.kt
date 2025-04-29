@@ -32,7 +32,6 @@ import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
 import com.ghgande.j2mod.modbus.ModbusException as J2ModModbusException
 
-
 /**
  * An instance of a ModbusDevice that uses the J2Mod library for the Modbus connection
  */
