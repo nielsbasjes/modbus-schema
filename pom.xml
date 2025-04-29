@@ -429,8 +429,8 @@
           </projectVersionPolicyConfig>
 
           <preparationProfiles>packageForRelease</preparationProfiles>
-          <preparationGoals>clean verify</preparationGoals>
-          <releaseProfiles>packageForRelease,release</releaseProfiles>
+          <preparationGoals>clean install</preparationGoals>
+          <releaseProfiles>packageForRelease</releaseProfiles>
           <pushChanges>false</pushChanges>
           <remoteTagging>false</remoteTagging>
         </configuration>
