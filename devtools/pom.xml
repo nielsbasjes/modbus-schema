@@ -57,24 +57,6 @@
         </executions>
       </plugin>
 
-      <!-- By trying to activate all toolchains referenced in this project we get a fail fast if any of them is missing. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-toolchains-plugin</artifactId>
-        <version>${maven-toolchains-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>Ensure ToolChain for JDK 21 is available</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>select-jdk-toolchain</goal>
-            </goals>
-            <configuration>
-              <version>[21,22)</version>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
