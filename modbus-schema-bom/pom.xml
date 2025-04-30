@@ -55,6 +55,12 @@
 
       <dependency>
         <groupId>nl.basjes.modbus</groupId>
+        <artifactId>modbus-api-testing</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>nl.basjes.modbus</groupId>
         <artifactId>modbus-schema-reference</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -62,12 +68,6 @@
       <dependency>
         <groupId>nl.basjes.modbus</groupId>
         <artifactId>modbus-schema-device</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-schema-maven-plugin</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -100,7 +100,5 @@
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
     <tag>HEAD</tag>
   </scm>
-
-
 
 </project>
