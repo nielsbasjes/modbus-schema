@@ -64,6 +64,7 @@ Things I will **NOT** change/fix:
 - It is READ ONLY. So NO writing. I will not change that because I consider that too much of a risk.
 
 Things I intend to fix:
+- Better website & more documentation.
 - Only Registers right now. So no Coils and/or Discrete Inputs yet.
 - If a register returns an error then the system should mark that as unreadable and avoid reading it in the future.
 
@@ -73,6 +74,11 @@ Working on:
 ## Overall status
 Works on my machine. Usable for experiments.
 
+## I spoke about this
+
+In 2024 the company I work for ([bol.com](https://partner.bol.com/click/click?p=2&t=url&s=2483&f=TXL&url=https%3A%2F%2Fwww.bol.com%2Fnl%2Fnl%2F&name=Modbus)) held an internal IT Conference where I gave a presentation about "[The dark side of Green Energy APIs](https://youtu.be/CHVktAbJbHc)" which is all about modbus and this project.
+
+<iframe width="1593" height="896" src="https://www.youtube.com/embed/CHVktAbJbHc" title="The dark side of Green Energy APIs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 # License
 I'm publishing this under the Apache 2.0 license because I believe this can be part of making this planet a bit more in control of the energy consumption.
