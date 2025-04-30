@@ -36,7 +36,7 @@
     <project.build.outputTimestamp>2025-04-30T08:41:48Z</project.build.outputTimestamp>
 
     <java.version>17</java.version>
-    <kotlin.version>2.1.0</kotlin.version>
+    <kotlin.version>2.1.20</kotlin.version>
 
     <!-- Tell IntelliJ which JDK to use -->
     <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -50,8 +50,8 @@
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
     <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-    <maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
+    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+    <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
     <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
     <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
