@@ -64,13 +64,11 @@ Intended effects:
 Things I will **NOT** change/fix:
 - It is READ ONLY. So NO writing. I will not change that because I consider that too much of a risk.
 
-Things I intend to fix:
+Things I intend to build/fix:
 - Better website & more documentation.
-- Only Registers right now. So no Coils and/or Discrete Inputs yet.
-- If a register returns an error then the system should mark that as unreadable and avoid reading it in the future.
-
-Working on:
-- SunSpec which is a completely separate beast.
+- Support for Coils and Discrete Inputs (Only Registers right now).
+- If a register returns an error then the system should mark that as unreadable and avoid trying to read it in the future.
+- I want to have an API gateway that speaks GraphQL and can connect to any Modbus device you have the schema for.
 
 ## Overall status
 Works on my machine. Usable for experiments.
