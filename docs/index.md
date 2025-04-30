@@ -87,7 +87,7 @@ But do not underestimate how much work went into this. From my first attempts to
 
 So what I want to see in return is a little bit of gratitude from the people who use this.
 If you are a home user/hobbyist/small business then a simple star on the projects you use is enough for me. Seeing that people use and like the things I create is what I'm doing this for.
-What also really helps is bug reports, dumps from real devices I do not have and discussions on things you think can be done better.
+What also really helps are bug reports, dumps from real devices I do not have and discussions on things you think can be done better.
 
 Despite there not being any obligation (because of the Apache 2.0 license); If you are a big corporation where my code really adds value to the products you make/sell then I would really appreciate it if you could do a small sponsor thing. Buy me lunch (€10), Buy me a game (€100) or what ever you think is the right way to say thank you for the work I have done.
 
