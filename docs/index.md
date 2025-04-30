@@ -49,6 +49,7 @@ Intended effects:
 - For all devices it is now trivial to generate code that maps the registers into usable values.
 - A new device is immediately available in all programming languages.
 - A new language immediately can provide tooling for all defined devices.
+- Other people and the companies who actually create the devices start publishing their Modbus registers in the format provided by this library. From there everyone can start using the data from these devices much more reliably in any context they want.
 
 ## Current features
 - A schema definition
