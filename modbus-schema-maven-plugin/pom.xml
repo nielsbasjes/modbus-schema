@@ -21,7 +21,7 @@
   <parent>
     <groupId>nl.basjes.modbus</groupId>
     <artifactId>modbus-schema-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
 
   <artifactId>modbus-schema-maven-plugin</artifactId>
@@ -192,7 +192,7 @@
     <url>https://github.com/nielsbasjes/modbus-schema</url>
     <connection>scm:git:https://github.com/nielsbasjes/modbus-schema.git</connection>
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.1.0</tag>
   </scm>
 
 
