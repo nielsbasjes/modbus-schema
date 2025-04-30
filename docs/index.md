@@ -85,7 +85,7 @@ In 2024 the company I work for ([bol.com](https://partner.bol.com/click/click?p=
 I'm publishing this under the Apache 2.0 license because I believe this can be part of making this planet a bit more in control of the energy consumption.
 I also believe that making this open for all to use is the best way to achieve this.
 
-But do not underestimate how much work went into this. From my first attempts to releasing the first version took be about 5 years of spending my spare time.
+But do not underestimate how much work went into this. From my first attempts to releasing the first version took me about 5 years of spending my spare time.
 
 So what I want to see in return is a little bit of gratitude from the people who use this.
 If you are a home user/hobbyist/small business then a simple star on the projects you use is enough for me. Seeing that people use and like the things I create is what I'm doing this for.
