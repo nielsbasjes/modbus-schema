@@ -20,65 +20,85 @@
 
   <parent>
     <groupId>nl.basjes.modbus</groupId>
-    <artifactId>modbus-schema-parent</artifactId>
+    <artifactId>modbus-api-parent</artifactId>
     <version>0.1.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>modbus-schema-bom</artifactId>
-  <name>Modbus Schema : BOM</name>
+  <artifactId>modbus-api-digitalpetri</artifactId>
+
+  <packaging>jar</packaging>
+  <name>Modbus Schema : Modbus : Impl : digitalpetri</name>
 
   <description>The Modbus Schema Toolkit makes retrieving data from Modbus based devices a lot easier.</description>
   <url>https://modbus.basjes.nl</url>
 
-  <packaging>pom</packaging>
+  <dependencies>
 
-  <dependencyManagement>
-    <dependencies>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-api-j2mod</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>com.digitalpetri.modbus</groupId>
+      <artifactId>modbus</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-api-plc4j</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>com.digitalpetri.modbus</groupId>
+      <artifactId>modbus-tcp</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-api-digitalpetri</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api-testing</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-api-testing</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-schema-reference</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-      <dependency>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-schema-device</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-    </dependencies>
-  </dependencyManagement>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <failIfNoTests>false</failIfNoTests>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 
   <licenses>
     <license>
@@ -106,5 +126,6 @@
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
     <tag>HEAD</tag>
   </scm>
+
 
 </project>
