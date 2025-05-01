@@ -55,6 +55,12 @@
 
       <dependency>
         <groupId>nl.basjes.modbus</groupId>
+        <artifactId>modbus-api-digitalpetri</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>nl.basjes.modbus</groupId>
         <artifactId>modbus-api-testing</artifactId>
         <version>${project.version}</version>
       </dependency>

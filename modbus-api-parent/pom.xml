@@ -36,6 +36,7 @@
     <module>modbus-api-testing</module>
     <module>modbus-api-j2mod</module>
     <module>modbus-api-plc4j</module>
+    <module>modbus-api-digitalpetri</module>
   </modules>
 
 
