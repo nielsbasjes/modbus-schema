@@ -149,25 +149,6 @@ object ByteConversions {
         return false
     }
 
-
-    fun bytesToString(byteList: List<Byte>): String {
-        val bytes = ByteArray(byteList.size)
-        var i = 0
-        while (i < byteList.size) {
-            val nextByte = byteList[i]
-            // https://en.wikipedia.org/wiki/UTF-8#Encoding
-            // https://stackoverflow.com/a/6907327/114196
-            // There is no other Unicode code point that will be encoded in UTF8 with a zero byte anywhere within it.
-            if (nextByte.toInt() == 0x00) {
-                break
-            }
-            bytes[i] = nextByte
-            i++
-        }
-
-        return String(bytes, 0, i, StandardCharsets.UTF_8)
-    }
-
     fun isInRange(b: Byte, first: UInt, last: UInt): Boolean {
         val unsignedByte = b.toUInt() and 0xFFu
         return (unsignedByte in first..last)
@@ -312,8 +293,8 @@ object ByteConversions {
     // ----------------------------------------------
     fun shortToBytes(input: Short): ByteArray {
         var value = input
-        val result = ByteArray(nl.basjes.modbus.schema.expression.SHORT_BYTES)
-        for (i in nl.basjes.modbus.schema.expression.SHORT_BYTES - 1 downTo 0) {
+        val result = ByteArray(SHORT_BYTES)
+        for (i in SHORT_BYTES - 1 downTo 0) {
             result[i] = (value.toInt() and 0xFF).toByte()
             value = (value.toInt() shr Byte.SIZE_BITS).toShort()
         }
@@ -323,7 +304,7 @@ object ByteConversions {
     fun bytesToShort(bytes: ByteArray): Short {
         assertByteArraySize(bytes, SHORT_BYTES, "short")
         var result: Short = 0
-        for (i in 0 until nl.basjes.modbus.schema.expression.SHORT_BYTES) {
+        for (i in 0 until SHORT_BYTES) {
             result = (result.toInt() shl Byte.SIZE_BITS).toShort()
             result = (result.toInt() or (bytes[i]
                 .toShort().toInt() and 0xFF.toShort().toInt()).toShort().toInt()).toShort()

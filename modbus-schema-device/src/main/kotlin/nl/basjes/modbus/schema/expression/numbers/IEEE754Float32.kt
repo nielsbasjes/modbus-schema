@@ -39,6 +39,9 @@ class IEEE754Float32(
 
     override var isImmutable: Boolean = false
 
+    override val returnType: ReturnType
+        get() = ReturnType.DOUBLE
+
     override val problems: List<Problem>
         get() = combine(
             "ieee754_32",
@@ -47,9 +50,6 @@ class IEEE754Float32(
             checkFatal(byteArray.returnedRegisters == nl.basjes.modbus.schema.expression.FLOAT_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
                 "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${nl.basjes.modbus.schema.expression.FLOAT_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}"),
         )
-
-    override val returnType: ReturnType
-        get() = ReturnType.DOUBLE
 
     override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
         return byteArray.getRegisterValues(schemaDevice)
