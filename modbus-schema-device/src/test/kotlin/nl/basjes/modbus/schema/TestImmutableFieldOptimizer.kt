@@ -65,10 +65,10 @@ class TestImmutableFieldOptimizer {
         // Field names are chosen to have a different logical (by required registers) from a sorted by name ordering.
         // A field registers itself with the mentioned Block
         Field(block, "Some",    expression = "utf8( hr:101 # 13)")
-        Field(block, "Field",   expression = "utf8( hr:114 # 5)", immutable = true)
+        Field(block, "Field",   expression = "utf8( hr:114 # 5)",           immutable = true)
         Field(block, "Value1",  expression = "int16( hr:141 ) / Scale1")
-        Field(block, "Scale1",  expression = "int16( hr:142 ) ",                               immutable = true)
-        Field(block, "Value2",  expression = "int16( hr:143 ) / Scale2", immutable = true)
+        Field(block, "Scale1",  expression = "int16( hr:142 ) ",            immutable = true)
+        Field(block, "Value2",  expression = "int16( hr:143 ) / Scale2",    immutable = true)
         Field(block, "Scale2",  expression = "100")
 
         schemaDevice.initialize()

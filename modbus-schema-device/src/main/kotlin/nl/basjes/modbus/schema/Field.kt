@@ -90,10 +90,6 @@ class Field(
     var returnType: ReturnType = UNKNOWN
         private set
 
-    init {
-        this.returnType = returnType
-    }
-
     private var initialized = false
     fun initialize(): Boolean {
         if (!initialized) {
@@ -206,25 +202,21 @@ class Field(
         }
 
     val value: Any?
-        get() = getValue(block.schemaDevice)
-
-    fun getValue(schemaDevice: SchemaDevice): Any? {
-        if (parsedExpression is StringExpression) {
-            return (parsedExpression as StringExpression).getValue(schemaDevice)
-        }
-        if (parsedExpression is StringListExpression) {
-            return (parsedExpression as StringListExpression).getValue(schemaDevice)
-        }
-        if (parsedExpression is NumericalExpression) {
-            if ((parsedExpression as NumericalExpression).returnType == LONG) {
-                return (parsedExpression as NumericalExpression).getValueAsLong(schemaDevice)
-            }
-            if ((parsedExpression as NumericalExpression).returnType == DOUBLE) {
-                return (parsedExpression as NumericalExpression).getValueAsDouble(schemaDevice)
+        get() = {
+            val parsedExpression = parsedExpression
+            when {
+                (parsedExpression is StringExpression)     -> parsedExpression.getValue(block.schemaDevice)
+                (parsedExpression is StringListExpression) -> parsedExpression.getValue(block.schemaDevice)
+                (parsedExpression is NumericalExpression)  -> {
+                    when (parsedExpression.returnType) {
+                        LONG   -> parsedExpression.getValueAsLong(block.schemaDevice)
+                        DOUBLE -> parsedExpression.getValueAsDouble(block.schemaDevice)
+                        else -> null
+                    }
+                }
+                else -> null
             }
         }
-        return null
-    }
 
     val stringValue: String?
         get() {
@@ -396,7 +388,6 @@ class Field(
         return "Field(id='$id', isSystem=$isSystem, isImmutable=$isImmutable, unit=$unit, fetchGroup='$fetchGroup',  returnType=$returnType, initialized=$initialized, expression='$expression', parsedExpression=$parsedExpression, addressClass=$addressClass)"
     }
 
-
     init {
 //        requireValidIdentifier(id, "Field id")
         block.addField(this)
@@ -480,7 +471,6 @@ class Field(
                     system      = system,
                     expression  = expression,
                     unit        = unit,
-//                    returnType  = returnType,
                 )
             } else {
                 Field(
@@ -492,7 +482,6 @@ class Field(
                     expression  = expression,
                     unit        = unit,
                     fetchGroup  = fetchGroup,
-//                    returnType  = returnType,
                 )
             }
         }

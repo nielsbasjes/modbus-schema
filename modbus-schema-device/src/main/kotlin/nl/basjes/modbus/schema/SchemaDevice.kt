@@ -262,9 +262,6 @@ open class SchemaDevice @JvmOverloads constructor(
     }
 
     fun createTestsUsingCurrentRealData() {
-        requireNotNull(registerBlockFetcher) { "There is no connection to a device to create tests for" }
-        registerBlockFetcher!!.updateAll()
-
         var oldestTimestampOfData = 0L
         for (registerBlock in registerBlocks.values) {
             oldestTimestampOfData = oldestTimestampOfData.coerceAtLeast(
