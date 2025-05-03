@@ -25,9 +25,30 @@ I have split this into 3 projects:
     [![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/nl/basjes/sunspec/sunspec-device-parent/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/nl/basjes/sunspec/sunspec-device-parent/README.md)
     [![GitHub stars](https://img.shields.io/github/stars/nielsbasjes/sunspec-device?label=GitHub%20stars)](https://github.com/nielsbasjes/sunspec-device/stargazers)
 
-The documentation can be found here https://modbus.basjes.nl/
+The documentation can be found here [https://modbus.basjes.nl/](https://modbus.basjes.nl/)
 
 All of this was created by [Niels Basjes](https://niels.basjes.nl/).
+
+# Summary
+This set of Kotlin/Java libraries and tools introduces a new way to making the mapping from the Modbus registers into usable values.
+
+The way the mapping is defined is an open format and can be reimplemented into any programming language by anyone.
+
+The mentioned projects mainly consist of the following components:
+- A definition language for creating a modbus mapping (suitable for all devices I have) which I call a Modbus Schema.
+  - Including some testing schemas to cover all capabilities (useful for anyone who wants to reimplement this)
+
+- The Kotlin (also usable under Java/JVM) implementation of using this definition to actually do the mapping
+  - A simple modbus interface to wrap any modbus implementation (Already several implementation are provided).
+  - An engine that is able to use the provided expressions to determine which registers are needed and then do the actual mapping to usable values.
+  - An optimizing reader that is able to reduce the number of modbus calls needed to get the registers.
+  - A maven plugin that is capable of generating code from the provided schema (Kotlin and Java using my library are available)
+  - A wrapper library that makes the official SunSpec definition usable from code.
+    - This does make a few tweaks to fix problems in the official SunSpec
+  - A library that inspects a SunSpec device and constructs the Modbus Schema for this device on the fly using the official SunSpec definitions.
+    - Note: Not all models work yet.
+
+- A collection of schemas for the devices I have schemas for.
 
 ## The problem
 I have multiple devices at home that are capable of exposing metrics using the modbus protocol.
@@ -81,7 +102,7 @@ Things I intend to build/fix:
 ## Overall status
 Works on my machine. Usable for experiments.
 
-## I spoke about this
+## Conference talk
 
 In 2024 the company I work for ([bol.com](https://partner.bol.com/click/click?p=2&t=url&s=2483&f=TXL&url=https%3A%2F%2Fwww.bol.com%2Fnl%2Fnl%2F&name=Modbus)) held an internal IT Conference where I gave a presentation about "[The dark side of Green Energy APIs](https://youtu.be/CHVktAbJbHc)" which is all about modbus and this project.
 
