@@ -72,6 +72,13 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
 
     /**
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
+     */
+    public void update() {
+        schemaDevice.update();
+    }
+
+    /**
+     * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
      */
     public void update(Long maxAge) {
@@ -160,7 +167,7 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
                 throw new IllegalArgumentException("The generated code was unable to find the Field \"" + fieldId + "\" in the Block \"" + block.getId() + "\"");
             }
         }
-        abstract Object getValue();
+        public abstract Object getValue();
 
         public void need() {
             field.need();
