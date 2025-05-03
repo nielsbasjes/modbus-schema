@@ -46,6 +46,9 @@ interface Expression {
     val requiredRegisters: List<Address>
         get() = subExpressions.flatMap { it.requiredRegisters } .toList()
 
+    val requiredMutableRegisters: List<Address>
+        get() = if (isImmutable) { emptyList() } else { subExpressions.flatMap { it.requiredMutableRegisters }.toList() }
+
     val requiredFields: List<String>
         get() = subExpressions.flatMap { it.requiredFields }.toList()
 

@@ -50,7 +50,10 @@ class RegisterValue(
     /*
      * The timestamp (epoch in milliseconds) of the last known value of the register.
      */
-    var timestamp: Long = Long.MIN_VALUE
+    var fetchTimestamp: Long = Long.MIN_VALUE
+
+    val timestamp: Long?
+        get() = if (fetchTimestamp <= -2208988800000 || immutable) null else fetchTimestamp
 
     fun setValue(value: Short): RegisterValue {
         return setValue(value, System.currentTimeMillis())
@@ -58,7 +61,7 @@ class RegisterValue(
 
     fun setValue(value: Short, timestamp: Long): RegisterValue {
         this.value = value
-        this.timestamp = timestamp
+        this.fetchTimestamp = timestamp
         return this
     }
 
@@ -73,13 +76,16 @@ class RegisterValue(
         if (immutable) {
             return false
         }
-        require(timestamp > -2208988800000) { "Any register with a valid value MUST be after 1900-01-01T00:00:00Z" }
-        return now - timestamp > maxAge
+        // Any register with a valid value MUST be after 1900-01-01T00:00:00Z
+        if (fetchTimestamp > -2208988800000) {
+            return true
+        }
+        return now - fetchTimestamp > maxAge
     }
 
     fun clear() {
         this.value = null
-        timestamp = Long.MIN_VALUE
+        fetchTimestamp = Long.MIN_VALUE
     }
 
     val hexValue: String
@@ -109,7 +115,7 @@ class RegisterValue(
         if (addressCompared != 0) {
             return addressCompared
         }
-        return timestamp.compareTo(other.timestamp)
+        return fetchTimestamp.compareTo(other.fetchTimestamp)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -119,11 +125,11 @@ class RegisterValue(
         if (other !is RegisterValue) {
             return false
         }
-        return  immutable   == other.immutable &&
-                value       == other.value &&
-                timestamp   == other.timestamp &&
-                address     == other.address &&
-                fetchGroup  == other.fetchGroup
+        return  immutable       == other.immutable &&
+                value           == other.value &&
+                fetchTimestamp  == other.fetchTimestamp &&
+                address         == other.address &&
+                fetchGroup      == other.fetchGroup
     }
 
     override fun hashCode(): Int {

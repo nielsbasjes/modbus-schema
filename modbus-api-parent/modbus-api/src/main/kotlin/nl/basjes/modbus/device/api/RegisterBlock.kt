@@ -45,7 +45,7 @@ class RegisterBlock (
 
     operator fun set(address: Address, registerValue: RegisterValue) {
         if (registerValues[address] != null && registerValue.hasValue()) {
-            setValue(registerValue.address, registerValue.value!!, registerValue.timestamp)
+            setValue(registerValue.address, registerValue.value!!, registerValue.fetchTimestamp)
         } else {
             registerValues[address] = registerValue
         }
@@ -66,7 +66,7 @@ class RegisterBlock (
 
     fun put(value: RegisterValue) {
         if (value.hasValue()) {
-            setValue(value.address, value.value!!, value.timestamp)
+            setValue(value.address, value.value!!, value.fetchTimestamp)
         }
     }
 
@@ -177,7 +177,7 @@ class RegisterBlock (
         for (value in registerValues.values) {
             val registerValue = RegisterValue(value.address)
             if (value.hasValue()) {
-                registerValue.setValue(value.value!!, value.timestamp)
+                registerValue.setValue(value.value!!, value.fetchTimestamp)
             }
             registerValue.immutable = value.immutable
             registerValue.fetchGroup = value.fetchGroup

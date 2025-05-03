@@ -41,6 +41,9 @@ open class RegistersModbusExpression(
 
     override var isImmutable: Boolean = false
 
+    override val requiredMutableRegisters: List<Address>
+        get() = registers
+
     override val problems: List<Problem>
         get() {
             if (registers.isEmpty()) {

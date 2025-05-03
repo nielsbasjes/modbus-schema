@@ -25,6 +25,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 class TestImmutableFieldOptimizer {
 
@@ -85,6 +87,7 @@ class TestImmutableFieldOptimizer {
     }
 
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun buildImmutableFields() {
         val schemaDevice = createTestSchemaDevice()
@@ -111,7 +114,12 @@ class TestImmutableFieldOptimizer {
         assertCloseEnough(111.11,                  fieldValue2.doubleValue)
         assertEquals(100,                          fieldScale2.longValue)
 
+        val fieldValue1Time = fieldValue1.valueEpochMs ?.let { Instant.fromEpochMilliseconds(it).toString() } ?: "<Immutable>"
+        log.info("Field 1: {} @ {}", fieldValue1.doubleValue, fieldValue1Time)
         fieldValue1.parsedExpression?.let { printRawExpression(it) }
+
+        val fieldValue2Time = fieldValue1.valueEpochMs ?.let { Instant.fromEpochMilliseconds(it).toString() } ?: "<Immutable>"
+        log.info("Field 2: {} @ {}", fieldValue2.doubleValue, fieldValue2Time)
         fieldValue2.parsedExpression?.let { printRawExpression(it) }
 
         require(fieldValue2.requiredFields.isNotEmpty()) { "Missing required fields" }

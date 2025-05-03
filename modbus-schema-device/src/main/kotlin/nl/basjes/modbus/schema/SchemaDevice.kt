@@ -266,7 +266,7 @@ open class SchemaDevice @JvmOverloads constructor(
         for (registerBlock in registerBlocks.values) {
             oldestTimestampOfData = oldestTimestampOfData.coerceAtLeast(
                 registerBlock.values
-                    .map(RegisterValue::timestamp)
+                    .map(RegisterValue::fetchTimestamp)
                     .filter { it > 0 }
                     .reduce { a: Long, b: Long -> java.lang.Long.min(a, b) }
                     .or(0L))

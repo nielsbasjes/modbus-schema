@@ -250,6 +250,28 @@ class Field(
             return null
         }
 
+    /**
+     * The epoch (in milliseconds since 1970-01-01) timestamp of the oldest mutable register used to build this value
+     * Returns null on fully immutable values
+     */
+    val valueEpochMs: Long?
+        get() {
+            val parsedExpression = parsedExpression
+            if (parsedExpression == null) {
+                return null
+            }
+            val addressClass = addressClass
+            if (addressClass == null) {
+                return null
+            }
+            val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(parsedExpression.requiredMutableRegisters)
+            val timestamps = registerValues.filterNotNull().mapNotNull { it.timestamp }
+            if (timestamps.isEmpty()) {
+                return null
+            }
+            return timestamps.min()
+        }
+
     val requiredFieldNames: List<String>
         get() = parsedExpression?.requiredFields ?: emptyList()
 
