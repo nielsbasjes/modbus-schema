@@ -29,19 +29,23 @@ internal class TestRegisterBlock {
 
     @Test
     fun testToHexString() {
-        val registerBlock = RegisterBlock(AddressClass.COIL)
-        registerBlock.setValue(Address.of("0x00005"), 5.toShort(), 5L) // 0005
-        registerBlock.setValue(Address.of("0x00006"), 6.toShort(), 6L) // 0006
+        val registerBlock = RegisterBlock(AddressClass.HOLDING_REGISTER)
+        registerBlock[Address.of("4x00005")].setValue(5.toShort(), 5L) // 0005
+        registerBlock.setValue(Address.of("4x00006"), 6.toShort(), 6L) // 0006
         // 7 is absent
-        registerBlock.setValue(Address.of("0x00008"), 8.toShort(), 8L) // 0008
+        registerBlock.setValue(Address.of("4x00008"), 8.toShort(), 8L) // 0008
         // 9 is absent
-        // 10 is absent
-        registerBlock.setValue(Address.of("0x00011"), 11.toShort(), 11L) // 000B
+        // 10 is a read error
+        registerBlock[Address.of("4x00010")].setSoftReadError() // 000A
+        registerBlock.setValue(Address.of("4x00011"), 11.toShort(), 11L) // 000B
         // 12 is absent
-        registerBlock.setValue(Address.of("0x00013"), 13.toShort(), 13L) // 000D
+        registerBlock.setValue(Address.of("4x00013"), 13.toShort(), 13L) // 000D
 
-        assertEquals("c:00004", registerBlock.firstAddress.toString())
-        assertEquals("0005 0006 ---- 0008 ---- ---- 000B ---- 000D", registerBlock.toHexString())
+        val firstAddress = registerBlock.firstAddress.toString()
+        val registersString ="0005 0006 ---- 0008 ---- xxxx 000B ---- 000D"
+
+        assertEquals("hr:00004", firstAddress)
+        assertEquals("0005 0006 ---- 0008 ---- xxxx 000B ---- 000D",registersString)
 
         // Because a RegisterBlock is an instance of Map: Log4j will handle it in a special way.
         // So the toString() here will actually give a different result !

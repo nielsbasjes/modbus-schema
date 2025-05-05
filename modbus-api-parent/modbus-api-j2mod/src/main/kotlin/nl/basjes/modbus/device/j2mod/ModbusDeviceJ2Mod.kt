@@ -16,6 +16,7 @@
  */
 package nl.basjes.modbus.device.j2mod
 
+import com.ghgande.j2mod.modbus.ModbusSlaveException
 import com.ghgande.j2mod.modbus.facade.AbstractModbusMaster
 import com.ghgande.j2mod.modbus.procimg.InputRegister
 import com.ghgande.j2mod.modbus.procimg.Register
@@ -30,6 +31,7 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
+import nl.basjes.modbus.device.exception.createReadErrorResponse
 import com.ghgande.j2mod.modbus.ModbusException as J2ModModbusException
 
 /**
@@ -70,6 +72,8 @@ class ModbusDeviceJ2Mod(
                         val registers: Array<Register> = master
                             .readMultipleRegisters(unitId, firstRegister.physicalAddress, count)
                         return buildRegisterBlock(firstRegister, registers)
+                    } catch (_: ModbusSlaveException) {
+                        return createReadErrorResponse(firstRegister, count)
                     } catch (e: J2ModModbusException) {
                         throw ModbusException(
                             "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
@@ -83,6 +87,8 @@ class ModbusDeviceJ2Mod(
                         val registers: Array<InputRegister> = master
                             .readInputRegisters(unitId, firstRegister.physicalAddress, count)
                         return buildRegisterBlock(firstRegister, registers)
+                    } catch (_: ModbusSlaveException) {
+                        return createReadErrorResponse(firstRegister, count)
                     } catch (e: J2ModModbusException) {
                         throw ModbusException(
                             "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,

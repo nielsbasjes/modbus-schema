@@ -61,7 +61,7 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
     }
 
     public ${asClassName(className)} connect(ModbusDevice modbusDevice){
-        schemaDevice.connect(modbusDevice, 0);
+        schemaDevice.connect(modbusDevice);
         return this;
     }
 

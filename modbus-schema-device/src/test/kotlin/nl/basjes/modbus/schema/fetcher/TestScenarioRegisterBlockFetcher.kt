@@ -49,17 +49,6 @@ internal class TestScenarioRegisterBlockFetcher {
         // So if one register of a set is retrieved the ALL registers of that set MUST be retrieved
         private val registerSets: MutableList<RegisterBlock> = ArrayList()
 
-        fun addRegisters(addressClass: AddressClass, firstRegisterNumber: Int, vararg hexRegisterValues: String) {
-            var currentFirstRegister = firstRegisterNumber
-            for (hexRegisterString in hexRegisterValues) {
-                val registerBlock = hexRegisterString.toRegisterBlock(Address(addressClass, currentFirstRegister))
-                registerSets.add(registerBlock)
-
-                super.addRegisters(addressClass, registerBlock)
-                currentFirstRegister += registerBlock.size
-            }
-        }
-
         var fetchErrors = false
 
         override fun getRegisters(firstRegister: Address, count: Int): RegisterBlock {
@@ -100,8 +89,8 @@ internal class TestScenarioRegisterBlockFetcher {
             6162 6364 6566 6768 696a 6b6c 6d6e 6f70 7172 7374 7576 7778 797a
             # 0123456789
             3031 3233 3435 3637 3839
-            # A deliberate gap without data
-            ---- ----
+            # A deliberate gap without data and a read error
+            xxxx ----
             # ABCDEFGHIJKLMNOPQRSTUVWXYZ
             4142 4344 4546 4748 494a 4b4c 4d4e 4f50 5152 5354 5556 5758 595a
             # 0123456789
@@ -131,6 +120,7 @@ internal class TestScenarioRegisterBlockFetcher {
         // A field registers itself with the mentioned Block
         Field(block, "Some",    expression = "utf8( hr:101 # 13)",       fetchGroup = f1Group)
         Field(block, "Field",   expression = "utf8( hr:114 # 5)",        fetchGroup = f2Group, immutable = true)
+        Field(block, "Dead",    expression = "int32( hr:119 # 2)" )
         Field(block, "And",     expression = "utf8( hr:121 # 13)",       fetchGroup = f3Group)
         Field(block, "Another", expression = "utf8( hr:134 # 5)",        fetchGroup = f4Group, immutable = true)
         Field(block, "Value1",  expression = "int16( hr:141 ) / Scale1")
@@ -158,18 +148,22 @@ internal class TestScenarioRegisterBlockFetcher {
 
         assertEquals(
             "abcdefghijklmnopqrstuvwxyz",
-            block.getField("Some")?.stringValue
+            block.getField("Some")?.stringValue,
+            "Field `Some`"
         )
-        assertEquals("0123456789", block.getField("Field")?.stringValue)
+        assertEquals("0123456789", block.getField("Field")?.stringValue, "Field `Field`")
         assertEquals(
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            block.getField("And")!!.stringValue
+            block.getField("And")!!.stringValue,
+            "Field `And`"
         )
-        assertEquals("0123456789", block.getField("Another")?.stringValue)
+        assertEquals("0123456789", block.getField("Another")?.stringValue, "Field `Another`")
 
-        assertEquals(10, block.getField("Scale1")?.longValue)
+        assertNull(block.getField("Dead")?.longValue, "Field `Dead`")
+
+        assertEquals(10, block.getField("Scale1")?.longValue, "Field `Scale1`")
         assertCloseEnough(1234.5, block.getField("Value1")?.doubleValue)
-        assertEquals(100, block.getField("Scale2")?.longValue)
+        assertEquals(100, block.getField("Scale2")?.longValue, "Field `Scale2`")
         assertCloseEnough(111.11, block.getField("Value2")?.doubleValue)
     }
 
@@ -181,8 +175,9 @@ internal class TestScenarioRegisterBlockFetcher {
     fun verifyDefaultFetcher(maxRegistersPerModbusRequest: Int, fg1: String, fg2: String, fg3: String, fg4: String) {
         val modbusDevice = createTestModbusDevice(maxRegistersPerModbusRequest)
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
+        schemaDevice.needAll()
+
         val fetcher = RegisterBlockFetcher(schemaDevice, modbusDevice)
-        fetcher.needAll()
 
         schemaDevice.blocks
             .map(Block::fields)
@@ -198,10 +193,10 @@ internal class TestScenarioRegisterBlockFetcher {
         // ----------------------------------------------------
         // First fetch. Nothing loaded yet: All must be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
-        var fetchBatches: List<FetchBatch?> = fetcher.calculateFetchBatches(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        var fetchBatches: List<FetchBatch> = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Clean ): {}", fetchBatches)
 
-        fetcher.update(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        fetcher.update()
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
@@ -210,9 +205,9 @@ internal class TestScenarioRegisterBlockFetcher {
         // Second fetch. All fields have been loaded; only the mutable fields should be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
 
-        fetchBatches = fetcher.calculateFetchBatches(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        fetchBatches = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Update): {}", fetchBatches)
-        fetcher.update(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        fetcher.update()
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
@@ -255,17 +250,18 @@ internal class TestScenarioRegisterBlockFetcher {
     ) {
         val modbusDevice = createTestModbusDevice(maxRegistersPerModbusRequest)
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
+        schemaDevice.needAll()
+
         val fetcher = OptimizingRegisterBlockFetcher(schemaDevice, modbusDevice)
         fetcher.allowedGapReadSize = readingGap
-        fetcher.needAll()
 
         // ----------------------------------------------------
         // First fetch. Nothing loaded yet: All must be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
-        var fetchBatches: List<FetchBatch?> = fetcher.calculateFetchBatches(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        var fetchBatches: List<FetchBatch> = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Clean ): {}", fetchBatches)
 
-        fetcher.update(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        fetcher.update(0)
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
@@ -274,9 +270,9 @@ internal class TestScenarioRegisterBlockFetcher {
         // Second fetch. All fields have been loaded; only the mutable fields should be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
 
-        fetchBatches = fetcher.calculateFetchBatches(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        fetchBatches = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Update): {}", fetchBatches)
-        fetcher.update(RegisterBlockFetcher.FORCE_UPDATE_MAX_AGE)
+        fetcher.update(0)
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")

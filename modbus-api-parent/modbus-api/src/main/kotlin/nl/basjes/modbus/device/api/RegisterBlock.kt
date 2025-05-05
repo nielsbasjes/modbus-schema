@@ -35,12 +35,8 @@ class RegisterBlock (
     }
 
     operator fun get(address: Address): RegisterValue {
-        var returnValue = registerValues[address]
-        if (returnValue == null) {
-            returnValue = RegisterValue(address)
-            registerValues[address] = returnValue
-        }
-        return returnValue
+        assertAddressClass(address.addressClass)
+        return registerValues.computeIfAbsent(address) { RegisterValue(address) }
     }
 
     operator fun set(address: Address, registerValue: RegisterValue) {
@@ -62,12 +58,8 @@ class RegisterBlock (
     fun computeIfAbsent(requiredRegister: Address, function: (Address) -> RegisterValue) =
         registerValues.computeIfAbsent(requiredRegister, function)
 
-
-
     fun put(value: RegisterValue) {
-        if (value.hasValue()) {
-            setValue(value.address, value.value!!, value.fetchTimestamp)
-        }
+        this[value.address].setValue(value)
     }
 
     /**
@@ -75,8 +67,8 @@ class RegisterBlock (
      * @param addresses The register addresses we need the values for.
      * @return The list of values which may be empty!
      */
-    fun get(addresses: List<Address>): List<RegisterValue?> {
-        return addresses. map { key: Address -> registerValues[key] }
+    fun get(addresses: List<Address>): List<RegisterValue> {
+        return addresses.mapNotNull { key: Address -> registerValues[key] }
     }
 
     fun put(key: Address, value: RegisterValue): RegisterValue? {
@@ -86,17 +78,22 @@ class RegisterBlock (
     }
 
     /**
-     * Set an not-yet-loaded register value IFF absent
+     * Set a not-yet-loaded register value IFF absent
      * @param address The address of the new value
      */
     fun setValue(address: Address) {
-        assertAddressClass(address.addressClass)
-        registerValues.computeIfAbsent(address) { RegisterValue(address) }
+        this[address]
+    }
+
+    /**
+     * Mark the provided address as a soft read error
+     */
+    fun setReadError(address: Address) {
+        this[address].setSoftReadError()
     }
 
     fun setValue(address: Address, value: Short, timestamp: Long) {
-        assertAddressClass(address.addressClass)
-        registerValues.computeIfAbsent(address) { RegisterValue(address) }.setValue(value, timestamp)
+        this[address].setValue(value, timestamp)
     }
 
     fun merge(registerBlock: RegisterBlock) {
@@ -175,14 +172,7 @@ class RegisterBlock (
     fun clone(): RegisterBlock {
         val result = RegisterBlock(addressClass)
         for (value in registerValues.values) {
-            val registerValue = RegisterValue(value.address)
-            if (value.hasValue()) {
-                registerValue.setValue(value.value!!, value.fetchTimestamp)
-            }
-            registerValue.immutable = value.immutable
-            registerValue.fetchGroup = value.fetchGroup
-            result.registerValues[value.address] = registerValue
-            registerValue.comment = value.comment
+            result.registerValues[value.address] = value.clone()
         }
         return result
     }
@@ -215,18 +205,23 @@ fun String.toRegisterBlock(
         if (toParse.isEmpty()) {
             continue  // Skip completely empty values
         }
+        val currentAddress = Address.of(addressClass, currentPhysicalAddress)
         toParse = toParse.lowercase()
-        if ("null" == toParse || "----" == toParse) {
-            val currentAddress = Address.of(addressClass, currentPhysicalAddress)
-            registerBlock.setValue(currentAddress)
-        } else {
-            val parsedInt = toParse.toInt(16)
-            val value = (parsedInt and 0xFFFF).toShort()
+        when (toParse) {
+            "null", "----" -> {
+                registerBlock.setValue(currentAddress)
+            }
+            "xxxx" ->
+                registerBlock.setReadError(currentAddress)
+            else -> {
+                    val parsedInt = toParse.toInt(16)
+                    val value = (parsedInt and 0xFFFF).toShort()
 
-            val currentAddress = Address.of(addressClass, currentPhysicalAddress)
-            // Timestamp is fixed value because loaded from file: 2001-02-03T04:05:06:789Z (i.e. 123456789)
-            registerBlock.setValue(currentAddress, value, 981173106789L)
+                    // Timestamp is fixed value because loaded from file: 2001-02-03T04:05:06:789Z (i.e. 123456789)
+                    registerBlock.setValue(currentAddress, value, 981173106789L)
+                }
         }
+
         currentPhysicalAddress++
     }
     return registerBlock

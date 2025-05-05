@@ -17,6 +17,8 @@
 package nl.basjes.modbus.device.digitalpetri
 
 import com.digitalpetri.modbus.client.ModbusClient
+import com.digitalpetri.modbus.exceptions.ModbusException as DPModbusException
+import com.digitalpetri.modbus.exceptions.ModbusResponseException as DPModbusResponseException
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest
 import com.digitalpetri.modbus.pdu.ReadInputRegistersRequest
 import nl.basjes.modbus.device.api.Address
@@ -30,6 +32,7 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
+import nl.basjes.modbus.device.exception.createReadErrorResponse
 
 /**
  * An instance of a ModbusDevice that uses the DigitalPetri library for the Modbus connection
@@ -71,7 +74,9 @@ class ModbusDeviceDigitalPetri(
                             ReadHoldingRegistersRequest(firstRegister.physicalAddress, count)
                         )
                         return buildRegisterBlock(firstRegister, response.registers)
-                    } catch (e: com.digitalpetri.modbus.exceptions.ModbusException) {
+                    } catch (_: DPModbusResponseException) {
+                        return createReadErrorResponse(firstRegister, count)
+                    } catch (e: DPModbusException) {
                         throw ModbusException(
                             "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
                             e,
@@ -86,6 +91,8 @@ class ModbusDeviceDigitalPetri(
                             ReadInputRegistersRequest(firstRegister.physicalAddress, count)
                         )
                         return buildRegisterBlock(firstRegister, response.registers)
+                    } catch (_: DPModbusResponseException) {
+                        return createReadErrorResponse(firstRegister, count)
                     } catch (e: com.digitalpetri.modbus.exceptions.ModbusException) {
                         throw ModbusException(
                             "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,

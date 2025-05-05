@@ -22,6 +22,7 @@ import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.api.toRegisterBlock
+import nl.basjes.modbus.device.exception.createReadErrorResponse
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.TreeMap
@@ -81,6 +82,11 @@ open class MockedModbusDevice: ModbusDevice() {
         for (registerNumber in firstPhysicalAddress until (firstPhysicalAddress + count)) {
             val address = Address.of(addressClass, registerNumber)
             val registerValue = registerBlock[address]
+            if (registerValue.isReadError()) {
+                // If ANY of the requested registers is invalid then the entire block of values is returned as readerror
+                // This is to match the behaviour of real devices
+                return createReadErrorResponse(firstRegister, count)
+            }
             if (registerValue.hasValue()) {
                 registers[address] = registerValue
             }

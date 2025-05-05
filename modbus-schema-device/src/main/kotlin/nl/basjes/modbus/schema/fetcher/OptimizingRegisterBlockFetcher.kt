@@ -16,8 +16,10 @@
  */
 package nl.basjes.modbus.schema.fetcher
 
+import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.schema.SchemaDevice
+import java.util.ArrayList
 
 class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: ModbusDevice) :
         RegisterBlockFetcher(schemaDevice, modbusDevice) {
@@ -31,8 +33,35 @@ class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: M
         }
 
     override fun calculateFetchBatches(maxAge: Long): List<FetchBatch> {
-        val baseFetchBatchList = super.calculateFetchBatches(maxAge)
         val fetchBatches: MutableList<FetchBatch> = ArrayList()
+
+        // This is the most fine-grained list of batches.
+        val rawFetchBatchList = super.calculateFetchBatches(maxAge)
+
+        // Any raw fetch batch that contains ANY ReadError register is dropped
+        // Since these are the smallest possible ones this cannot be repaired.
+        val baseFetchBatchList = rawFetchBatchList
+            .filter {
+                for (field in it.fields) {
+                    if (field.isUsingReadErrorRegisters()) {
+                        return@filter false
+                    }
+                }
+                return@filter true
+            }
+
+        val usedAddressClasses = baseFetchBatchList
+            .flatMap { it.fields }
+            .flatMap { it.requiredRegisters }
+            .map     { it.addressClass }
+            .sorted()
+            .distinct()
+
+        val readErrorAddresses = usedAddressClasses
+            .flatMap    { schemaDevice.getRegisterBlock(it).values }
+            .filter     { it.isReadError() }
+            .map        { it.address }
+            .toList()
 
         val fetchBatchIterator = baseFetchBatchList.iterator()
 
@@ -46,58 +75,70 @@ class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: M
         // Copy the next batch from the provided list
         // Then for each following provided batch either merge or not merge.
         var nextInput = fetchBatchIterator.next()
-        var nextBatch = FetchBatch()
-        nextBatch.start = nextInput.start
-        nextBatch.count = nextInput.count
+        var nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+        nextBatch.add(nextInput)
         fetchBatches.add(nextBatch)
 
         while (fetchBatchIterator.hasNext()) {
             nextInput = fetchBatchIterator.next()
 
-            if (nextBatch.start!!.addressClass != nextInput.start!!.addressClass) {
+            if (nextBatch.start.addressClass != nextInput.start.addressClass) {
                 // Different addressClass is ALWAYS start a new batch
-                nextBatch = FetchBatch()
-                nextBatch.start = nextInput.start
-                nextBatch.count = nextInput.count
+                nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+                nextBatch.add(nextInput)
                 fetchBatches.add(nextBatch)
                 continue
             }
 
-            val lastOfNextBatch = nextBatch.start!!.increment(nextBatch.count)
+            val lastOfNextBatch = nextBatch.start.increment(nextBatch.count)
 
-            if (nextInput.start!! == lastOfNextBatch) {
+            if (nextInput.start == lastOfNextBatch) {
                 // Clean append without gaps
                 if (nextBatch.count + nextInput.count <= modbusDevice.maxRegistersPerModbusRequest) {
                     // Merge
                     nextBatch.count += nextInput.count
+                    nextBatch.add(nextInput)
                 } else {
                     // DO NOT Merge
-                    nextBatch = FetchBatch()
-                    nextBatch.start = nextInput.start
-                    nextBatch.count = nextInput.count
+                    nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+                    nextBatch.add(nextInput)
                     fetchBatches.add(nextBatch)
                 }
                 continue
             }
 
             // We have a gap between nextBatch and nextInput and we MAY read those also!
-            val nextBatchStart = nextBatch.start!!.physicalAddress
-            val nextInputStart = nextInput.start!!.physicalAddress
+            val nextBatchStart = nextBatch.start.physicalAddress
+            val nextInputStart = nextInput.start.physicalAddress
             val gapSize = nextInputStart - (nextBatchStart + nextBatch.count)
             val mergedCount = nextInputStart + nextInput.count - nextBatchStart
             if (gapSize <= allowedGapReadSize &&  // Do NOT jump more than N registers
-                mergedCount <= modbusDevice.maxRegistersPerModbusRequest
+                mergedCount <= modbusDevice.maxRegistersPerModbusRequest &&
+                !readErrorAddresses.overlaps(nextBatch.start, mergedCount)// Do NOT try to read read errors
             ) {
                 nextBatch.count = mergedCount
+                nextBatch.add(nextInput)
             } else {
-                // DO NOT Merge
-                nextBatch = FetchBatch()
-                nextBatch.start = nextInput.start
-                nextBatch.count = nextInput.count
+                // DO NOT Merge (i.e. start a new one)
+                nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+                nextBatch.add(nextInput)
                 fetchBatches.add(nextBatch)
             }
         }
 
         return fetchBatches
     }
+
+    fun List<Address>.overlaps(firstAddress: Address, count: Int): Boolean {
+        if (this.isEmpty()) {
+            return false
+        }
+        require(count > 0) { "At least one address is required" }
+
+        return this
+            .mapNotNull { firstAddress.distance(it) }
+            .any { it in 0 .. count }
+    }
+
+
 }

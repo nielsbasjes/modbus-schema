@@ -18,23 +18,22 @@ package nl.basjes.modbus.device.memory
 
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass
+import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
-import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.memory.MockedModbusDevice.Companion.builder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class TestMockedModbusDevice {
     @Test
-    @Throws(ModbusException::class)
     fun checkMockDeviceValuesNormal() {
         checkMockDeviceValues("F001 E002 D003 C004 B005 A006 9007 8008 7009 600A 500B 400C 300D 200E 100F 0000 FFFF")
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun checkMockDeviceValuesSpaces() {
         checkMockDeviceValues(" F001   E002  D003   C004   B005 A006 9007 8008 7009 600A 500B 400C 300D 200E 100F 0000  FFFF  ")
     }
@@ -57,7 +56,6 @@ internal class TestMockedModbusDevice {
         }
     }
 
-    @Throws(ModbusException::class)
     fun checkMockDeviceValues(registerString: String?) {
         val addressClass = AddressClass.INPUT_REGISTER
 
@@ -91,47 +89,52 @@ internal class TestMockedModbusDevice {
             }
     }
 
+    private fun assertAddressValue(
+        modbusDevice: ModbusDevice,
+        addressClass: AddressClass,
+        registerNumber: Int,
+        expectedHexValue: String?
+    ) {
+        val registers = modbusDevice.getRegisters(Address.of(addressClass, registerNumber), 1)
+        assertAddressValue(registers, addressClass, registerNumber, expectedHexValue)
+    }
+
     @Test
-    fun testLoadingWithRegisterGaps() {
+    fun testLoadingWithRegisterGapsAndErrors() {
         val registerString =
             """
                 0001   ----   0003
                 null    0005
-                0006 ----   0008  null
+                0006 ----   0008  xxxx
                 null   000B  null   000D
             """
 
         val addressClass = AddressClass.INPUT_REGISTER
 
-        try {
-            builder()
-                .withRegisters(addressClass, 0, registerString)
-                .build().use { device ->
-                    val registers = device.getRegisters(Address.of(addressClass, 0), 20)
-                    assertEquals(
-                        7,
-                        registers.size,
-                        "Should have 7 registers as that is all there is in the device"
-                    )
+        val modbusDevice = builder()
+            .withRegisters(addressClass, 1, registerString)
+            .build()
 
-                    assertAddressValue(registers, addressClass, 0, "0001")
-                    assertAddressValue(registers, addressClass, 1, null)
-                    assertAddressValue(registers, addressClass, 2, "0003")
-                    assertAddressValue(registers, addressClass, 3, null)
-                    assertAddressValue(registers, addressClass, 4, "0005")
-                    assertAddressValue(registers, addressClass, 5, "0006")
-                    assertAddressValue(registers, addressClass, 6, null)
-                    assertAddressValue(registers, addressClass, 7, "0008")
-                    assertAddressValue(registers, addressClass, 8, null)
-                    assertAddressValue(registers, addressClass, 9, null)
-                    assertAddressValue(registers, addressClass, 10, "000B")
-                    assertAddressValue(registers, addressClass, 11, null)
-                    assertAddressValue(registers, addressClass, 12, "000D")
-                    assertAddressValue(registers, addressClass, 13, null)
-                    assertAddressValue(registers, addressClass, 14, null)
-                }
-        } catch (e: Exception) {
-            throw RuntimeException(e)
-        }
+        // The Read Error should make the entire block return a read error
+        modbusDevice
+            .getRegisters(Address.of(addressClass, 0), 20)
+            .values.forEach { assertTrue { it.isReadError() } }
+
+        // Reading them one at a time should only return a read error on the bad one.
+        assertAddressValue(modbusDevice, addressClass, 1, "0001")
+        assertAddressValue(modbusDevice, addressClass, 2, null)
+        assertAddressValue(modbusDevice, addressClass, 3, "0003")
+        assertAddressValue(modbusDevice, addressClass, 4, null)
+        assertAddressValue(modbusDevice, addressClass, 5, "0005")
+        assertAddressValue(modbusDevice, addressClass, 6, "0006")
+        assertAddressValue(modbusDevice, addressClass, 7, null)
+        assertAddressValue(modbusDevice, addressClass, 8, "0008")
+        assertAddressValue(modbusDevice, addressClass, 9, "xxxx")
+        assertAddressValue(modbusDevice, addressClass, 10, null)
+        assertAddressValue(modbusDevice, addressClass, 11, "000B")
+        assertAddressValue(modbusDevice, addressClass, 12, null)
+        assertAddressValue(modbusDevice, addressClass, 13, "000D")
+        assertAddressValue(modbusDevice, addressClass, 14, null)
+        assertAddressValue(modbusDevice, addressClass, 15, null)
     }
 }

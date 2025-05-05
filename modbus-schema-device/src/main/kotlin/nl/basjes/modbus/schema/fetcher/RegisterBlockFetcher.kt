@@ -24,7 +24,6 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.time.Instant
 import java.util.*
 
 /**
@@ -34,31 +33,10 @@ open class RegisterBlockFetcher(
     protected val schemaDevice: SchemaDevice,
     protected val modbusDevice: ModbusDevice,
 ) {
-    // Maps the fetchGroupId to a list of addresses
-    protected val fetchGroupToAddresses: MutableMap<String, MutableList<Address>> = TreeMap()
 
-    // Essentially a semaphore map. The number indicates how many need this field.
-    protected val neededFieldsMap: MutableMap<Field, Int> = TreeMap()
+    private fun calculateFetchGroupToAddressesMapping(): Map<String, MutableList<Address>> {
+        val fetchGroupToAddresses: MutableMap<String, MutableList<Address>> = TreeMap()
 
-    val neededFields: List<Field>
-        get() = neededFieldsMap
-                .entries
-                .filter { it.value > 0 }
-                .map { it.key }
-
-    fun initialize() {
-        fetchGroupToAddresses.clear()
-        neededFieldsMap.clear()
-        lastFetchGroupToAddressesMappingTimestamp = Instant.ofEpochMilli(0)
-        ensureValidFetchGroupToAddressesMapping()
-    }
-
-    /** If a field was added or removed this should trigger updates and reinitializations in other parts */
-    private var lastFetchGroupToAddressesMappingTimestamp = Instant.ofEpochMilli(0) // Very long ago
-    private fun ensureValidFetchGroupToAddressesMapping() {
-        if (schemaDevice.lastFieldModificationTimestamp.isBefore(lastFetchGroupToAddressesMappingTimestamp)) {
-            return // Nothing to update
-        }
         // We register all fields in the schemaDevice with the right fetch group as dictated in the Field.
         for (block in schemaDevice.blocks) {
             for (field in block.fields) {
@@ -94,56 +72,7 @@ open class RegisterBlockFetcher(
                 firstAddress.increment(numberOfAddresses - 1) == lastAddress
             ) { "There are gaps in the addresses for fetch group \"$key\": $fetchGroupAddresses" }
         }
-
-        lastFetchGroupToAddressesMappingTimestamp = Instant.now()
-    }
-
-    /**
-     * @param field The field that must be kept up-to-date
-     */
-    fun need(field: Field) {
-        field.initialize()
-        neededFieldsMap.merge(field, 1) { a: Int?, b: Int? -> Integer.sum(a!!, b!!) }
-        field.requiredFields.forEach { this.need(it) }
-    }
-
-    /**
-     * @param field The field that no longer needs to be kept up-to-date
-     */
-    fun unNeed(field: Field) {
-        neededFieldsMap.merge(field, -1) { a: Int?, b: Int? -> Integer.sum(a!!, b!!) }
-        field.requiredFields.forEach { this.unNeed(it) }
-    }
-
-    /**
-     * We want all fields to be kept up-to-date
-     */
-    fun needAll() {
-        schemaDevice.blocks
-            .map { it.fields }
-            .flatMap { it.asSequence() }
-            .forEach { this.need(it) }
-    }
-
-    /**
-     * We no longer want all fields to be kept up-to-date
-     */
-    fun unNeedAll() {
-        schemaDevice.blocks
-            .map { it.fields }
-            .flatMap { it.asSequence() }
-            .forEach { this.unNeed(it) }
-    }
-
-    /**
-     * Make sure all registers mentioned in all known fields are retrieved.
-     */
-    @Throws(ModbusException::class)
-    @JvmOverloads
-    fun updateAll(maxAge: Long = 0) {
-        needAll()
-        update(maxAge)
-        unNeedAll()
+        return fetchGroupToAddresses
     }
 
     /**
@@ -153,7 +82,11 @@ open class RegisterBlockFetcher(
      */
     @Throws(ModbusException::class)
     fun update(field: Field) {
-        ensureValidFetchGroupToAddressesMapping()
+        if (field.isUsingReadErrorRegisters()) {
+            return // Cannot update
+        }
+        val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
+
         var requiredRegisters: List<Address>? = fetchGroupToAddresses[field.fetchGroup]
         if (requiredRegisters.isNullOrEmpty()) {
             requiredRegisters = field.requiredRegisters
@@ -162,12 +95,24 @@ open class RegisterBlockFetcher(
         schemaDevice.getRegisterBlock(deviceRegisters.addressClass).merge(deviceRegisters)
     }
 
-    class FetchBatch : Comparable<FetchBatch> {
-        var start: Address? = null
-        var count: Int = 0
+    open class FetchBatch(
+        val start: Address,
+        var count: Int,
+    ) : Comparable<FetchBatch> {
+        /** The affected list of fields */
+        val fields: MutableList<Field> = mutableListOf()
+
+        fun isUsingReadErrorRegisters(): Boolean {
+            for (field in fields) {
+                if (field.isUsingReadErrorRegisters()) {
+                    return true
+                }
+            }
+            return false
+        }
 
         override fun compareTo(other: FetchBatch): Int {
-            val addressCompare = start!!.compareTo(other.start!!)
+            val addressCompare = start.compareTo(other.start)
             if (addressCompare != 0) {
                 return addressCompare
             }
@@ -189,7 +134,20 @@ open class RegisterBlockFetcher(
         }
 
         override fun toString(): String {
-            return "FetchBatch{ $start # $count}"
+            return "FetchBatch { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
+        }
+    }
+
+    /**
+     * When doing fetch optimization we are sometimes combining the FetchBatches.
+     * This is the class to hold such a combination.
+     * This is needed to be able to handle the retry in case of a read error
+     */
+    class MergedFetchBatch(start: Address, count: Int): FetchBatch(start, count) {
+        val fetchBatches: MutableList<FetchBatch> = ArrayList()
+        fun add(fetchBatch: FetchBatch) {
+            fetchBatches.add(fetchBatch)
+            fields.addAll(fetchBatch.fields)
         }
     }
 
@@ -197,15 +155,34 @@ open class RegisterBlockFetcher(
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
      */
-    fun update(maxAge: Long) {
-        ensureValidFetchGroupToAddressesMapping()
+    @JvmOverloads
+    fun update(maxAge: Long = 0) {
         for (fetchBatch in calculateFetchBatches(maxAge)) {
-            try {
-                val registers = modbusDevice.getRegisters(fetchBatch.start!!, fetchBatch.count)
-                schemaDevice.getRegisterBlock(registers.addressClass).merge(registers)
-            } catch (me: ModbusException) {
-                LOG.error("Got ModbusException on {} --> {}", fetchBatch, me)
+            fetch(fetchBatch)
+        }
+    }
+
+    private fun fetch(fetchBatch: FetchBatch) {
+//        println("Fetching $fetchBatch")
+        try {
+            val registers = modbusDevice.getRegisters(fetchBatch.start, fetchBatch.count)
+            val registerBlock = schemaDevice.getRegisterBlock(registers.addressClass)
+            registerBlock.merge(registers)
+            if (registers.values.any { it.isReadError() }) {
+                if (fetchBatch is MergedFetchBatch) {
+//                    println("-----READ ERROR getting $fetchBatch ; Retry non optimized")
+                    // If we have a merged fetch then we retry on the individuals.
+                    for (fetchPart in fetchBatch.fetchBatches) {
+                        fetch(fetchPart)
+                    }
+                } else {
+//                    println("-----READ ERROR getting $fetchBatch ; Fields are marked as DEAD")
+                    registers.values.forEach { it.setHardReadError() }
+                    registerBlock.merge(registers)
+                }
             }
+        } catch (me: ModbusException) {
+            LOG.error("Got ModbusException on {} --> {}", fetchBatch, me)
         }
     }
 
@@ -220,7 +197,7 @@ open class RegisterBlockFetcher(
         val fieldsThatMustBeUpdated: MutableList<Field> = ArrayList()
 
         // First we determine which of the fields need to be updated
-        for (field in neededFields) {
+        for (field in schemaDevice.neededFields()) {
             val requiredRegisters = field.requiredRegisters
 
             if (requiredRegisters.isEmpty()) {
@@ -238,29 +215,26 @@ open class RegisterBlockFetcher(
             }
         }
 
+        val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
+
         // For each fetchGroup that needs to be updated we create a single batch
         val fetchBatchesMap: MutableMap<String, FetchBatch> = TreeMap()
         for (field in fieldsThatMustBeUpdated) {
-            if (fetchBatchesMap.containsKey(field.fetchGroup)) {
+            var fetchBatch = fetchBatchesMap[field.fetchGroup]
+            if (fetchBatch != null) {
+                fetchBatch.fields.add(field)
                 continue  // Already have this one
             }
             val addresses: List<Address> = fetchGroupToAddresses[field.fetchGroup]!!
-            val fetchBatch = FetchBatch()
-            fetchBatch.start = addresses[0]
-            fetchBatch.count = addresses.size
+            fetchBatch = FetchBatch(addresses[0], addresses.size)
+            fetchBatch.fields.add(field)
             fetchBatchesMap[field.fetchGroup] = fetchBatch
         }
 
         return fetchBatchesMap.values.sorted().toList()
     }
 
-    init {
-        initialize()
-    }
-
     companion object {
-        const val FORCE_UPDATE_MAX_AGE: Long = -1000000000000L
-
         private val LOG: Logger = LogManager.getLogger()
     }
 }

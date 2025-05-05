@@ -34,6 +34,7 @@ import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringListExpression
 import nl.basjes.modbus.schema.utils.DoubleToString
 import nl.basjes.modbus.schema.utils.StringTable
+import java.util.TreeMap
 import kotlin.properties.Delegates
 
 
@@ -202,20 +203,13 @@ class Field(
         }
 
     val value: Any?
-        get() = {
-            val parsedExpression = parsedExpression
-            when {
-                (parsedExpression is StringExpression)     -> parsedExpression.getValue(block.schemaDevice)
-                (parsedExpression is StringListExpression) -> parsedExpression.getValue(block.schemaDevice)
-                (parsedExpression is NumericalExpression)  -> {
-                    when (parsedExpression.returnType) {
-                        LONG   -> parsedExpression.getValueAsLong(block.schemaDevice)
-                        DOUBLE -> parsedExpression.getValueAsDouble(block.schemaDevice)
-                        else -> null
-                    }
-                }
-                else -> null
-            }
+        get() = when (returnType) {
+            UNKNOWN ->      TODO("Unknown returnType (Field $id) means we do not know yet")
+            BOOLEAN ->      TODO("Coils are not supported yet")
+            LONG ->         longValue
+            DOUBLE ->       doubleValue
+            STRING ->       stringValue
+            STRINGLIST ->   stringListValue
         }
 
     val stringValue: String?
@@ -265,7 +259,7 @@ class Field(
                 return null
             }
             val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(parsedExpression.requiredMutableRegisters)
-            val timestamps = registerValues.filterNotNull().mapNotNull { it.timestamp }
+            val timestamps = registerValues.mapNotNull { it.timestamp }
             if (timestamps.isEmpty()) {
                 return null
             }
@@ -284,6 +278,14 @@ class Field(
     val requiredRegisters: List<Address>
         get() = parsedExpression?.requiredRegisters ?: emptyList()
 
+    fun usedReadErrorAddresses(): List<Address> {
+        val addressClass = addressClass ?: return emptyList()
+        val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(requiredRegisters)
+        return registerValues.filter { it.isReadError() }.map { it.address }.toList()
+    }
+
+    fun isUsingReadErrorRegisters() = !usedReadErrorAddresses().isEmpty()
+
     /**
      * Directly update this field
      */
@@ -291,19 +293,33 @@ class Field(
         block.schemaDevice.update(this)
     }
 
+    // Essentially a semaphore. The number indicates how many need this field.
+    var neededCount = 0
+
     /**
      * This field must be kept up-to-date
      */
     fun need() {
-        block.schemaDevice.need(this)
+        neededCount++
+        requiredFields.forEach { it.need() }
+
+        // If the registers of this block were read before then there is the possibility that they were part of a read error.
+        // Because (perhaps) this read error was NOT related to this field: we reset any read error status of the cached
+        // register values if we are not 100% certain that it was caused by this specific field.
+        val addressClass = addressClass ?: return
+        val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(requiredRegisters)
+        registerValues.forEach { it.clearSoftReadError() }
     }
 
     /**
      * The field no longer needs to be kept up-to-date
      */
     fun unNeed() {
-        block.schemaDevice.unNeed(this)
+        neededCount--
+        requiredFields.forEach { it.unNeed() }
     }
+
+    fun isNeeded() = neededCount > 0
 
     val testCompareValue: List<String>
         get() = when (returnType) {
@@ -330,7 +346,7 @@ class Field(
         try {
 //            System.out.println("Getting " + this);
             value = this.value
-        } catch (e: ModbusException) {
+        } catch (_: ModbusException) {
             if (onlyUseFullFields) {
                 return
             }
@@ -464,13 +480,6 @@ class Field(
         /** Human-readable unit of the field (like 'V' for Volt or '%' for percentage).     */
         fun unit(unit: String?) = apply { this.unit = unit ?: "" }
         private var unit: String = ""
-//
-//        /**
-//         * The return type that the programming language must support.
-//         * If not specified it will be automatically calculated from the expression.
-//         * When specified here it is a constraint that will fail if the expression yields a different result. */
-//        fun returnType(type: ReturnType) = apply { this.returnType = type }
-//        private var returnType: ReturnType = UNKNOWN
 
         /**
          * An identifier to that can be used to ensure all needed registers are retrieved together.

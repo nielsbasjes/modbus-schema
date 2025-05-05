@@ -53,15 +53,34 @@ class RegisterValue(
     var fetchTimestamp: Long = Long.MIN_VALUE
 
     val timestamp: Long?
-        get() = if (fetchTimestamp <= -2208988800000 || immutable) null else fetchTimestamp
+        get() = if (fetchTimestamp <= NEVER_VALID_BEFORE || immutable) null else fetchTimestamp
+
+    fun clone(): RegisterValue {
+        val registerValue = RegisterValue(address)
+        registerValue.fetchGroup      = fetchGroup
+        registerValue.immutable       = immutable
+        registerValue.value           = value
+        registerValue.comment         = comment
+        registerValue.fetchTimestamp  = fetchTimestamp
+        registerValue.hardReadError   = hardReadError
+        return registerValue
+    }
 
     fun setValue(value: Short): RegisterValue {
         return setValue(value, System.currentTimeMillis())
     }
 
+    fun setValue(registerValue: RegisterValue): RegisterValue {
+        this.value           = registerValue.value
+        this.fetchTimestamp  = registerValue.fetchTimestamp
+        this.hardReadError   = registerValue.hardReadError
+        return this
+    }
+
     fun setValue(value: Short, timestamp: Long): RegisterValue {
         this.value = value
         this.fetchTimestamp = timestamp
+        this.hardReadError = false
         return this
     }
 
@@ -69,7 +88,45 @@ class RegisterValue(
         return value != null
     }
 
+    /** 1900-01-01T00:00:00.000Z */
+    val EPOCH_1900 = -2208988800000
+    /** 1888-08-08T08:08:08.888Z */
+    val EPOCH_1888 = -2568642711112
+
+    val NEVER_VALID_BEFORE  = EPOCH_1900
+    val READERROR_TIMESTAMP = EPOCH_1888
+
+    // If a read error is NOT hard it can be reset
+    // If a read error IS hard it cannot be reset
+    var hardReadError = false
+
+    fun setSoftReadError() {
+        this.value = null
+        this.fetchTimestamp = READERROR_TIMESTAMP
+        this.hardReadError = false
+    }
+
+    fun setHardReadError() {
+        this.value = null
+        this.fetchTimestamp = READERROR_TIMESTAMP
+        this.hardReadError = true
+    }
+
+    fun isReadError(): Boolean {
+        return value == null && fetchTimestamp == READERROR_TIMESTAMP
+    }
+
+    fun clearSoftReadError() {
+        if (!hardReadError) {
+            value = null
+            fetchTimestamp = Long.MIN_VALUE
+        }
+    }
+
     fun needsToBeUpdated(now: Long, maxAge: Long): Boolean {
+        if (isReadError()) {
+            return false
+        }
         if (value == null) {
             return true
         }
@@ -77,14 +134,14 @@ class RegisterValue(
             return false
         }
         // Any register with a valid value MUST be after 1900-01-01T00:00:00Z
-        if (fetchTimestamp > -2208988800000) {
+        if (fetchTimestamp > NEVER_VALID_BEFORE) {
             return true
         }
         return now - fetchTimestamp > maxAge
     }
 
     fun clear() {
-        this.value = null
+        value = null
         fetchTimestamp = Long.MIN_VALUE
     }
 
@@ -95,6 +152,12 @@ class RegisterValue(
         get() {
             if (hasValue()) {
                 return String.format("%04X", value)
+            }
+            if (isReadError()) {
+                if (hardReadError) {
+                    return "XXXX"
+                }
+                return "xxxx"
             }
             return "----"
         }
@@ -107,7 +170,7 @@ class RegisterValue(
         if (hasValue()) {
             return "{$address=0x$hexValue}${stringComment}"
         }
-        return "{$address= ----}${stringComment}"
+        return "{$address= $hexValue${stringComment}"
     }
 
     override fun compareTo(other: RegisterValue): Int {

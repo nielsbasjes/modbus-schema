@@ -30,10 +30,12 @@ import nl.basjes.modbus.device.api.FunctionCode.WRITE_SINGLE_HOLDING_REGISTER
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.junit.jupiter.api.assertThrows
+import kotlin.collections.mapNotNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class TestAddress {
     private fun checkAllAreEqual(expectedAddress: Address, vararg registerTags: String) {
@@ -222,6 +224,56 @@ internal class TestAddress {
         assertEquals(HOLDING_REGISTER, AddressClass.of("holding-registers  "))
         assertEquals(HOLDING_REGISTER, AddressClass.of("HOLDing_register"))
         assertEquals(HOLDING_REGISTER, AddressClass.of("holding_registers"))
+    }
+
+    @Test
+    fun testDistance() {
+        assertEquals(null, Address.of("hr:0123").distance(Address.of("ir:0123")))
+        assertEquals(0, Address.of("hr:0123").distance(Address.of("hr:0123")))
+        assertEquals(23, Address.of("hr:0100").distance(Address.of("hr:0123")))
+        assertEquals(-23, Address.of("hr:0123").distance(Address.of("hr:0100")))
+
+        val list = listOf(
+            Address.of(" hr:00217"),
+            Address.of(" hr:00218"),
+            Address.of(" hr:00219"),
+            Address.of(" hr:00220"),
+            Address.of(" hr:00221"),
+            Address.of(" hr:00222"),
+            Address.of(" hr:00223"),
+            Address.of(" hr:00224"),
+            Address.of(" hr:00225"),
+            Address.of(" hr:00226"),
+            Address.of(" hr:00227"),
+            Address.of(" hr:00228"),
+            Address.of(" hr:00229"),
+            Address.of(" hr:00230"),
+            Address.of(" hr:00231"),
+            Address.of(" hr:00232"),
+            Address.of(" hr:00233"),
+            Address.of(" hr:00234"),
+            Address.of(" hr:00235"),
+            Address.of(" hr:00236"),
+            Address.of(" hr:00237"),
+            Address.of(" hr:00238"),
+        )
+
+        val firstAddress = Address.of("hr:00199")
+
+        assertTrue {
+            list.overlaps(firstAddress, 41)
+        }
+    }
+
+    fun List<Address>.overlaps(firstAddress: Address, count: Int): Boolean {
+        if (this.isEmpty()) {
+            return false
+        }
+        require(count > 0) { "At least one address is required" }
+
+        return this
+            .mapNotNull { firstAddress.distance(it) }
+            .any { it in 0 .. count }
     }
 
     companion object {

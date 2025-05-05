@@ -60,7 +60,7 @@ class Test${asClassName(className)} {
     // ${testScenario.name!"Unknown Test"} (${testScenario.description!""})
     void verifyProvidedTest_${asClassName(testScenario.name)}() throws ModbusException  {
         MockedModbusDevice modbusDevice = MockedModbusDevice.builder().build();
-        ${asClassName(className)} ${asVariableName(className)} = new ${asClassName(className)}().connect(modbusDevice, 0);
+        ${asClassName(className)} ${asVariableName(className)} = new ${asClassName(className)}().connect(modbusDevice);
 <#list testScenario.registerBlocks as registerBlock>
         modbusDevice.addRegisters(Address.of("${registerBlock.firstAddress}"), "${hexString(registerBlock)}");
 </#list>

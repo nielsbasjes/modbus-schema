@@ -162,21 +162,24 @@ open class Block(
     /**
      * Directly update all fields in this Block
      */
-    fun update() = fields.forEach { field -> field.update() }
+    fun update() = fields.forEach { it.update() }
 
     /**
      * All fields in this Block must be kept up-to-date
      */
-    fun need() = fields.forEach { field -> field.need() }
+    fun needAll() = fields.forEach { it.need() }
 
     /**
      * All fields in this Block no longer need to be kept up-to-date
      */
-    fun unNeed() = fields.forEach { field -> field.unNeed() }
+    fun unNeedAll() = fields.forEach { it.unNeed() }
 
+    /**
+     * Get the list of needed fields
+     */
+    fun neededFields() = fields.filter { it.isNeeded() }
 
     // ------------------------------------------
-
 
     companion object {
         @JvmStatic

@@ -110,6 +110,17 @@ class Address (
     }
 
     /**
+     * @param address The address to compare to
+     * @return The "Increment" difference to get from this Address to the provided Address. Returns null if not the same address class
+     */
+    fun distance(address: Address): Int? {
+        if (addressClass != address.addressClass) {
+            return null
+        }
+        return address.physicalAddress - physicalAddress
+    }
+
+    /**
      * @return The stored address as cleanly parsable format without the "off by one" problem.
      *          For example "hr:00123".
      */

@@ -24,7 +24,6 @@ import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.fetcher.OptimizingRegisterBlockFetcher
 import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.Companion.FORCE_UPDATE_MAX_AGE
 import nl.basjes.modbus.schema.test.ExpectedBlock
 import nl.basjes.modbus.schema.test.TestScenario
 import nl.basjes.modbus.schema.test.TestScenarioResults
@@ -43,12 +42,28 @@ open class SchemaDevice @JvmOverloads constructor(
      */
     var description: String = "",
     /**
-     * The maximum number of registers per request is different for some devices
+     * The maximum number of modbus registers that can be requested PER call.
+     * Some devices do not allow the normal max of 125.
      */
-    val maxRegistersPerModbusRequest: Int = MODBUS_MAX_REGISTERS_PER_REQUEST,
+    maxRegistersPerModbusRequest: Int = MODBUS_MAX_REGISTERS_PER_REQUEST,
 ) {
     // The registerBlock from which the values must be retrieved.
     private val registerBlocks: MutableMap<AddressClass, RegisterBlock> = TreeMap()
+
+    /**
+     * The maximum number of modbus registers that can be requested PER call.
+     * Some devices do not allow the normal max of 125.
+     */
+    var maxRegistersPerModbusRequest = maxRegistersPerModbusRequest
+        set(value) {
+            if (value < 1 || value > MODBUS_MAX_REGISTERS_PER_REQUEST) {
+                throw ModbusException(
+                    "The maxRegistersPerModbusRequest must be between 1 and $MODBUS_MAX_REGISTERS_PER_REQUEST" +
+                        " (was set to $value)."
+                )
+            }
+            field = value ;
+        }
 
     private fun clearRegisterBlocks() {
         registerBlocks.values.forEach { it.clear() }
@@ -119,7 +134,6 @@ open class SchemaDevice @JvmOverloads constructor(
         if (!allOk) {
             return false
         }
-        registerBlockFetcher?.initialize()
         return true
     }
 
@@ -184,7 +198,7 @@ open class SchemaDevice @JvmOverloads constructor(
                 /**
                  * How many registers may needlessly be read to optimize fetching
                  */
-                allowedGapReadSize:Int = 0,
+                allowedGapReadSize:Int = 10,
     ): SchemaDevice {
         clearRegisterBlocks()
         this.modbusDevice = modbusDevice
@@ -218,36 +232,43 @@ open class SchemaDevice @JvmOverloads constructor(
     @JvmOverloads
     fun updateAll(maxAge: Long = 0) {
         initialize()
-        registerBlockFetcher?.updateAll(maxAge)
+        needAll()
+        update(maxAge)
+        unNeedAll()
     }
 
     /**
      * @param field The field that must be kept up-to-date
      */
     fun need(field: Field) {
-        registerBlockFetcher?.need(field)
+        field.need()
     }
 
     /**
      * @param field The field that no longer needs to be kept up-to-date
      */
     fun unNeed(field: Field) {
-        registerBlockFetcher?.unNeed(field)
+        field.unNeed()
     }
 
     /**
      * We want all fields to be kept up-to-date
      */
     fun needAll() {
-        registerBlockFetcher?.needAll()
+        blocks.forEach { it.needAll() }
     }
 
     /**
      * We no longer want all fields to be kept up-to-date
      */
     fun unNeedAll() {
-        registerBlockFetcher?.unNeedAll()
+        blocks.forEach { it.unNeedAll() }
     }
+
+    /**
+     * Get the list of needed fields
+     */
+    fun neededFields() = blocks.flatMap { it.neededFields() }
 
     // ------------------------------------------
 
@@ -264,12 +285,12 @@ open class SchemaDevice @JvmOverloads constructor(
     fun createTestsUsingCurrentRealData() {
         var oldestTimestampOfData = 0L
         for (registerBlock in registerBlocks.values) {
-            oldestTimestampOfData = oldestTimestampOfData.coerceAtLeast(
-                registerBlock.values
-                    .map(RegisterValue::fetchTimestamp)
-                    .filter { it > 0 }
-                    .reduce { a: Long, b: Long -> java.lang.Long.min(a, b) }
-                    .or(0L))
+            oldestTimestampOfData = oldestTimestampOfData
+                .coerceAtLeast(
+            registerBlock.values
+                .map(RegisterValue::fetchTimestamp)
+                .filter { it > 0 }
+                .minOrNull() ?: 0L)
         }
 
         val dateTimeFormatterCompact = DateTimeFormatter
@@ -387,7 +408,7 @@ open class SchemaDevice @JvmOverloads constructor(
             .filter { it.isImmutable }
             .toList()
         immutableFields.forEach { it.need() }
-        update(FORCE_UPDATE_MAX_AGE)
+        update()
         immutableFields.forEach { it.unNeed() }
     }
 

@@ -28,11 +28,13 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
+import nl.basjes.modbus.device.exception.createReadErrorResponse
 import org.apache.plc4x.java.api.PlcConnection
 import org.apache.plc4x.java.api.PlcDriverManager
 import org.apache.plc4x.java.api.exceptions.PlcConnectionException
 import org.apache.plc4x.java.api.exceptions.PlcRuntimeException
 import org.apache.plc4x.java.api.messages.PlcReadResponse
+import org.apache.plc4x.java.api.types.PlcResponseCode
 import org.apache.plc4x.java.modbus.base.tag.ModbusTag
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -115,6 +117,22 @@ class ModbusDevicePlc4j(
                 // Record all received values under the current timestamp.
                 // Many devices have a bad clock.
                 val now = System.currentTimeMillis()
+
+                when (response.getResponseCode("F")) {
+                    PlcResponseCode.OK -> {
+                        // We're cool
+                    }
+                    PlcResponseCode.NOT_FOUND ,
+                    PlcResponseCode.ACCESS_DENIED ,
+                    PlcResponseCode.INVALID_ADDRESS ,
+                    PlcResponseCode.INVALID_DATATYPE ,
+                    PlcResponseCode.INVALID_DATA ,
+                    PlcResponseCode.INTERNAL_ERROR ,
+                    PlcResponseCode.REMOTE_BUSY ,
+                    PlcResponseCode.REMOTE_ERROR ,
+                    PlcResponseCode.UNSUPPORTED ,
+                    PlcResponseCode.RESPONSE_PENDING -> return createReadErrorResponse(firstRegister, count)
+                }
 
                 var address = firstRegister
                 val result = RegisterBlock(address.addressClass)
