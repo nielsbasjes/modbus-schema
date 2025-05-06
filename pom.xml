@@ -20,7 +20,7 @@
 
   <groupId>nl.basjes.modbus</groupId>
   <artifactId>modbus-schema-parent</artifactId>
-  <version>0.2.0</version>
+  <version>0.2.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Modbus Schema :</name>
@@ -33,7 +33,7 @@
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
 
     <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
-    <project.build.outputTimestamp>2025-05-06T06:16:12Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-05-06T06:18:09Z</project.build.outputTimestamp>
 
     <java.version>17</java.version>
     <kotlin.version>2.1.20</kotlin.version>
@@ -515,7 +515,7 @@
     <url>https://github.com/nielsbasjes/modbus-schema</url>
     <connection>scm:git:https://github.com/nielsbasjes/modbus-schema.git</connection>
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
-    <tag>v0.2.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
 </project>

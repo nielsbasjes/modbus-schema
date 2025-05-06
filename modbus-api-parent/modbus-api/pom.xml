@@ -21,7 +21,7 @@
   <parent>
     <groupId>nl.basjes.modbus</groupId>
     <artifactId>modbus-api-parent</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>modbus-api</artifactId>
@@ -94,7 +94,7 @@
     <url>https://github.com/nielsbasjes/modbus-schema</url>
     <connection>scm:git:https://github.com/nielsbasjes/modbus-schema.git</connection>
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
-    <tag>v0.2.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
 
