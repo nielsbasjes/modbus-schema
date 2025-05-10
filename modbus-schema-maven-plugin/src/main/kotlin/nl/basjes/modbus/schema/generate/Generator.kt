@@ -19,6 +19,7 @@ package nl.basjes.modbus.schema.generate
 import freemarker.template.Configuration
 import freemarker.template.Template
 import freemarker.template.TemplateExceptionHandler
+import nl.basjes.modbus.Version
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.toSchemaDevice
@@ -145,7 +146,7 @@ class Generator {
             val template: Template = templateConfig.getTemplate("code.ftl")
             template.process(
                 mapOf(
-                    "pluginVersion" to "0.0.1-SNAPSHOT",//FIXME: Generate this
+                    "pluginVersion" to Version.PROJECT_VERSION,
                     "packageName"   to packageName,
                     "className"     to className,
                     "schemaDevice" to schemaDevice,
