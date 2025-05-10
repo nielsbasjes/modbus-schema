@@ -38,12 +38,10 @@ public class TestBuilderJava {
             .schemaDevice(schemaDevice)
             .id("BlockOne")
             .description("Block One Description")
-            .addressClass(INPUT_REGISTER)
             .build();
         assertSame(schemaDevice, block.getSchemaDevice());
         assertEquals("BlockOne", block.getId());
         assertEquals("Block One Description", block.getDescription());
-        assertEquals(INPUT_REGISTER, block.getAddressClass());
 
         Field field = Field
             .builder()

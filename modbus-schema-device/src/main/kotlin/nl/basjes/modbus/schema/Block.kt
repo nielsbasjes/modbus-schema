@@ -48,18 +48,6 @@ open class Block(
      */
     val id: String = id.trim()
 
-    /**
-     * An identifier to that can be used to ensure all needed registers are retrieved together.
-     * By default, filled with null to leave maximum fetching freedom.
-     * A non-null value means that all fields in this block MUST be fetched in one modbus request
-     */
-    var fetchGroup: String? = null
-
-    /**
-     * A block is limited to a single AddressClass.
-     */
-    var addressClass: AddressClass? = null
-
     // ------------------------------------------
     /**
      * The set of fields defined in this block
@@ -151,7 +139,7 @@ open class Block(
     }
 
     override fun toString(): String {
-        return "Block(id='$id', description=$description, fetchGroup=$fetchGroup, addressClass=$addressClass, fieldMap=$fieldMap)"
+        return "Block(id='$id', description=$description, fieldMap=$fieldMap)"
     }
 
     init {
@@ -209,20 +197,6 @@ open class Block(
         private var description: String? = null
 
         /**
-         * An identifier to that can be used to ensure all needed registers are retrieved together.
-         * By default, filled with null to leave maximum fetching freedom.
-         * A non-null value means that all fields in this block MUST be fetched in one modbus request
-         */
-        fun fetchGroup(fetchGroup: String) = apply { this.fetchGroup = fetchGroup }
-        private var fetchGroup: String? = null
-
-        /**
-         * A block is limited to a single AddressClass.
-         */
-        fun addressClass(addressClass: AddressClass) = apply { this.addressClass = addressClass }
-        private var addressClass: AddressClass? = null
-
-        /**
          * Build the SchemaDevice, throws IllegalArgumentException if something is wrong
          */
         fun build(): Block {
@@ -233,12 +207,6 @@ open class Block(
                 } else {
                     Block(schemaDevice, id, description = finalDescription)
                 }
-            if (fetchGroup != null) {
-                block.fetchGroup = fetchGroup
-            }
-            if (addressClass != null) {
-                block.addressClass = addressClass
-            }
             return block
         }
     }

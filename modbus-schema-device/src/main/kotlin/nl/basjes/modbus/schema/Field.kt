@@ -78,7 +78,7 @@ class Field(
      * An identifier to that can be used to ensure all needed registers are retrieved together.
      * By default, filled with a random unique value or what was dictated by the block
      */
-    var fetchGroup: String = block.fetchGroup ?: (block.id + " | " + id),
+    var fetchGroup: String = block.id + " | " + id,
 
 //    /** The return type that the programming language must support. */
 //    returnType: ReturnType = UNKNOWN,
