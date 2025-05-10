@@ -272,11 +272,14 @@
             <configuration>
               <publishingServerId>central</publishingServerId>
               <deploymentName>Modbus Schema ${project.version}</deploymentName>
-              <!--              <autoPublish>true</autoPublish>-->
-              <!--              <waitUntil>published</waitUntil>-->
+<!--              <autoPublish>true</autoPublish>-->
+<!--              <waitUntil>published</waitUntil>-->
               <waitUntil>validated</waitUntil>
               <excludeArtifacts>
                 <excludeArtifact>devtools</excludeArtifact>
+                <excludeArtifact>demos-parent</excludeArtifact>
+                <excludeArtifact>generate-custom-java</excludeArtifact>
+<!--                TODO: EXCLUDE ALL DEMOS-->
               </excludeArtifacts>
             </configuration>
           </plugin>
@@ -354,6 +357,9 @@
           <configuration>
             <skipModules>
               <skipModule>nl.basjes.modbus/devtools</skipModule>
+              <skipModule>nl.basjes.modbus.demo/demos-parent</skipModule>
+              <skipModule>nl.basjes.modbus.demo/generate-custom-java</skipModule>
+<!--                TODO: EXCLUDE ALL DEMOS -->
             </skipModules>
           </configuration>
         </plugin>
@@ -489,6 +495,7 @@
     <module>modbus-schema-reference</module>
     <module>modbus-schema-device</module>
     <module>modbus-schema-maven-plugin</module>
+    <module>demos</module>
   </modules>
 
   <licenses>
