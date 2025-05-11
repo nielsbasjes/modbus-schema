@@ -68,6 +68,13 @@ object ByteConversions {
         if (bytes.isEmpty()) {
             return ""
         }
+        return bytesToTwoByteHexStringList(bytes).joinToString(separator = separator)
+    }
+
+    fun bytesToTwoByteHexStringList(bytes: ByteArray): List<String> {
+        if (bytes.isEmpty()) {
+            return emptyList()
+        }
 
         val result: MutableList<String> = ArrayList()
         var i = 0
@@ -75,7 +82,7 @@ object ByteConversions {
             result.add(String.format("%02X%02X", bytes[i], bytes[i + 1]))
             i += 2
         }
-        return result.joinToString(separator = separator)
+        return result
     }
 
     // From https://stackoverflow.com/a/33678350/114196 + modifications to fit my needs

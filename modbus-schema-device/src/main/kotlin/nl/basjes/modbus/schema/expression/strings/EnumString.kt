@@ -28,7 +28,7 @@ import nl.basjes.modbus.schema.utils.ByteConversions
 class EnumString(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
-    private val mappings: Map<Long, String>
+    val mappings: Map<Long, String>
 ) : NotImplemented(registers.returnedRegisters, notImplemented), StringExpression {
 
     override fun toString(): String {

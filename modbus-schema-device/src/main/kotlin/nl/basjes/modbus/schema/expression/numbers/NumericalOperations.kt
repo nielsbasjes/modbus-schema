@@ -29,8 +29,8 @@ import kotlin.math.pow
 
 abstract class SubExpression(
     protected val name: String,
-    protected val left: NumericalExpression,
-    protected val right: NumericalExpression,
+    val left: NumericalExpression,
+    val right: NumericalExpression,
 ) : NumericalExpression {
 
     abstract val operatorSymbol: String

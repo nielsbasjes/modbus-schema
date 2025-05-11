@@ -57,6 +57,7 @@
     <dependency>
       <groupId>nl.basjes.modbus</groupId>
       <artifactId>modbus-schema-device</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -98,9 +99,9 @@
     </dependency>
 
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.5.18</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

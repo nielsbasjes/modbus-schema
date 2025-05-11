@@ -28,7 +28,7 @@ import java.util.BitSet
 class BitsetStringList(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
-    private val mappings: Map<Int, String>,
+    val mappings: Map<Int, String>,
 ) : NotImplemented(registers.returnedRegisters, notImplemented), StringListExpression {
 
     override fun toString(): String {

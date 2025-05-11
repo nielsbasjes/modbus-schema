@@ -19,6 +19,7 @@ package nl.basjes.modbus.schema.expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.utils.ByteConversions
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToSeparatedTwoByteHexString
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToTwoByteHexStringList
 import nl.basjes.modbus.schema.utils.ByteConversions.hexStringToBytes
 
 abstract class NotImplemented(
@@ -33,14 +34,16 @@ abstract class NotImplemented(
         return " ; " + notImplementedStrings.joinToString(separator = " ; ")
     }
 
-    private val notImplementedStrings: MutableList<String> = ArrayList()
     private val notImplementedBytes: Array<ByteArray> = hexStringToBytes(notImplementedStrings)
+    private val notImplementedStrings: MutableList<String> = mutableListOf()
+    val notImplemented: MutableList<List<String>> = mutableListOf()
 
     init {
         for (notImplementedByte in notImplementedBytes) {
             this.notImplementedStrings.add(
                 "0x" + bytesToSeparatedTwoByteHexString(notImplementedByte," 0x")
             )
+            this.notImplemented.add(bytesToTwoByteHexStringList(notImplementedByte))
         }
     }
 
