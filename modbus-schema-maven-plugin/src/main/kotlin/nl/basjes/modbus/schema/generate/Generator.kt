@@ -19,10 +19,10 @@ package nl.basjes.modbus.schema.generate
 import freemarker.template.Configuration
 import freemarker.template.Template
 import freemarker.template.TemplateExceptionHandler
-import nl.basjes.modbus.Version
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.toSchemaDevice
+import nl.basjes.modbus.version.PROJECT_VERSION
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.logging.Log
 import java.io.ByteArrayOutputStream
@@ -146,7 +146,7 @@ class Generator {
             val template: Template = templateConfig.getTemplate("code.ftl")
             template.process(
                 mapOf(
-                    "pluginVersion" to Version.PROJECT_VERSION,
+                    "pluginVersion" to PROJECT_VERSION,
                     "packageName"   to packageName,
                     "className"     to className,
                     "schemaDevice" to schemaDevice,

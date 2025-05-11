@@ -15,28 +15,13 @@
  * limitations under the License.
  */
 
-package nl.basjes.modbus
+package nl.basjes.modbus.version
 
-class Version {
-    val gitCommitId              = GIT_COMMIT_ID
-    val gitCommitIdDescribeShort = GIT_COMMIT_ID_DESCRIBE_SHORT
-    val buildTimeStamp           = BUILD_TIME_STAMP
-    val projectVersion           = PROJECT_VERSION
-    val copyright                = COPYRIGHT
-    val license                  = LICENSE
-    val url                      = URL
-    val buildKotlinVersion       = BUILD_KOTLIN_VERSION
-
-    companion object {
-        private val instance = nl.basjes.modbus.Version()
-
-        const val GIT_COMMIT_ID                = "@git.commit.id@"
-        const val GIT_COMMIT_ID_DESCRIBE_SHORT = "@git.commit.id.describe-short@"
-        const val BUILD_TIME_STAMP             = "@project.build.outputTimestamp@"
-        const val PROJECT_VERSION              = "@project.version@"
-        const val COPYRIGHT                    = "@version.copyright@"
-        const val LICENSE                      = "@version.license@"
-        const val URL                          = "@version.url@"
-        const val BUILD_KOTLIN_VERSION         = "@kotlin.version@"
-    }
-}
+const val GIT_COMMIT_ID                = "@git.commit.id@"
+const val GIT_COMMIT_ID_DESCRIBE_SHORT = "@git.commit.id.describe-short@"
+const val BUILD_TIME_STAMP             = "@project.build.outputTimestamp@"
+const val PROJECT_VERSION              = "@project.version@"
+const val COPYRIGHT                    = "@version.copyright@"
+const val LICENSE                      = "@version.license@"
+const val URL                          = "@version.url@"
+const val BUILD_KOTLIN_VERSION         = "@kotlin.version@"
