@@ -18,71 +18,82 @@
 
 description: 'Fake Device that uses all possible expressions'
 schemaFeatureLevel: 1
+maxRegistersPerModbusRequest: 42
 blocks:
   - id: 'Main'
-    description:  'The only block of registers'
+    description: 'The only block of registers'
     fields:
+      - id: 'CombinedNumerical'
+        description:  'A Combined Numerical Expression'
+        expression: '(ieee754_32(hr:00000 # 2) + ieee754_64(hr:00002 # 4))^2 / (MyShort * (5-3))'
+        unit: 'Foo'
+
+      - id: 'CombinedString'
+        description:  'A Combined String Expression'
+        expression: 'concat (MyName , ''@'' , MyIPv6)'
+        unit: 'Foo'
+
       - id: 'MyFloat'
-        description:  'A Float 32'
+        description: 'A Float 32'
         expression: 'ieee754_32(hr:00000 # 2)'
         unit: 'Foo'
 
       - id: 'MyDouble'
-        description:  'A Float 64'
+        description: 'A Float 64'
         expression: 'ieee754_64(hr:00002 # 4)'
         unit: 'Bar'
 
       - id: 'MyBitset1'
-        description:  'Bitset 1 register'
+        description: 'Bitset 1 register'
         expression: "bitset(hr:06                                  ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
       - id: 'MyBitset2'
-        description:  'Bitset 2 registers'
+        description: 'Bitset 2 registers'
         expression: "bitset(hr:07#2                                ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )"
       - id: 'MyBitset3'
-        description:  'Bitset 3 registers'
+        description: 'Bitset 3 registers'
         expression: "bitset(hr:9#3                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' )"
       - id: 'MyBitset4'
-        description:  'Bitset 4 registers'
+        description: 'Bitset 4 registers'
         expression: "bitset(hr:12#4                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50' )"
 
       - id: 'MyEnum'
-        description:  'Enum'
+        description: 'Enum'
         expression: "enum(hr:16 ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')"
 
       - id: 'MyEUI48'
-        description:  'EUI48'
+        description: 'EUI48'
         expression: "eui48(hr:17#3 )"
 
       - id: 'MyShort'
-        description:  'Int 16'
+        description: 'Int 16'
         expression: "int16(hr:21)"
 
       - id: 'MyUnsignedShort'
-        description:  'Unsigned Int 16'
+        description: 'Unsigned Int 16'
         expression: "uint16(hr:22)"
 
       - id: 'MyInteger'
-        description:  'Int 32'
+        description: 'Int 32'
         expression: "int32(hr:23#2)"
 
       - id: 'MyUnsignedInteger'
-        description:  'Unsigned Int 32'
+        description: 'Unsigned Int 32'
         expression: "uint32(hr:25#2)"
 
       - id: 'MyLong'
-        description:  'Int 64'
+        description: 'Int 64'
         expression: "int64(hr:27#4)"
 
       - id: 'MyUnsignedLong'
-        description:  'Unsigned Int 64'
+        description: 'Unsigned Int 64'
         expression: "uint64(hr:31#4)"
 
       - id: 'MyIPv4'
-        description:  'IPv4'
+        description: 'IPv4'
         expression: "ipv4addr(hr:35#2)"
 
       - id: 'MyIPv6'
-        description:  'IPv6'
+        description: 'IPv6'
         expression: 'ipv6addr(hr:37#8)'
 
       - id: 'MyName'
@@ -137,3 +148,5 @@ tests:
           MyIPv6             : [ '0001:0203:0405:0607:0809:1011:1213:1415' ]
           MyName             : [ 'Niels Basjes' ]
           MyNameHex          : [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73' ]
+          CombinedNumerical  : [ -246.927 ]
+          CombinedString     : ['Niels Basjes@0001:0203:0405:0607:0809:1011:1213:1415' ]

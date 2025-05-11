@@ -22,6 +22,16 @@ blocks:
   - id: 'Main'
     description: 'The only block of registers'
     fields:
+      - id: 'CombinedNumerical'
+        description:  'A Combined Numerical Expression'
+        expression: '(ieee754_32(hr:00000 # 2) + ieee754_64(hr:00002 # 4))^2 / (MyShort * (5-3))'
+        unit: 'Foo'
+
+      - id: 'CombinedString'
+        description:  'A Combined String Expression'
+        expression: 'concat (MyName , ''@'' , MyIPv6)'
+        unit: 'Foo'
+
       - id: 'MyFloat'
         description:  'A Float 32'
         expression: 'ieee754_32(hr:00000 # 2)'
@@ -87,6 +97,7 @@ blocks:
 
       - id: 'MyName'
         expression: 'utf8(hr:45#6)'
+
       - id: 'MyNameHex'
         expression: 'hexstring(hr:45#6)'
 
@@ -137,3 +148,5 @@ tests:
           MyIPv6             : [ '0001:0203:0405:0607:0809:1011:1213:1415' ]
           MyName             : [ 'Niels Basjes' ]
           MyNameHex          : [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73' ]
+          CombinedNumerical  : [ -246.927 ]
+          CombinedString     : ['Niels Basjes@0001:0203:0405:0607:0809:1011:1213:1415' ]
