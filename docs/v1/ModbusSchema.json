@@ -135,7 +135,6 @@
       },
       "required": [
         "id",
-        "description",
         "input",
         "blocks"
       ],
@@ -154,7 +153,7 @@
           "additionalProperties": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": ["number", "string"]
             }
           },
           "description": "The expected value for each Field that needs to be tested. The expected value is always an ARRAY, an empty Array means no value should be returned, and Array with 1 or more values makes it that those values must be returned in the defined order."
@@ -174,7 +173,7 @@
           "type": "string"
         },
         "registers": {
-          "type": "string"
+          "type": ["integer" ,"string"]
         }
       },
       "required": [
