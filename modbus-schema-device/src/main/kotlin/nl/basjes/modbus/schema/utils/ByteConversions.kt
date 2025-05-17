@@ -31,26 +31,18 @@ object ByteConversions {
         }
     }
 
-    fun bytesToHexString(bytes: ByteArray): String {
-        if (bytes.isEmpty()) {
+    fun bytesToHexString(bytes: ByteArray?): String {
+        if (bytes == null || bytes.isEmpty()) {
             return ""
         }
-        val result: MutableList<String> = ArrayList()
-        for (aByte in bytes) {
-            result.add(String.format("%02X", aByte))
-        }
-        return "0x" + result.joinToString(separator = " 0x")
+        return "0x" + bytesToHexStringList(bytes).joinToString(separator = " 0x")
     }
 
     fun bytesToSeparatedHexString(bytes: ByteArray, separator: String): String {
         if (bytes.isEmpty()) {
             return ""
         }
-        val result: MutableList<String> = ArrayList()
-        for (aByte in bytes) {
-            result.add(String.format("%02X", aByte))
-        }
-        return result.joinToString(separator = separator)
+        return bytesToHexStringList(bytes).joinToString(separator = separator)
     }
 
     fun bytesToSeparatedIntegerString(bytes: ByteArray, separator: String): String {
@@ -71,8 +63,20 @@ object ByteConversions {
         return bytesToTwoByteHexStringList(bytes).joinToString(separator = separator)
     }
 
-    fun bytesToTwoByteHexStringList(bytes: ByteArray): List<String> {
-        if (bytes.isEmpty()) {
+    fun bytesToHexStringList(bytes: ByteArray?): List<String> {
+        if (bytes == null || bytes.isEmpty()) {
+            return emptyList()
+        }
+
+        val result: MutableList<String> = ArrayList()
+        for (aByte in bytes) {
+            result.add(String.format("%02X", aByte))
+        }
+        return result
+    }
+
+    fun bytesToTwoByteHexStringList(bytes: ByteArray?): List<String> {
+        if (bytes == null || bytes.isEmpty()) {
             return emptyList()
         }
 

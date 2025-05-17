@@ -20,6 +20,8 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.utils.ByteConversions
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToHexStringList
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToTwoByteHexStringList
 
 /*
  * An constant byte array value (i.e. Raw Register values)
@@ -38,4 +40,16 @@ open class RegistersConstantExpression(val value: String) : RegistersExpression 
     override fun toString(): String = '"' + ByteConversions.bytesToHexString(theBytes) + '"'
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray = theBytes
+
+    /**
+     * @return The bytes as a list of HEX ascii Strings (1 byte each)
+     */
+    @Suppress("unused") // Used by code generating templates
+    val asByteHexStrings: List<String> = bytesToHexStringList(theBytes)
+
+    /**
+     * @return The registers as a list of HEX ascii Strings (2 bytes each)
+     */
+    @Suppress("unused") // Used by code generating templates
+    val asRegisterHexStrings: List<String> = bytesToTwoByteHexStringList(theBytes)
 }

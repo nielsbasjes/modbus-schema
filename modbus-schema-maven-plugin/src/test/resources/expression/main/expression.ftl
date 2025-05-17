@@ -23,19 +23,19 @@
 </#compress></#macro>
 
 <#macro hexValues hexStrings><#compress>
-    <#list hexStrings as hexString>0x${hexString}<#sep>, </#sep></#list>
+    [ <#list hexStrings as hexString>0x${hexString}<#sep>, </#sep></#list> ]
 </#compress></#macro>
 
 <#macro expression expr><#compress>
 <#if !expr?has_content>
 NULL EXPRESSION
 <#else>
-<#if isExpressionType(expr, "ExpressionRegistersConstant")>   RegistersConstant( ${expr.value}                                                                                  )</#if>
+<#if isExpressionType(expr, "ExpressionRegistersConstant")>   RegistersConstant( |PER REGISTER| <@hexValues hexStrings=expr.asRegisterHexStrings/> |OR PER BYTE| <@hexValues hexStrings=expr.asByteHexStrings/>                                     )</#if>
 <#if isExpressionType(expr, "ExpressionGetModbus")>           GetModbus(         <#list expr.requiredRegisters as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
 <#if isExpressionType(expr, "ExpressionSwapBytes")>           SwapBytes(         <#list expr.requiredRegisters as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
 <#if isExpressionType(expr, "ExpressionSwapEndian")>          SwapEndian(        <#list expr.requiredRegisters as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
-<#if isExpressionType(expr, "ExpressionLongConstant")>        LongConstant(      ${expr.value}                                                                            )</#if>
-<#if isExpressionType(expr, "ExpressionDoubleConstant")>      DoubleConstant(    ${expr.value}                                                                            )</#if>
+<#if isExpressionType(expr, "ExpressionLongConstant")>        LongConstant(      ${expr.value?c}                                                                          )</#if>
+<#if isExpressionType(expr, "ExpressionDoubleConstant")>      DoubleConstant(    ${expr.value?c}                                                                          )</#if>
 <#if isExpressionType(expr, "ExpressionNumericalField")>      NumericalField(    ${expr.fieldName}                                                                        )</#if>
 <#if isExpressionType(expr, "ExpressionAdd")>                 Add(               <@expression expr=expr.left/>     , <@expression expr=expr.right/>                       )</#if>
 <#if isExpressionType(expr, "ExpressionSubtract")>            Subtract(          <@expression expr=expr.left/>     , <@expression expr=expr.right/>                       )</#if>
