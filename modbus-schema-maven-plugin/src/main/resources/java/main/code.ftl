@@ -235,20 +235,15 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
 
         ${asClassName(block.id)}(Block block) {
             super(block);
-            <#list block.fields as field>
-            <#if !field.system>
+            <#list block.fields?filter(f -> !f.system) as field>
             ${asVariableName(field.id)} = new DeviceField${asClassName(field.returnType.enumName)}(block, "${field.id}");
-            </#if>
             </#list>
 
-           allFields = Arrays.asList(
-           <#list block.fields as field>
-             <#if !field.system>
-               ${asVariableName(field.id)},
-             </#if>
-           </#list>
-               (DeviceField)null // Needed as terminator in the list because of the templating
-           ).stream().filter(deviceField -> deviceField!=null).toList();
+            allFields = Arrays.asList(
+            <#list block.fields?filter(f -> !f.system) as field>
+                ${asVariableName(field.id)}<#sep>, </#sep>
+            </#list>
+            );
       }
 
     <#list block.fields as field>
