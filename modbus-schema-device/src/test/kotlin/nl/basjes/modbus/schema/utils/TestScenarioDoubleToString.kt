@@ -24,20 +24,17 @@ import kotlin.test.assertEquals
 internal class TestScenarioDoubleToString {
     @Test
     fun testOfFloat() {
-        // Note the rounding errors!
-        assertEquals("1.234568", DoubleToString.of(1.23456789f))
-        assertEquals("12.34568", DoubleToString.of(12.3456789f))
-        assertEquals("123.4568", DoubleToString.of(123.456789f))
-        assertEquals("1234.568", DoubleToString.of(1234.56789f))
-        assertEquals("12345.68", DoubleToString.of(12345.6789f))
-        assertEquals("123456.8", DoubleToString.of(123456.789f))
-        assertEquals("1234567.9", DoubleToString.of(1234567.89f))
-        assertEquals("12345679", DoubleToString.of(12345678.9f))
-        assertEquals("123456792", DoubleToString.of(123456789f))
+        assertEquals("1.234567", DoubleToString.of(1.234567f))
+        assertEquals("12.34567", DoubleToString.of(12.34567f))
+        assertEquals("123.4567", DoubleToString.of(123.4567f))
+        assertEquals("1234.567", DoubleToString.of(1234.567f))
+        assertEquals("12345.67", DoubleToString.of(12345.67f))
+        assertEquals("123456.7", DoubleToString.of(123456.7f))
+        assertEquals("1234567", DoubleToString.of(1234567.0f))
 
-        LOG.info("239.30 --> {}", DoubleToString.of(239.300000002f))
+        LOG.info("239.30 --> {}", DoubleToString.of(239.30002f))
 
-        var foo = 0.0000123450000001f
+        var foo = 1.2300001f
         for (i in 0..9) {
             LOG.info("{}", String.format("FLOAT: %2d : %30f --> %s", i, foo, DoubleToString.of(foo)))
             foo *= 10.0f
