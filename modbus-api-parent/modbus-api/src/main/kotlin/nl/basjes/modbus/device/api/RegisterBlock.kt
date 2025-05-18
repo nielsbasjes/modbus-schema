@@ -51,8 +51,14 @@ class RegisterBlock(
         registerValues.keys
     }
 
-    val firstAddress: Address
-        get() = registerValues.firstKey()
+    val firstAddress: Address?
+        get() =
+            if (registerValues.isEmpty()) {
+                null
+            } else {
+                registerValues.firstKey()
+            }
+
     val keys
         get() = registerValues.keys
     val values
@@ -152,7 +158,10 @@ class RegisterBlock(
      */
     fun toHexString(): String = toHexList().joinToString(separator = " ")
 
-    override fun toString(): String = "Starting at " + registerValues.firstKey().toCleanFormat() + ": [ " + toHexString() + " ]"
+    override fun toString(): String =
+        firstAddress?.let {
+            "Starting at " + it.toCleanFormat() + ": [ " + toHexString() + " ]"
+        } ?: "Empty RegisterBlock"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
