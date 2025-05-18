@@ -106,7 +106,7 @@ class RegisterValue(
     fun isReadError(): Boolean = (value == null && fetchTimestamp == READERROR_TIMESTAMP)
 
     fun clearSoftReadError() {
-        if (!hardReadError) {
+        if (isReadError() && !hardReadError) {
             value = null
             fetchTimestamp = Long.MIN_VALUE
         }

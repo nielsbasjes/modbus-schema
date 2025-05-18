@@ -210,7 +210,7 @@ fun RegisterBlock.toSchema(): SchemaTestRegisters {
     }
 
     return SchemaTestRegisters(
-        firstAddress.toCleanFormat(),
+        firstAddress?.toCleanFormat() ?: "Empty",
         sb.toString(),
     )
 }
