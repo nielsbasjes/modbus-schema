@@ -192,7 +192,10 @@ fun RegisterBlock.toSchema(): SchemaTestRegisters {
         var comment = registerValue.comment
         if (!comment.isNullOrEmpty()) {
             comment = comment.replace("{address}", registerValue.address.toCleanFormat())
-            sb.append("\n\n# " + comment.replace("\n", "\n# ") + "\n")
+            if (lineCount > 0) {
+                sb.append("\n")
+            }
+            sb.append("\n# " + comment.replace("\n", "\n# ") + "\n")
             lineCount = 0
         }
         if (lineCount > 0) {
