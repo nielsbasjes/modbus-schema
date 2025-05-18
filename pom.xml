@@ -500,7 +500,6 @@
     <module>modbus-schema-reference</module>
     <module>modbus-schema-device</module>
     <module>modbus-schema-maven-plugin</module>
-    <module>demos</module>
   </modules>
 
   <licenses>
