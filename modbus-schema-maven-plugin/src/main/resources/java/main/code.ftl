@@ -28,6 +28,7 @@
 // ===========================================================
 package ${packageName};
 
+import nl.basjes.modbus.device.api.AddressClass;
 import nl.basjes.modbus.device.api.ModbusDevice;
 import nl.basjes.modbus.device.exception.ModbusException;
 import nl.basjes.modbus.schema.Field;
@@ -47,13 +48,8 @@ import static nl.basjes.modbus.schema.YamlLoaderKt.toSchemaDevice;
 * ${schemaDevice.description}
 */
 public class ${asClassName(className)} {
-    public static final String schema = List.of("""
-${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
-""").stream().collect(Collectors.joining());
 
-    public final SchemaDevice schemaDevice = toSchemaDevice(schema);
-
-    public final List<TestScenario> tests = schemaDevice.getTests();
+    public final SchemaDevice schemaDevice = new SchemaDevice();
 
     public ${asClassName(className)} connectBase(ModbusDevice modbusDevice) {
         schemaDevice.connectBase(modbusDevice);
@@ -71,7 +67,7 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
     }
 
     /**
-     * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
+     * Update all registers related to the needed fields to be updated
      */
     public void update() {
         schemaDevice.update();
@@ -128,13 +124,38 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
         schemaDevice.unNeedAll();
     }
 
-    abstract public static class DeviceBlock {
+    abstract public static class DeviceField {
+      public final Field field;
+      public DeviceField(Field field) {
+        this.field = field;
+      }
+      abstract Object getValue();
+      public void need() {
+          field.need();
+      }
+      public void unNeed() {
+          field.unNeed();
+      }
+    }
+
+<#list schemaDevice.blocks as block>
+    // ==========================================
+    public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(schemaDevice);
+
+    public static class ${asClassName(block.id)} {
         private Block block;
-        public DeviceBlock(Block block) {
-            if (block == null) {
-                throw new IllegalArgumentException("The generated code was unable to find the Block \"" + block.getId() + "\"");
-            }
-            this.block = block;
+        ${asClassName(block.id)}(SchemaDevice schemaDevice) {
+            this.block = Block.builder()
+              .schemaDevice(schemaDevice)
+              .id("${block.id}")
+<#if block.description??>
+              .description("${block.description}")
+</#if>
+              .build();
+
+<#list block.fields as field>
+            this.${asVariableName(field.id)} = new ${asClassName(field.id)}(block);
+</#list>
         }
 
         /**
@@ -157,119 +178,63 @@ ${breakStringBlock(yamlSchema(schemaDevice), "\"\"\",\"\"\"")}
         public void unNeed() {
             block.getFields().stream().forEach(Field::unNeed);
         }
-    }
+<#list block.fields as field>
 
-    abstract public static class DeviceField {
-        public final Field field;
-        public DeviceField(Block block, String fieldId) {
-            field = block.getField(fieldId);
-            if (field == null) {
-                throw new IllegalArgumentException("The generated code was unable to find the Field \"" + fieldId + "\" in the Block \"" + block.getId() + "\"");
+        // ==========================================
+
+        <#if field.system>private<#else>public</#if> final ${asClassName(field.id)} ${asVariableName(field.id)};
+        <#if field.system>private<#else>public</#if> static class ${asClassName(field.id)} extends DeviceField {
+            public ${asClassName(field.id)}(Block block) {
+                super(Field.builder()
+                           .block(block)
+                           .id("${field.id}")
+                           .description("${field.description}")
+                           .expression("${field.parsedExpression}")
+                           .unit("${field.unit}")
+                           .immutable(${field.immutable?string('true', 'false')})
+                           .system(${field.system?string('true', 'false')})
+                           .fetchGroup("${field.fetchGroup}")
+                           .build());
+            }
+
+            @Override
+            public ${jvmReturnType(field.returnType)} getValue() {
+                return field.get${asClassName(valueGetter(field.returnType))}();
             }
         }
-        public abstract Object getValue();
-
-        public void need() {
-            field.need();
-        }
-
-        public void unNeed() {
-            field.unNeed();
-        }
+</#list>
 
         @Override
         public String toString() {
-            return getValue().toString();
-        }
-    }
-
-    public static class DeviceFieldLong extends DeviceField {
-        public DeviceFieldLong(Block block, String fieldId) {
-            super(block, fieldId);
-        }
-        @Override
-        public Long getValue() {
-            return super.field.getLongValue();
-        }
-    }
-
-    public static class DeviceFieldDouble extends DeviceField {
-        public DeviceFieldDouble(Block block, String fieldId) {
-            super(block, fieldId);
-        }
-        @Override
-        public Double getValue() {
-            return super.field.getDoubleValue();
-        }
-    }
-
-    public static class DeviceFieldString extends DeviceField {
-        public DeviceFieldString(Block block, String fieldId) {
-            super(block, fieldId);
-        }
-        @Override
-        public String getValue() {
-            return super.field.getStringValue();
-        }
-    }
-
-    public static class DeviceFieldStringList extends DeviceField {
-        public DeviceFieldStringList(Block block, String fieldId) {
-            super(block, fieldId);
-        }
-        @Override
-        public List<String> getValue() {
-            return super.field.getStringListValue();
-        }
-    }
-
-  <#list schemaDevice.blocks as block>
-    // ==========================================
-    /**
-    * ${block.description}
-    */
-    public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(schemaDevice.getBlock("${block.id}"));
-
-    public static class ${asClassName(block.id)} extends DeviceBlock {
-        public final List<DeviceField> allFields;
-
-        ${asClassName(block.id)}(Block block) {
-            super(block);
-            <#list block.fields?filter(f -> !f.system) as field>
-            ${asVariableName(field.id)} = new DeviceField${asClassName(field.returnType.enumName)}(block, "${field.id}");
-            </#list>
-
-            allFields = Arrays.asList(
-            <#list block.fields?filter(f -> !f.system) as field>
-                ${asVariableName(field.id)}<#sep>, </#sep>
-            </#list>
-            );
-      }
-
-    <#list block.fields as field>
-      <#if !field.system>
-      /**
-        * ${field.description}
-        <#if field.unit?has_content>
-        * Unit: ${field.unit}
-        </#if>
-        */
-      public final DeviceField${asClassName(field.returnType.enumName)} ${asVariableName(field.id)};
-      </#if>
-    </#list>
-
-    @Override
-        public String toString() {
-            return new StringTable()
-                .withHeaders("Field in Block \"${block.id}\"", "Value")
-                <#list block.fields as field>
-                <#if !field.system>
-                .addRow( "${field.id}", "" + ${asVariableName(field.id)})
-                </#if>
-                </#list>
-                .toString();
+            StringTable table = new StringTable();
+            table.withHeaders("Block", "Field", "Value");
+            toStringTable(table);
+            return table.toString();
         }
 
+        private void toStringTable(StringTable table) {
+<#assign nonSystemFields=block.fields?filter(f -> !f.system)>
+<#if nonSystemFields?has_content>
+            table
+<#list nonSystemFields as field>
+<#assign fieldId="\""+field.id+"\"">
+                .addRow("${block.id}", ${fieldId?right_pad(30)}, "" + ${asVariableName(field.id)}.getValue())
+</#list>;
+<#else>
+            // This block has no fields
+</#if>
+        }
     }
 </#list>
+
+    @Override
+    public String toString() {
+        StringTable table = new StringTable();
+        table.withHeaders("Block", "Field", "Value");
+<#list schemaDevice.blocks as block>
+        ${asVariableName(block.id)}.toStringTable(table);
+</#list>
+        return table.toString();
+    }
+
 }

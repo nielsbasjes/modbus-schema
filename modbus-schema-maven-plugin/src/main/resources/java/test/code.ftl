@@ -67,6 +67,7 @@ class Test${asClassName(className)} {
         ${asVariableName(className)}.updateAll();
 <#list testScenario.expectedBlocks as expectedBlock>
         // ----------
+        // Block: ${expectedBlock.blockId}
 <#list expectedBlock.expected?keys as fieldName>
 <#assign field=schemaDevice.getBlock(expectedBlock.blockId).getField(fieldName)>
 <#if !field.system>
@@ -86,6 +87,8 @@ class Test${asClassName(className)} {
 </#if>
 </#list>
 </#list>
+        // ----------
+        System.out.println(${asVariableName(className)});
     }
 </#list>
 }

@@ -149,22 +149,22 @@ public class ${asClassName(className)} {
         }
 
         /**
-        * Directly update all fields in this Block
-        */
+         * Directly update all fields in this Block
+         */
         public void update() {
             block.getFields().stream().forEach(Field::update);
         }
 
         /**
-        * All fields in this Block must be kept up-to-date
-        */
+         * All fields in this Block must be kept up-to-date
+         */
         public void need() {
             block.getFields().stream().forEach(Field::need);
         }
 
         /**
-        * All fields in this Block no longer need to be kept up-to-date
-        */
+         * All fields in this Block no longer need to be kept up-to-date
+         */
         public void unNeed() {
             block.getFields().stream().forEach(Field::unNeed);
         }
