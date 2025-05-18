@@ -27,7 +27,7 @@ fun createReadErrorResponse(
 ): RegisterBlock {
     val registerBlock = RegisterBlock(firstRegister.addressClass)
     var address = firstRegister
-    for (i in 0 until count) {
+    for (i in 0..count) {
         val readErrorValue = RegisterValue(address)
         readErrorValue.setSoftReadError()
         registerBlock[address] = readErrorValue
