@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.device.sunspec
+package nl.basjes.modbus.device.testcases.sunspec
 
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass.HOLDING_REGISTER

@@ -40,18 +40,18 @@ open class MockedModbusDevice : ModbusDevice() {
     }
 
     fun addRegister(
-        addressClass: AddressClass,
         registerValue: RegisterValue,
     ) {
+        val addressClass = registerValue.address.addressClass
         registerBlocks
             .computeIfAbsent(addressClass) { RegisterBlock(addressClass) }
             .put(registerValue)
     }
 
     fun addRegisters(
-        addressClass: AddressClass,
         registerBlock: RegisterBlock,
     ) {
+        val addressClass = registerBlock.addressClass
         registerBlocks
             .computeIfAbsent(addressClass) { RegisterBlock(addressClass) }
             .merge(registerBlock)
@@ -67,13 +67,13 @@ open class MockedModbusDevice : ModbusDevice() {
             hexRegisterValues,
         )
 
-    open fun addRegisters(
+    fun addRegisters(
         addressClass: AddressClass,
         firstPhysicalAddress: Int,
         hexRegisterValues: String,
     ): MockedModbusDevice {
         val registerBlock = hexRegisterValues.toRegisterBlock(Address(addressClass, firstPhysicalAddress))
-        addRegisters(addressClass, registerBlock)
+        addRegisters(registerBlock)
         return this
     }
 
@@ -95,12 +95,22 @@ open class MockedModbusDevice : ModbusDevice() {
             if (registerValue.isReadError()) {
                 // If ANY of the requested registers is invalid then the entire block of values is returned as readerror
                 // This is to match the behaviour of real devices
+                logRequestResult(firstRegister, count, "READ ERROR ON ${address.toCleanFormat()}")
                 return createReadErrorResponse(firstRegister, count)
             }
             if (registerValue.hasValue()) {
                 registers[address] = registerValue
             }
         }
+        logRequestResult(firstRegister, count, registers)
+        return registers
+    }
+
+    private fun logRequestResult(
+        firstRegister: Address,
+        count: Int,
+        result: Any,
+    ) {
         if (logRequests) {
             logger.info(
                 "Getting {} registers starting at \"{}\" (last = \"{}\"): {}",
@@ -108,10 +118,9 @@ open class MockedModbusDevice : ModbusDevice() {
                 firstRegister,
                 // The -1 is because the count is including both the first and last registers in the list
                 firstRegister.increment(count - 1),
-                registers,
+                result,
             )
         }
-        return registers
     }
 
     class MockedModbusDeviceBuilder {
@@ -135,7 +144,10 @@ open class MockedModbusDevice : ModbusDevice() {
         }
 
         fun withRegisters(registerBlock: RegisterBlock): MockedModbusDeviceBuilder {
-            mockedModbusDevice.addRegisters(registerBlock.firstAddress, registerBlock.toHexString())
+            val firstAddress = registerBlock.firstAddress
+            if (firstAddress != null) {
+                mockedModbusDevice.addRegisters(firstAddress, registerBlock.toHexString())
+            }
             return this
         }
 

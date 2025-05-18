@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.device.sunspec
+package nl.basjes.modbus.device.testcases.sunspec
 
 import nl.basjes.modbus.device.api.AddressClass
-import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.memory.MockedModbusDevice
 import nl.basjes.modbus.device.memory.MockedModbusDevice.Companion.builder
 
 object DeviceFimerPVSDated20240722 {
     @JvmStatic
-    val device: ModbusDevice
+    val device: MockedModbusDevice
         get() =
             // Extracted on 2024-07-22 from a Fimer PVS inverter by https://github.com/Nedi11
             // This data was provided here https://github.com/nielsbasjes/energy/pull/308#issuecomment-2242694058

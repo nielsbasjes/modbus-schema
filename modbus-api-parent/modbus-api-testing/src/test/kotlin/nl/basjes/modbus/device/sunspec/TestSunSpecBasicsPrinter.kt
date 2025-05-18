@@ -16,6 +16,8 @@
  */
 package nl.basjes.modbus.device.sunspec
 
+import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
+import nl.basjes.modbus.device.testcases.sunspec.SunSpecBasicsPrinter
 import kotlin.test.Test
 
 internal class TestSunSpecBasicsPrinter {

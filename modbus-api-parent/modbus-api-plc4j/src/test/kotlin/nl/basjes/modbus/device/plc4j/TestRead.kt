@@ -18,8 +18,8 @@ package nl.basjes.modbus.device.plc4j
 
 import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.sunspec.SUNSPEC_STANDARD_UNITID
-import nl.basjes.modbus.device.sunspec.SunSpecBasicsPrinter
+import nl.basjes.modbus.device.testcases.sunspec.SUNSPEC_STANDARD_UNITID
+import nl.basjes.modbus.device.testcases.sunspec.SunSpecBasicsPrinter
 import kotlin.test.Ignore
 import kotlin.test.Test
 
