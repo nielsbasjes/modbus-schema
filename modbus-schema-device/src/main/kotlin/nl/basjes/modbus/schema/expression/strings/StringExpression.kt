@@ -31,6 +31,4 @@ interface StringExpression : Expression {
 
     override val returnType: ReturnType
         get() = ReturnType.STRING
-
 }
-

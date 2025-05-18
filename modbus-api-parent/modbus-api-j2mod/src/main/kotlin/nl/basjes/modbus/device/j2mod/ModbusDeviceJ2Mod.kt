@@ -47,7 +47,6 @@ class ModbusDeviceJ2Mod(
      */
     private val unitId: Int,
 ) : ModbusDevice() {
-
     init {
         require(master.isConnected) { "The provided master must be connected" }
 
@@ -61,48 +60,63 @@ class ModbusDeviceJ2Mod(
     }
 
     @Throws(ModbusException::class)
-    override fun getRegisters(firstRegister: Address, count: Int): RegisterBlock {
+    override fun getRegisters(
+        firstRegister: Address,
+        count: Int,
+    ): RegisterBlock {
         when (val functionCode = forReading(firstRegister.addressClass)) {
             READ_COIL,
-            READ_DISCRETE_INPUT ->
+            READ_DISCRETE_INPUT,
+            -> {
                 throw NotYetImplementedException("Reading a ${firstRegister.addressClass} has not yet been implemented")
+            }
 
-            READ_HOLDING_REGISTERS -> {
-                    try {
-                        val registers: Array<Register> = master
+            READ_HOLDING_REGISTERS,
+            -> {
+                try {
+                    val registers: Array<Register> =
+                        master
                             .readMultipleRegisters(unitId, firstRegister.physicalAddress, count)
-                        return buildRegisterBlock(firstRegister, registers)
-                    } catch (_: ModbusSlaveException) {
-                        return createReadErrorResponse(firstRegister, count)
-                    } catch (e: J2ModModbusException) {
-                        throw ModbusException(
-                            "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
-                            e,
-                        )
-                    }
+                    return buildRegisterBlock(firstRegister, registers)
+                } catch (_: ModbusSlaveException) {
+                    return createReadErrorResponse(firstRegister, count)
+                } catch (e: J2ModModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
+                        e,
+                    )
                 }
+            }
 
-            READ_INPUT_REGISTERS -> {
-                    try {
-                        val registers: Array<InputRegister> = master
+            READ_INPUT_REGISTERS,
+            -> {
+                try {
+                    val registers: Array<InputRegister> =
+                        master
                             .readInputRegisters(unitId, firstRegister.physicalAddress, count)
-                        return buildRegisterBlock(firstRegister, registers)
-                    } catch (_: ModbusSlaveException) {
-                        return createReadErrorResponse(firstRegister, count)
-                    } catch (e: J2ModModbusException) {
-                        throw ModbusException(
-                            "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
-                            e,
-                        )
-                    }
+                    return buildRegisterBlock(firstRegister, registers)
+                } catch (_: ModbusSlaveException) {
+                    return createReadErrorResponse(firstRegister, count)
+                } catch (e: J2ModModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
+                        e,
+                    )
                 }
+            }
 
-            else ->
-                throw NotYetImplementedException("The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented")
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented",
+                )
+            }
         }
     }
 
-    private fun buildRegisterBlock(firstAddress: Address, registers: Array<out InputRegister>): RegisterBlock {
+    private fun buildRegisterBlock(
+        firstAddress: Address,
+        registers: Array<out InputRegister>,
+    ): RegisterBlock {
         // Record all received values under the current timestamp.
         // Many devices have a bad clock.
         val now = System.currentTimeMillis()

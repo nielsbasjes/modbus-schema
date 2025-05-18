@@ -23,14 +23,14 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import java.util.TreeSet
 
-private const val MOST_SIG_BYTE  = 0xFF00.toShort()
+private const val MOST_SIG_BYTE = 0xFF00.toShort()
 private const val LEAST_SIG_BYTE = 0x00FF.toShort()
 
 /*
  * An Expression for which the result is a byte array of raw register values
  */
 open class RegistersModbusExpression(
-    private val registers: List<Address>
+    private val registers: List<Address>,
 ) : RegistersExpression {
 
     override val requiredRegisters: List<Address>
@@ -71,7 +71,12 @@ open class RegistersModbusExpression(
         }
 
     private val isSortedList
-        get() = if(problems.isEmpty()) { registers == ArrayList(TreeSet(registers)) } else { false }
+        get() =
+            if (problems.isEmpty()) {
+                registers == ArrayList(TreeSet(registers))
+            } else {
+                false
+            }
 
     /**
      * @return The list of bytes value or null in case of problems

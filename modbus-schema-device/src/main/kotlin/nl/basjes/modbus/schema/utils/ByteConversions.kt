@@ -25,7 +25,11 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.min
 
 object ByteConversions {
-    private fun assertByteArraySize(bytes: ByteArray, expectedSize: Int, targetType: String) {
+    private fun assertByteArraySize(
+        bytes: ByteArray,
+        expectedSize: Int,
+        targetType: String,
+    ) {
         require(bytes.size == expectedSize) {
             "A 'byte[]' to '$targetType' must have exactly $expectedSize bytes instead of the provided ${bytes.size} bytes."
         }
@@ -38,14 +42,20 @@ object ByteConversions {
         return "0x" + bytesToHexStringList(bytes).joinToString(separator = " 0x")
     }
 
-    fun bytesToSeparatedHexString(bytes: ByteArray, separator: String): String {
+    fun bytesToSeparatedHexString(
+        bytes: ByteArray,
+        separator: String,
+    ): String {
         if (bytes.isEmpty()) {
             return ""
         }
         return bytesToHexStringList(bytes).joinToString(separator = separator)
     }
 
-    fun bytesToSeparatedIntegerString(bytes: ByteArray, separator: String): String {
+    fun bytesToSeparatedIntegerString(
+        bytes: ByteArray,
+        separator: String,
+    ): String {
         if (bytes.isEmpty()) {
             return ""
         }
@@ -56,7 +66,10 @@ object ByteConversions {
         return result.joinToString(separator = separator)
     }
 
-    fun bytesToSeparatedTwoByteHexString(bytes: ByteArray, separator: String): String {
+    fun bytesToSeparatedTwoByteHexString(
+        bytes: ByteArray,
+        separator: String,
+    ): String {
         if (bytes.isEmpty()) {
             return ""
         }
@@ -90,13 +103,18 @@ object ByteConversions {
     }
 
     // From https://stackoverflow.com/a/33678350/114196 + modifications to fit my needs
-    fun splitStringBySize(str: String, size: Int): List<String> {
+    fun splitStringBySize(
+        str: String,
+        size: Int,
+    ): List<String> {
         val split = ArrayList<String>()
         for (i in 0..str.length / size) {
-            val substring = str.substring(
-                i * size, min(((i + 1) * size).toDouble(), str.length.toDouble())
-                    .toInt()
-            )
+            val substring =
+                str.substring(
+                    i * size,
+                    min(((i + 1) * size).toDouble(), str.length.toDouble())
+                        .toInt(),
+                )
             if (substring.isNotEmpty()) {
                 split.add(substring)
             }
@@ -105,10 +123,11 @@ object ByteConversions {
     }
 
     fun hexStringToBytes(input: String): ByteArray {
-        val hexByteValues = input
-            .replace("0x", "")
-            .replace(" ", "")
-            .trim { it <= ' ' }
+        val hexByteValues =
+            input
+                .replace("0x", "")
+                .replace(" ", "")
+                .trim { it <= ' ' }
 
         val result = ByteArray(hexByteValues.length / 2)
         var nextByteIndex = 0
@@ -142,7 +161,10 @@ object ByteConversions {
      * @param size The allowed size
      * @return true if all arrays are of an allowed size
      */
-    fun allAreOfSize(arrayOfByteArrays: Array<ByteArray>, size: Int): Boolean {
+    fun allAreOfSize(
+        arrayOfByteArrays: Array<ByteArray>,
+        size: Int,
+    ): Boolean {
         for (byteArrays in arrayOfByteArrays) {
             if (byteArrays.size != size) {
                 return false
@@ -151,7 +173,10 @@ object ByteConversions {
         return true
     }
 
-    fun arrayOfByteArraysContains(arrayOfByteArrays: Array<ByteArray>, bytes: ByteArray): Boolean {
+    fun arrayOfByteArraysContains(
+        arrayOfByteArrays: Array<ByteArray>,
+        bytes: ByteArray,
+    ): Boolean {
         for (byteArray in arrayOfByteArrays) {
             if (byteArray.contentEquals(bytes)) {
                 return true
@@ -160,7 +185,11 @@ object ByteConversions {
         return false
     }
 
-    fun isInRange(b: Byte, first: UInt, last: UInt): Boolean {
+    fun isInRange(
+        b: Byte,
+        first: UInt,
+        last: UInt,
+    ): Boolean {
         val unsignedByte = b.toUInt() and 0xFFu
         return (unsignedByte in first..last)
     }
@@ -170,7 +199,10 @@ object ByteConversions {
      * @param bytesInChar The number of bytes to check: (1,2,3,4)
      * @return Is the provided byte value valid for a UTF-8 byte at the provided index.
      */
-    private fun isValidUtf8(bytes: ByteArray, bytesInChar: Int): Boolean {
+    private fun isValidUtf8(
+        bytes: ByteArray,
+        bytesInChar: Int,
+    ): Boolean {
         // https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf
         // Code Points         1st Byte     2nd Byte    3rd Byte    4th Byte
         // U+0000..U+007F      00..7F
@@ -183,47 +215,64 @@ object ByteConversions {
         // U+40000..U+FFFFF    F1..F3       80..BF      80..BF      80..BF
         // U+100000..U+10FFFF  F4           80..8F      80..BF      80..BF
 
+        @Suppress("ktlint:standard:indent")
         return when (bytesInChar) {
-            1 -> isInRange(bytes[0], 0x01u, 0x7Fu)
-            2 -> isInRange(bytes[0], 0xC2u, 0xDFu) && isInRange(bytes[1], 0x80u, 0xBFu)
-            3 -> isInRange(bytes[0], 0xE0u, 0xE0u) && isInRange(bytes[1], 0xA0u, 0xBFu) && isInRange(
-                bytes[2],
-                0x80u,
-                0xBFu,
-            ) ||
-                (isInRange(bytes[0], 0xE1u, 0xECu) && isInRange(bytes[1], 0x80u, 0xBFu) && isInRange(
-                    bytes[2],
-                    0x80u,
-                    0xBFu
-                )) ||
-                (isInRange(bytes[0], 0xEDu, 0xEDu) && isInRange(
-                    bytes[1],
-                    0x80u,
-                    0x9Fu
-                ) && isInRange(bytes[2], 0x80u, 0xBFu)) ||
-                (isInRange(bytes[0], 0xEEu, 0xEFu) && isInRange(
-                    bytes[1],
-                    0x80u,
-                    0xBFu
-                ) && isInRange(bytes[2], 0x80u, 0xBFu))
+            1 -> {
+                isInRange(bytes[0], 0x01u, 0x7Fu)
+            }
 
-            4 -> isInRange(bytes[0], 0xF0u, 0xF0u) && isInRange(
-                bytes[1],
-                0x90u,
-                0xBFu
-            ) && isInRange(bytes[2], 0x80u, 0xBFu) && isInRange(bytes[3], 0x80u, 0xBFu) ||
-                (isInRange(bytes[0], 0xF1u, 0xF3u) && isInRange(
-                    bytes[1],
-                    0x80u,
-                    0xBFu
-                ) && isInRange(bytes[2], 0x80u, 0xBFu) && isInRange(bytes[3], 0x80u, 0xBFu)) ||
-                (isInRange(bytes[0], 0xF4u, 0xF4u) && isInRange(
-                    bytes[1],
-                    0x80u,
-                    0x8Fu
-                ) && isInRange(bytes[2], 0x80u, 0xBFu) && isInRange(bytes[3], 0x80u, 0xBFu))
+            2 -> {
+                isInRange(bytes[0], 0xC2u, 0xDFu) &&
+                isInRange(bytes[1], 0x80u, 0xBFu)
+            }
 
-            else -> false
+            3 -> {
+                (
+                    isInRange(bytes[0], 0xE0u, 0xE0u) &&
+                    isInRange(bytes[1], 0xA0u, 0xBFu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu)
+                ) ||
+                (
+                    isInRange(bytes[0], 0xE1u, 0xECu) &&
+                    isInRange(bytes[1], 0x80u, 0xBFu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu)
+                ) ||
+                (
+                    isInRange(bytes[0], 0xEDu, 0xEDu) &&
+                    isInRange(bytes[1], 0x80u, 0x9Fu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu)
+                ) ||
+                (
+                    isInRange(bytes[0], 0xEEu, 0xEFu) &&
+                    isInRange(bytes[1], 0x80u, 0xBFu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu)
+                )
+            }
+
+            4 -> {
+                (
+                    isInRange(bytes[0], 0xF0u, 0xF0u) &&
+                    isInRange(bytes[1], 0x90u, 0xBFu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu) &&
+                    isInRange(bytes[3], 0x80u, 0xBFu)
+                ) ||
+                (
+                    isInRange(bytes[0], 0xF1u, 0xF3u) &&
+                    isInRange(bytes[1], 0x80u, 0xBFu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu) &&
+                    isInRange(bytes[3], 0x80u, 0xBFu)
+                ) ||
+                (
+                    isInRange(bytes[0], 0xF4u, 0xF4u) &&
+                    isInRange(bytes[1], 0x80u, 0x8Fu) &&
+                    isInRange(bytes[2], 0x80u, 0xBFu) &&
+                    isInRange(bytes[3], 0x80u, 0xBFu)
+                )
+            }
+
+            else -> {
+                false
+            }
         }
     }
 
@@ -247,29 +296,21 @@ object ByteConversions {
         var i = 0
         while (i < bytes.size) {
             val bytesInChar =
-                if ((bytes[i].toInt() and 0x80.toByte().toInt()) == 0x00.toByte().toInt()) {
+                when {
                     // Byte 1 = 0xxxxxxx --> 1 byte char
-                    1
-                }
-                else
-                if ((bytes[i].toInt() and 0xE0.toByte().toInt()) == 0xC0.toByte().toInt()) {
+                    ((bytes[i].toInt() and 0x80.toByte().toInt()) == 0x00.toByte().toInt()) -> 1
+
                     // Byte 1 = 110xxxxx --> 2 byte char
-                    2
-                }
-                else
-                if ((bytes[i].toInt() and 0xF0.toByte().toInt()) == 0xE0.toByte().toInt()) {
+                    ((bytes[i].toInt() and 0xE0.toByte().toInt()) == 0xC0.toByte().toInt()) -> 2
+
                     // Byte 1 = 1110xxxx --> 3 byte char
-                    3
-                }
-                else
-                if ((bytes[i].toInt() and 0xF8.toByte().toInt()) == 0xF0.toByte().toInt()) {
+                    ((bytes[i].toInt() and 0xF0.toByte().toInt()) == 0xE0.toByte().toInt()) -> 3
+
                     // Byte 1 = 11110xxx --> 4 byte char
-                    4
-                }
-                else
-                {
+                    ((bytes[i].toInt() and 0xF8.toByte().toInt()) == 0xF0.toByte().toInt()) -> 4
+
                     // Error Illegal character, stop
-                    break
+                    else -> break
                 }
 
             for (b in 0 until bytesInChar) {
@@ -297,9 +338,7 @@ object ByteConversions {
         return string
     }
 
-    fun stringToBytes(value: String): ByteArray {
-        return value.toByteArray(StandardCharsets.UTF_8)
-    }
+    fun stringToBytes(value: String): ByteArray = value.toByteArray(StandardCharsets.UTF_8)
 
     // ----------------------------------------------
     fun shortToBytes(input: Short): ByteArray {
@@ -317,8 +356,7 @@ object ByteConversions {
         var result: Short = 0
         for (i in 0 until SHORT_BYTES) {
             result = (result.toInt() shl Byte.SIZE_BITS).toShort()
-            result = (result.toInt() or (bytes[i]
-                .toShort().toInt() and 0xFF.toShort().toInt()).toShort().toInt()).toShort()
+            result = (result.toInt() or (bytes[i].toShort().toInt() and 0xFF.toShort().toInt()).toShort().toInt()).toShort()
         }
         return result
     }
@@ -326,8 +364,8 @@ object ByteConversions {
     // ----------------------------------------------
     fun integerToBytes(input: Int): ByteArray {
         var value = input
-        val result = ByteArray(nl.basjes.modbus.schema.expression.INTEGER_BYTES)
-        for (i in nl.basjes.modbus.schema.expression.INTEGER_BYTES - 1 downTo 0) {
+        val result = ByteArray(INTEGER_BYTES)
+        for (i in INTEGER_BYTES - 1 downTo 0) {
             result[i] = (value and 0xFF).toByte()
             value = value shr Byte.SIZE_BITS
         }
@@ -337,7 +375,7 @@ object ByteConversions {
     fun bytesToInteger(bytes: ByteArray): Int {
         assertByteArraySize(bytes, INTEGER_BYTES, "int")
         var result = 0
-        for (i in 0 until nl.basjes.modbus.schema.expression.INTEGER_BYTES) {
+        for (i in 0 until INTEGER_BYTES) {
             result = result shl Byte.SIZE_BITS
             result = result or (bytes[i].toInt() and 0xFF)
         }
@@ -347,8 +385,8 @@ object ByteConversions {
     // ----------------------------------------------
     fun longToBytes(input: Long): ByteArray {
         var value = input
-        val result = ByteArray(nl.basjes.modbus.schema.expression.LONG_BYTES)
-        for (i in nl.basjes.modbus.schema.expression.LONG_BYTES - 1 downTo 0) {
+        val result = ByteArray(LONG_BYTES)
+        for (i in LONG_BYTES - 1 downTo 0) {
             result[i] = (value and 0xFFL).toByte()
             value = value shr Byte.SIZE_BITS
         }
@@ -358,7 +396,7 @@ object ByteConversions {
     fun bytesToLong(bytes: ByteArray): Long {
         assertByteArraySize(bytes, LONG_BYTES, "long")
         var result: Long = 0
-        for (i in 0 until nl.basjes.modbus.schema.expression.LONG_BYTES) {
+        for (i in 0 until LONG_BYTES) {
             result = result shl Byte.SIZE_BITS
             result = result or (bytes[i].toInt() and 0xFF).toLong()
         }
@@ -366,9 +404,7 @@ object ByteConversions {
     }
 
     // ----------------------------------------------
-    fun floatToBytes(value: Float): ByteArray {
-        return integerToBytes(value.toBits())
-    }
+    fun floatToBytes(value: Float): ByteArray = integerToBytes(value.toBits())
 
     fun bytesToFloat(bytes: ByteArray): Float {
         assertByteArraySize(bytes, FLOAT_BYTES, "float")
@@ -376,9 +412,7 @@ object ByteConversions {
     }
 
     // ----------------------------------------------
-    fun doubleToBytes(value: Double): ByteArray {
-        return longToBytes(value.toBits())
-    }
+    fun doubleToBytes(value: Double): ByteArray = longToBytes(value.toBits())
 
     fun bytesToDouble(bytes: ByteArray): Double {
         assertByteArraySize(bytes, DOUBLE_BYTES, "double")

@@ -19,10 +19,8 @@ package nl.basjes.modbus.device.sunspec
 import kotlin.test.Test
 
 internal class TestSunSpecBasicsPrinter {
-
     @Test
-    fun testSunSpecDump(){
-        SunSpecBasicsPrinter(DeviceSMASunnyBoy36.device).print()
+    fun testSunSpecDump() {
+        SunSpecBasicsPrinter(DeviceSMASunnyBoy36Dated20230810.device).print()
     }
-
 }

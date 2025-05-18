@@ -20,11 +20,11 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 
-class StringConcat(val expressions: List<StringExpression>) : StringExpression {
+class StringConcat(
+    val expressions: List<StringExpression>,
+) : StringExpression {
 
-    override fun toString(): String {
-        return "concat("+ expressions.joinToString(", ") + ")"
-    }
+    override fun toString(): String = "concat(" + expressions.joinToString(", ") + ")"
 
     override val subExpressions: List<Expression>
         get() = expressions
@@ -33,7 +33,7 @@ class StringConcat(val expressions: List<StringExpression>) : StringExpression {
         get() =
             combine(
                 "concat",
-                super.problems
+                super.problems,
             )
 
     override fun getValue(schemaDevice: SchemaDevice): String {

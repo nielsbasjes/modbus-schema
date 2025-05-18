@@ -21,6 +21,7 @@ import nl.basjes.modbus.device.api.AddressClass.DISCRETE_INPUT
 import nl.basjes.modbus.device.api.AddressClass.HOLDING_REGISTER
 import nl.basjes.modbus.device.api.AddressClass.INPUT_REGISTER
 
+@Suppress("ktlint:standard:max-line-length", "ktlint:standard:paren-spacing", "ktlint:standard:argument-list-wrapping")
 enum class FunctionCode(
     /** The underlying modbus function code  */
     private val code: Int,
@@ -40,13 +41,14 @@ enum class FunctionCode(
 ) {
     READ_COIL(                        0x01, COIL,             false, false, "READ_COIL",                        "Read Coil"),
     READ_DISCRETE_INPUT(              0x02, DISCRETE_INPUT,   false, false, "READ_DISCRETE_INPUT",              "Read Discrete Input"),
-    READ_HOLDING_REGISTERS(           0x03, HOLDING_REGISTER, false, false, "READ_HOLDING_REGISTERS",           "Read Holding Registers" ),
-    READ_INPUT_REGISTERS(             0x04, INPUT_REGISTER,   false, false, "READ_INPUT_REGISTERS",             "Read Input Registers" ),
+    READ_HOLDING_REGISTERS(           0x03, HOLDING_REGISTER, false, false, "READ_HOLDING_REGISTERS",           "Read Holding Registers"),
+    READ_INPUT_REGISTERS(             0x04, INPUT_REGISTER,   false, false, "READ_INPUT_REGISTERS",             "Read Input Registers"),
 
     WRITE_SINGLE_COIL(                0x05, COIL,             true,  false, "WRITE_SINGLE_COIL",                "Write Single Coil"),
     WRITE_SINGLE_HOLDING_REGISTER(    0x06, HOLDING_REGISTER, true,  false, "WRITE_SINGLE_HOLDING_REGISTER",    "Write Single Holding Register"),
     WRITE_MULTIPLE_COILS(             0x0F, COIL,             true,  true,  "WRITE_MULTIPLE_COILS",             "Write Multiple Coils"),
-    WRITE_MULTIPLE_HOLDING_REGISTERS( 0x10, HOLDING_REGISTER, true,  true,  "WRITE_MULTIPLE_HOLDING_REGISTERS", "Write Multiple Holding Registers" );
+    WRITE_MULTIPLE_HOLDING_REGISTERS( 0x10, HOLDING_REGISTER, true,  true,  "WRITE_MULTIPLE_HOLDING_REGISTERS", "Write Multiple Holding Registers"),
+    ;
 
     // Sometimes 1 bit per value (booleans really), sometimes 16 bits (normal registers) */
     val bitsPerValue = addressClass.bitsPerValue
@@ -57,9 +59,7 @@ enum class FunctionCode(
     val isForWritableSingle: Boolean
         get() = forWriting && !forWritingMultiple
 
-    override fun toString(): String {
-        return super.toString() + "($code)"
-    }
+    override fun toString(): String = super.toString() + "($code)"
 
     companion object {
         /**
@@ -68,11 +68,10 @@ enum class FunctionCode(
          * @return The requested FunctionCode or null if not found
          */
         @JvmStatic
-        fun of(code: Int): FunctionCode {
-            return entries
-                .firstOrNull { it.code == code } ?:
-                    throw IllegalArgumentException("The provided function code value $code is not supported.")
-        }
+        fun of(code: Int): FunctionCode =
+            entries
+                .firstOrNull { it.code == code }
+                ?: throw IllegalArgumentException("The provided function code value $code is not supported.")
 
         /**
          * Retrieve the read FunctionCode instance which can handle the provided AddressClass
@@ -80,13 +79,11 @@ enum class FunctionCode(
          * @return The FunctionCode(s) that can be used for reading
          */
         @JvmStatic
-        fun forReading(addressClass: AddressClass): FunctionCode {
-            return entries
+        fun forReading(addressClass: AddressClass): FunctionCode =
+            entries
                 .filter { it.addressClass == addressClass }
-                .filter { it.isForReading }
-                .firstOrNull()
+                .firstOrNull { it.isForReading }
                 ?: throw IllegalArgumentException("Unable to find the read function code for $addressClass.")
-        }
 
         /**
          * Retrieve the writing FunctionCode instance which can handle the provided AddressClass
@@ -94,12 +91,11 @@ enum class FunctionCode(
          * @return The FunctionCode that can be used for writing a single register
          */
         @JvmStatic
-        fun forWritingSingle(addressClass: AddressClass): FunctionCode {
-            return entries
+        fun forWritingSingle(addressClass: AddressClass): FunctionCode =
+            entries
                 .filter { it.addressClass == addressClass }
                 .firstOrNull { it.isForWritableSingle }
-                    ?: throw IllegalArgumentException("Unable to find the write single function code for $addressClass.")
-        }
+                ?: throw IllegalArgumentException("Unable to find the write single function code for $addressClass.")
 
         /**
          * Retrieve the writing FunctionCode instance which can handle the provided AddressClass
@@ -107,11 +103,10 @@ enum class FunctionCode(
          * @return The FunctionCode that can be used for writing a single register
          */
         @JvmStatic
-        fun forWritingMultiple(addressClass: AddressClass): FunctionCode {
-            return entries
+        fun forWritingMultiple(addressClass: AddressClass): FunctionCode =
+            entries
                 .filter { it.addressClass == addressClass }
                 .firstOrNull { it.forWritingMultiple }
-                    ?: throw IllegalArgumentException("Unable to find the write multiple function code for $addressClass.")
-        }
+                ?: throw IllegalArgumentException("Unable to find the write multiple function code for $addressClass.")
     }
 }

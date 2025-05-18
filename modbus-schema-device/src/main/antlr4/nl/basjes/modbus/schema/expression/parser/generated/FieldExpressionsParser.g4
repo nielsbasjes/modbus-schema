@@ -19,7 +19,7 @@ parser grammar FieldExpressionsParser;
 options { tokenVocab=FieldExpressionsLexer; }
 
 // ===============================================================
-// SIMPLIFICATION: ONLY DO STRING, number and LONG expressions
+// SIMPLIFICATION: ONLY DO Number, String and StringList expressions
 
 // An expression can only result in one of these
 expression

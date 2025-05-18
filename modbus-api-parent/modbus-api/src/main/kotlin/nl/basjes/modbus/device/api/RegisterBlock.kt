@@ -23,9 +23,9 @@ import java.util.TreeMap
  * The map from address to register in a SORTED way.
  * This means we can iterate over the keys sequentially (yet there can be Address gaps!).
  */
-class RegisterBlock (
+class RegisterBlock(
     /** The AddressClass of ALL addresses in this RegisterBlock */
-    val addressClass: AddressClass
+    val addressClass: AddressClass,
 ) {
     private val registerValues = TreeMap<Address, RegisterValue>()
 
@@ -39,7 +39,10 @@ class RegisterBlock (
         return registerValues.computeIfAbsent(address) { RegisterValue(address) }
     }
 
-    operator fun set(address: Address, registerValue: RegisterValue) {
+    operator fun set(
+        address: Address,
+        registerValue: RegisterValue,
+    ) {
         if (registerValues[address] != null && registerValue.hasValue()) {
             setValue(registerValue.address, registerValue.value!!, registerValue.fetchTimestamp)
         } else {
@@ -47,6 +50,7 @@ class RegisterBlock (
         }
         registerValues.keys
     }
+
     val firstAddress: Address
         get() = registerValues.firstKey()
     val keys
@@ -55,8 +59,11 @@ class RegisterBlock (
         get() = registerValues.values
     val size
         get() = registerValues.size
-    fun computeIfAbsent(requiredRegister: Address, function: (Address) -> RegisterValue) =
-        registerValues.computeIfAbsent(requiredRegister, function)
+
+    fun computeIfAbsent(
+        requiredRegister: Address,
+        function: (Address) -> RegisterValue,
+    ) = registerValues.computeIfAbsent(requiredRegister, function)
 
     fun put(value: RegisterValue) {
         this[value.address].setValue(value)
@@ -67,11 +74,12 @@ class RegisterBlock (
      * @param addresses The register addresses we need the values for.
      * @return The list of values which may be empty!
      */
-    fun get(addresses: List<Address>): List<RegisterValue> {
-        return addresses.mapNotNull { key: Address -> registerValues[key] }
-    }
+    fun get(addresses: List<Address>): List<RegisterValue> = addresses.mapNotNull { key: Address -> registerValues[key] }
 
-    fun put(key: Address, value: RegisterValue): RegisterValue? {
+    fun put(
+        key: Address,
+        value: RegisterValue,
+    ): RegisterValue? {
         assertAddressClass(key.addressClass)
         require(key == value.address) { "The address MUST be the same as the address in the register value" }
         return registerValues.put(key, value)
@@ -92,7 +100,11 @@ class RegisterBlock (
         this[address].setSoftReadError()
     }
 
-    fun setValue(address: Address, value: Short, timestamp: Long) {
+    fun setValue(
+        address: Address,
+        value: Short,
+        timestamp: Long,
+    ) {
         this[address].setValue(value, timestamp)
     }
 
@@ -130,9 +142,7 @@ class RegisterBlock (
      * So all values are 4 characters: ([0-9A-F][0-9A-F][0-9A-F][0-9A-F]|----)
      * @return List of hex values
      */
-    fun toHexList(): List<String> {
-        return noGapsValuesList().map { it.hexValue }.toList()
-    }
+    fun toHexList(): List<String> = noGapsValuesList().map { it.hexValue }.toList()
 
     /**
      * Creating a single string of hex values for all available values.
@@ -140,13 +150,9 @@ class RegisterBlock (
      * So all values are 4 characters: ([0-9A-F][0-9A-F][0-9A-F][0-9A-F]|----)
      * @return A String of mostly 4 char hex values, sometimes "----".
      */
-    fun toHexString(): String {
-        return toHexList().joinToString(separator = " ")
-    }
+    fun toHexString(): String = toHexList().joinToString(separator = " ")
 
-    override fun toString(): String {
-        return "Starting at " + registerValues.firstKey().toCleanFormat() + ": [ " + toHexString() + " ]"
-    }
+    override fun toString(): String = "Starting at " + registerValues.firstKey().toCleanFormat() + ": [ " + toHexString() + " ]"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -161,12 +167,13 @@ class RegisterBlock (
         return super.equals(other)
     }
 
-
     private fun assertAddressClass(addressClass: AddressClass) {
         if (this.addressClass == addressClass) {
             return  // Ok.
         }
-        throw IllegalArgumentException("Trying to use the AddressClass \"$addressClass\" on a RegisterBlock which only allows AddressClass \"$addressClass\"")
+        throw IllegalArgumentException(
+            "Trying to use the AddressClass \"$addressClass\" on a RegisterBlock which only allows AddressClass \"$addressClass\"",
+        )
     }
 
     fun clone(): RegisterBlock {
@@ -192,13 +199,13 @@ fun String.toRegisterBlock(
     val registerBlock = RegisterBlock(addressClass)
     var currentPhysicalAddress = firstRegisterAddress.physicalAddress
 
-    val cleaned = this
-        .replace(Regex("#.*\n"), "\n")  // Drop '#' comments
-        .replace(Regex("//.*\n"), "\n") // Drop '//' comments
-        .replace(Regex("^ +"), "")      // Drop leading spaced
-        .replace("\n"," ")              // Make it all 1 line
-        .replace(Regex(" +")," ")       // Make it all 1 space separators
-
+    val cleaned =
+        this
+            .replace(Regex("#.*\n"), "\n")  // Drop '#' comments
+            .replace(Regex("//.*\n"), "\n") // Drop '//' comments
+            .replace(Regex("^ +"), "")      // Drop leading spaced
+            .replace("\n", " ")              // Make it all 1 line
+            .replace(Regex(" +"), " ")       // Make it all 1 space separators
 
     for (word in cleaned.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
         var toParse = word.trim { it <= ' ' }
@@ -211,19 +218,21 @@ fun String.toRegisterBlock(
             "null", "----" -> {
                 registerBlock.setValue(currentAddress)
             }
-            "xxxx" ->
-                registerBlock.setReadError(currentAddress)
-            else -> {
-                    val parsedInt = toParse.toInt(16)
-                    val value = (parsedInt and 0xFFFF).toShort()
 
-                    // Timestamp is fixed value because loaded from file: 2001-02-03T04:05:06:789Z (i.e. 123456789)
-                    registerBlock.setValue(currentAddress, value, 981173106789L)
-                }
+            "xxxx" -> {
+                registerBlock.setReadError(currentAddress)
+            }
+
+            else -> {
+                val parsedInt = toParse.toInt(16)
+                val value = (parsedInt and 0xFFFF).toShort()
+
+                // Timestamp is fixed value because loaded from file: 2001-02-03T04:05:06:789Z (i.e. 123456789)
+                registerBlock.setValue(currentAddress, value, 981173106789L)
+            }
         }
 
         currentPhysicalAddress++
     }
     return registerBlock
 }
-

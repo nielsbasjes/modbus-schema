@@ -22,35 +22,34 @@ import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 import nl.basjes.modbus.schema.utils.DoubleToString
 
-class DoubleConstant(val value: Double) : NumericalExpression {
-    override fun toString(): String {
-        return DoubleToString.of(value)
-    }
+class DoubleConstant(
+    val value: Double,
+) : NumericalExpression {
+
+    override fun toString(): String = DoubleToString.of(value)
 
     override val problems: List<Problem>
         get() =
             combine(
                 "DoubleConstant",
                 super.problems,
-                checkFatal(value.isFinite(), "Not a finite number")
+                checkFatal(value.isFinite(), "Not a finite number"),
             )
 
     override var isImmutable: Boolean = true
-        set(unused) { field = true } // Refusing to change the value
-
-    override fun getValueAsDouble(schemaDevice: SchemaDevice): Double {
-        return value
-    }
-
-    override fun getGuarantee(): ValueGuarantee {
-        return when {
-            value >= 0 -> ValueGuarantee.POSITIVE
-            value < 0 -> ValueGuarantee.NEGATIVE
-            else -> ValueGuarantee.NONE
+        set(unused) {
+            field = true // Refusing to change the value
         }
-    }
+
+    override fun getValueAsDouble(schemaDevice: SchemaDevice): Double = value
+
+    override fun getGuarantee(): ValueGuarantee =
+        when {
+            value >= 0 -> ValueGuarantee.POSITIVE
+            value < 0  -> ValueGuarantee.NEGATIVE
+            else       -> ValueGuarantee.NONE
+        }
 
     override val returnType: ReturnType
         get() = ReturnType.DOUBLE
-
 }

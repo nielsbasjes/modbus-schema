@@ -23,11 +23,11 @@ import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
-class UTF8String(private val registers: RegistersExpression) : StringExpression {
+class UTF8String(
+    private val registers: RegistersExpression,
+) : StringExpression {
 
-    override fun toString(): String {
-        return "utf8($registers)"
-    }
+    override fun toString(): String = "utf8($registers)"
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
@@ -41,11 +41,8 @@ class UTF8String(private val registers: RegistersExpression) : StringExpression 
                 super.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return registers.getRegisterValues(schemaDevice)
-    }
+    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
-    override fun getValue(schemaDevice: SchemaDevice): String? {
-        return registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToString(it) }
-    }
+    override fun getValue(schemaDevice: SchemaDevice): String? =
+        registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToString(it) }
 }

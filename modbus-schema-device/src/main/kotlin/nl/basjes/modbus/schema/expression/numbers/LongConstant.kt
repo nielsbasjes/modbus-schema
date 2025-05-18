@@ -20,28 +20,26 @@ import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 
-open class LongConstant(val value: Long) : NumericalExpression {
+open class LongConstant(
+    val value: Long,
+) : NumericalExpression {
 
-    override fun toString(): String {
-        return value.toString()
-    }
+    override fun toString(): String = value.toString()
 
     override var isImmutable: Boolean = true
-        set(unused) { field = true } // Refusing to change the value
+        set(unused) {
+            field = true // Refusing to change the value
+        }
 
     override val returnType: ReturnType
         get() = ReturnType.LONG
 
-    override fun getValueAsLong(schemaDevice: SchemaDevice): Long {
-        return value
-    }
+    override fun getValueAsLong(schemaDevice: SchemaDevice): Long = value
 
-    override fun getGuarantee(): ValueGuarantee {
-        return when {
+    override fun getGuarantee(): ValueGuarantee =
+        when {
             value >= 0 -> ValueGuarantee.POSITIVE
             value < 0 -> ValueGuarantee.NEGATIVE
             else -> ValueGuarantee.NONE
         }
-    }
-
 }

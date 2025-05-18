@@ -48,7 +48,7 @@ class ModbusDevicePlc4j(
      * The Plc4J specific connect string for the desired modbus device
      */
     connectionString: String,
-    ) : ModbusDevice() {
+) : ModbusDevice() {
     private val connection: PlcConnection
 
     @Throws(ModbusException::class)
@@ -79,25 +79,31 @@ class ModbusDevicePlc4j(
 
     private fun getAddressClassTag(addressClass: AddressClass): String = addressClass.longLabel
 
-
     @Throws(ModbusException::class)
-    override fun getRegisters(firstRegister: Address, count: Int): RegisterBlock {
+    override fun getRegisters(
+        firstRegister: Address,
+        count: Int,
+    ): RegisterBlock {
         when (val functionCode = forReading(firstRegister.addressClass)) {
             READ_COIL,
-            READ_DISCRETE_INPUT ->
+            READ_DISCRETE_INPUT,
+            -> {
                 throw NotYetImplementedException("Reading a " + firstRegister.addressClass + " has not yet been implemented")
+            }
 
             READ_HOLDING_REGISTERS,
-            READ_INPUT_REGISTERS -> {
+            READ_INPUT_REGISTERS,
+            -> {
                 val builder = connection.readRequestBuilder()
 
                 // This is REALLY fragile ! If you add the correct type (like WORD) you only get a single value.
-                val fieldTag = String.format(
-                    "%s:%05d[%d]",
-                    getAddressClassTag(firstRegister.addressClass),
-                    firstRegister.registerNumber,
-                    count
-                )
+                val fieldTag =
+                    String.format(
+                        "%s:%05d[%d]",
+                        getAddressClassTag(firstRegister.addressClass),
+                        firstRegister.registerNumber,
+                        count,
+                    )
                 builder.addTag("F", ModbusTag.of(fieldTag))
 
                 val asyncResponse = builder.build().execute()
@@ -119,19 +125,24 @@ class ModbusDevicePlc4j(
                 val now = System.currentTimeMillis()
 
                 when (response.getResponseCode("F")) {
-                    PlcResponseCode.OK -> {
+                    PlcResponseCode.OK,
+                    -> {
                         // We're cool
                     }
-                    PlcResponseCode.NOT_FOUND ,
-                    PlcResponseCode.ACCESS_DENIED ,
-                    PlcResponseCode.INVALID_ADDRESS ,
-                    PlcResponseCode.INVALID_DATATYPE ,
-                    PlcResponseCode.INVALID_DATA ,
-                    PlcResponseCode.INTERNAL_ERROR ,
-                    PlcResponseCode.REMOTE_BUSY ,
-                    PlcResponseCode.REMOTE_ERROR ,
-                    PlcResponseCode.UNSUPPORTED ,
-                    PlcResponseCode.RESPONSE_PENDING -> return createReadErrorResponse(firstRegister, count)
+
+                    PlcResponseCode.NOT_FOUND,
+                    PlcResponseCode.ACCESS_DENIED,
+                    PlcResponseCode.INVALID_ADDRESS,
+                    PlcResponseCode.INVALID_DATATYPE,
+                    PlcResponseCode.INVALID_DATA,
+                    PlcResponseCode.INTERNAL_ERROR,
+                    PlcResponseCode.REMOTE_BUSY,
+                    PlcResponseCode.REMOTE_ERROR,
+                    PlcResponseCode.UNSUPPORTED,
+                    PlcResponseCode.RESPONSE_PENDING,
+                    -> {
+                        return createReadErrorResponse(firstRegister, count)
+                    }
                 }
 
                 var address = firstRegister
@@ -148,8 +159,11 @@ class ModbusDevicePlc4j(
                 return result
             }
 
-            else ->
-                throw NotYetImplementedException("The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented")
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented",
+                )
+            }
         }
     }
 }

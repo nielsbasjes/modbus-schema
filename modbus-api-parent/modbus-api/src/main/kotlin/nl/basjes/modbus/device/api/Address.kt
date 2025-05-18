@@ -25,13 +25,12 @@ package nl.basjes.modbus.device.api
  * @param physicalAddress The physical wire address of the modbus register (0-65535). Usually 1 lower than what many modbus tools use.
  * @return A new immutable instance of Address with the given values
  */
-class Address (
+class Address(
     /** The kind of the address (which limits the allowed function codes) */
     val addressClass: AddressClass,
     /** The technical wire address. Always in the 0-65535 range. */
     val physicalAddress: Int,
-    ) : Comparable<Address> {
-
+) : Comparable<Address> {
     /** The register number (as used in the original modicon notation) which is usually 1 higher than the physical address. */
     val registerNumber: Int
         get() = physicalAddress + addressClass.registerNumberOffset
@@ -64,9 +63,7 @@ class Address (
          * @return A new immutable instance of Address with the given values
          */
         @JvmStatic
-        fun ofModicon5(
-            modicon5RegisterTag: Int,
-        ):Address {
+        fun ofModicon5(modicon5RegisterTag: Int): Address {
             val (addressClass, physicalAddress) = addressFromModicon5(modicon5RegisterTag)
             return Address(addressClass, physicalAddress)
         }
@@ -78,9 +75,7 @@ class Address (
          * @return a new immutable instance of Address with the given values
          */
         @JvmStatic
-        fun ofModicon6(
-            modicon6RegisterTag: Int,
-        ):Address {
+        fun ofModicon6(modicon6RegisterTag: Int): Address {
             val (addressClass, physicalAddress) = addressFromModicon6(modicon6RegisterTag)
             return Address(addressClass, physicalAddress)
         }
@@ -91,9 +86,7 @@ class Address (
          * @return A new immutable instance of Address with the given values
          */
         @JvmStatic
-        fun of(
-            registerTag: String,
-        ):Address {
+        fun of(registerTag: String): Address {
             val (addressClass, physicalAddress) = addressFrom(registerTag)
             return Address(addressClass, physicalAddress)
         }
@@ -105,9 +98,7 @@ class Address (
      * @return A NEW (incremented) immutable instance
      */
     @JvmOverloads
-    fun increment(step: Int = 1): Address {
-        return Address(addressClass, physicalAddress + step)
-    }
+    fun increment(step: Int = 1): Address = Address(addressClass, physicalAddress + step)
 
     /**
      * @param address The address to compare to
@@ -124,16 +115,12 @@ class Address (
      * @return The stored address as cleanly parsable format without the "off by one" problem.
      *          For example "hr:00123".
      */
-    override fun toString(): String {
-        return toCleanFormat()
-    }
+    override fun toString(): String = toCleanFormat()
 
     /**
      * @return The stored address as cleanly parsable format without the "off by one" problem. For example "hr:00123".
      */
-    fun toCleanFormat(): String {
-        return String.format("%s:%05d", addressClass.shortLabel, physicalAddress)
-    }
+    fun toCleanFormat(): String = String.format("%s:%05d", addressClass.shortLabel, physicalAddress)
 
     /**
      * @return The stored address as an original modicon 5 digit value (or null if the register number is > 9999). For example "40124".
@@ -142,22 +129,18 @@ class Address (
         if (registerNumber > 9999) {
             return null
         }
-        return String.format("%d%04d", addressClass.baseOffset, registerNumber);
+        return String.format("%d%04d", addressClass.baseOffset, registerNumber)
     }
 
     /**
      * @return The stored address as a modicon 6 digit value. For example "400124".
      */
-    fun toModicon6(): String {
-        return String.format("%d%05d", addressClass.baseOffset, registerNumber);
-    }
+    fun toModicon6(): String = String.format("%d%05d", addressClass.baseOffset, registerNumber)
 
     /**
      * @return The stored address as a modicon variant with an 'x' separator. For example "4x00124".
      */
-    fun toModiconX(): String {
-        return String.format("%dx%05d", addressClass.baseOffset, registerNumber);
-    }
+    fun toModiconX(): String = String.format("%dx%05d", addressClass.baseOffset, registerNumber)
 
     override fun compareTo(other: Address): Int {
         val addressClassCompared = addressClass.compareTo(other.addressClass)
@@ -183,24 +166,17 @@ class Address (
         result = 31 * result + physicalAddress
         return result
     }
-
 }
 
 private val REGISTER_TAG_COLON_FORMAT       = Regex("^([a-zA-Z-]+):(\\d+)$")
 private val REGISTER_TAG_X_FORMAT           = Regex("^(\\d)x(\\d+)$")
 private val REGISTER_TAG_56DIGIT_FORMAT     = Regex("^(\\d)(\\d{4,5})$")
 
-fun Int.asAddressAssumingModicon5() : Address {
-    return Address.ofModicon5(this)
-}
+fun Int.asAddressAssumingModicon5(): Address = Address.ofModicon5(this)
 
-fun Int.asAddressAssumingModicon6() : Address {
-    return Address.ofModicon6(this)
-}
+fun Int.asAddressAssumingModicon6(): Address = Address.ofModicon6(this)
 
-fun String.asAddress() : Address {
-    return Address.of(this)
-}
+fun String.asAddress(): Address = Address.of(this)
 
 private fun addressFrom(registerTag: Int): Pair<AddressClass, Int> {
     // Modicon notation: MUST be positive and at most 5 digits (it is impossible to handle the 6 digit format)
@@ -218,9 +194,7 @@ private fun addressFrom(registerTag: Int): Pair<AddressClass, Int> {
     return Pair(addressClass, modiconRegisterNumber - addressClass.registerNumberOffset)
 }
 
-private fun addressFromModicon5(registerTag: Int): Pair<AddressClass, Int> {
-    return addressFrom(registerTag)
-}
+private fun addressFromModicon5(registerTag: Int): Pair<AddressClass, Int> = addressFrom(registerTag)
 
 private fun addressFromModicon6(registerTag: Int): Pair<AddressClass, Int> {
     // Modicon notation: This MUST be the modicon 6 digit format!

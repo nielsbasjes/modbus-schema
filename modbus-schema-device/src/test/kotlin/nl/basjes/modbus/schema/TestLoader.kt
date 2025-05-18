@@ -25,37 +25,38 @@ class TestLoader {
 
     @Test
     fun testGoodSchema() {
-        val schema = """
-        description: 'A device'
-        schemaFeatureLevel: 1
-        blocks:
-        - id: 'Main'
-          description:  'The only block of registers'
-          fields:
-          - id: 'MyFloat'
-            description:  'A Float 32'
-            expression: 'ieee754_32(hr:00000 # 2)'
-            unit: 'Foo'
+        val schema =
+            """
+            description: 'A device'
+            schemaFeatureLevel: 1
+            blocks:
+            - id: 'Main'
+              description:  'The only block of registers'
+              fields:
+              - id: 'MyFloat'
+                description:  'A Float 32'
+                expression: 'ieee754_32(hr:00000 # 2)'
+                unit: 'Foo'
 
-          - id: 'MyDouble'
-            description:  'A Float 64'
-            expression: 'ieee754_64(hr:00002 # 4)'
-            unit: 'Bar'
+              - id: 'MyDouble'
+                description:  'A Float 64'
+                expression: 'ieee754_64(hr:00002 # 4)'
+                unit: 'Bar'
 
-        tests:
-        - id: 'Normal values'
-          description: 'Normal values'
-          input:
-          - firstRegisterAddress: 'hr:0'
-            registers: >-
-              449A 5225
-              4093 4A45 84FC D47C
-          blocks:
-          - id: 'Main'
-            expected:
-              MyFloat            : [ 1234.567 ]
-              MyDouble           : [ 1234.568 ]
-                """.trimIndent()
+            tests:
+            - id: 'Normal values'
+              description: 'Normal values'
+              input:
+              - firstRegisterAddress: 'hr:0'
+                registers: >-
+                  449A 5225
+                  4093 4A45 84FC D47C
+              blocks:
+              - id: 'Main'
+                expected:
+                  MyFloat            : [ 1234.567 ]
+                  MyDouble           : [ 1234.568 ]
+            """.trimIndent()
 
         val device =  schema.toSchemaDevice()
         assertNotNull(device)
@@ -64,37 +65,39 @@ class TestLoader {
 
     @Test
     fun testBadSchema() {
-        val schema = """
-        description: 'A device'
-        schemaFeatureLevel: 1
-        blocks:
-        - id: 'Main'
-          description:  'The only block of registers'
-          fields:
-          - id: 'MyFloat'
-            description:  'A Float 32'
-            expression: 'ieee754_32(hr:00000 # 3)'
-            unit: 'Foo'
+        val schema =
+            """
+            description: 'A device'
+            schemaFeatureLevel: 1
+            blocks:
+            - id: 'Main'
+              description:  'The only block of registers'
+              fields:
+              - id: 'MyFloat'
+                description:  'A Float 32'
+                expression: 'ieee754_32(hr:00000 # 3)'
+                unit: 'Foo'
 
-          - id: 'MyDouble'
-            description:  'A Float 64'
-            expression: 'ieee754_64(hr:00002 # 3)'
-            unit: 'Bar'
+              - id: 'MyDouble'
+                description:  'A Float 64'
+                expression: 'ieee754_64(hr:00002 # 3)'
+                unit: 'Bar'
 
-        tests:
-        - id: 'Normal values'
-          description: 'Normal values'
-          input:
-          - firstRegisterAddress: 'hr:0'
-            registers: >-
-              449A 5225
-              4093 4A45 84FC D47C
-          blocks:
-          - id: 'Main'
-            expected:
-              MyFloat            : [ 111.111 ]
-              MyDouble           : [ 111.111 ]
-                """.trimIndent()
+            tests:
+            - id: 'Normal values'
+              description: 'Normal values'
+              input:
+              - firstRegisterAddress: 'hr:0'
+                registers: >-
+                  449A 5225
+                  4093 4A45 84FC D47C
+              blocks:
+              - id: 'Main'
+                expected:
+                  MyFloat            : [ 111.111 ]
+                  MyDouble           : [ 111.111 ]
+            """.trimIndent()
+
         try {
             schema.toSchemaDevice()
         }
@@ -110,37 +113,38 @@ class TestLoader {
 
     @Test
     fun testBadTestResult() {
-        val schema = """
-        description: 'A device'
-        schemaFeatureLevel: 1
-        blocks:
-        - id: 'Main'
-          description:  'The only block of registers'
-          fields:
-          - id: 'MyFloat'
-            description:  'A Float 32'
-            expression: 'ieee754_32(hr:00000 # 2)'
-            unit: 'Foo'
+        val schema =
+            """
+            description: 'A device'
+            schemaFeatureLevel: 1
+            blocks:
+            - id: 'Main'
+              description:  'The only block of registers'
+              fields:
+              - id: 'MyFloat'
+                description:  'A Float 32'
+                expression: 'ieee754_32(hr:00000 # 2)'
+                unit: 'Foo'
 
-          - id: 'MyDouble'
-            description:  'A Float 64'
-            expression: 'ieee754_64(hr:00002 # 4)'
-            unit: 'Bar'
+              - id: 'MyDouble'
+                description:  'A Float 64'
+                expression: 'ieee754_64(hr:00002 # 4)'
+                unit: 'Bar'
 
-        tests:
-        - id: 'Normal values'
-          description: 'Normal values'
-          input:
-          - firstRegisterAddress: 'hr:0'
-            registers: >-
-              449A 5225
-              4093 4A45 84FC D47C
-          blocks:
-          - id: 'Main'
-            expected:
-              MyFloat            : [ 111.111 ]
-              MyDouble           : [ 111.111 ]
-                """.trimIndent()
+            tests:
+            - id: 'Normal values'
+              description: 'Normal values'
+              input:
+              - firstRegisterAddress: 'hr:0'
+                registers: >-
+                  449A 5225
+                  4093 4A45 84FC D47C
+              blocks:
+              - id: 'Main'
+                expected:
+                  MyFloat            : [ 111.111 ]
+                  MyDouble           : [ 111.111 ]
+            """.trimIndent()
 
         try {
             schema.toSchemaDevice()

@@ -35,8 +35,9 @@ class TestScenario(
     /**
      * Human-readable description of the test.
      */
-    val description: String? = null
+    val description: String? = null,
 ) {
+
     val registerBlocks: MutableList<RegisterBlock> = mutableListOf()
     val expectedBlocks: MutableList<ExpectedBlock> = mutableListOf()
 
@@ -54,23 +55,22 @@ class TestScenario(
         expectedBlocks.add(block)
     }
 
-    override fun toString(): String {
-        return "TestScenario: '$name' => $description)"
-    }
-
+    override fun toString(): String = "TestScenario: '$name' => $description)"
 }
 
 open class TestScenarioResults(
     val testName: String,
     val schemaDevice: SchemaDevice,
-    val testResults: MutableMap<String, MutableMap<String, SchemaDevice.TestResult>>) {
+    val testResults: MutableMap<String, MutableMap<String, SchemaDevice.TestResult>>,
+) {
 
     val allPassed: Boolean
         get() = testResults.isNotEmpty() && testResults.all { it.value.all { r -> r.value.passed } }
 
-    fun toTable(onlyFailed: Boolean = false):String {
-        val stringTable = StringTable()
-            .withHeaders("Test", "Block", "Field", "Unit", "Expected", "Actual", "Good?")
+    fun toTable(onlyFailed: Boolean = false): String {
+        val stringTable =
+            StringTable()
+                .withHeaders("Test", "Block", "Field", "Unit", "Expected", "Actual", "Good?")
         for ((blockId, results) in testResults) {
             for ((fieldId, testResult) in results) {
                 if (!onlyFailed || !testResult.passed) {
@@ -79,19 +79,18 @@ open class TestScenarioResults(
                         blockId,
                         fieldId,
                         schemaDevice.getBlock(blockId)?.getField(fieldId)?.unit ?: "",
-                        "\""+testResult.expectedValue+"\"",
-                        "\""+testResult.actualValue+"\"",
-                        testResult.passed.toString()
+                        "\"" + testResult.expectedValue + "\"",
+                        "\"" + testResult.actualValue + "\"",
+                        testResult.passed.toString(),
                     )
                 }
             }
         }
         return stringTable.toString()
     }
-
 }
 
-class TestScenarioResultsList: ArrayList<TestScenarioResults>() {
+class TestScenarioResultsList : ArrayList<TestScenarioResults>() {
     /**
      * Logs all the results
      * @return true if all passed, false if one or more failed.
@@ -115,6 +114,5 @@ class TestScenarioResultsList: ArrayList<TestScenarioResults>() {
         get() = isEmpty() || none { !it.allPassed }
 
     val failedTests: List<String>
-        get() = filter { !it.allPassed } .map { it.testName }
+        get() = filter { !it.allPassed }.map { it.testName }
 }
-

@@ -21,7 +21,11 @@ import kotlin.test.Test
 import kotlin.test.junit5.JUnit5Asserter.assertEquals
 
 internal class TestCodeGeneration {
-    private fun checkConvert(input: String, expectedLower: String, expectedUpper: String) {
+    private fun checkConvert(
+        input: String,
+        expectedLower: String,
+        expectedUpper: String,
+    ) {
         assertEquals("Wrong lowercase initial", expectedLower, convertToCodeCompliantName(input, false))
         assertEquals("Wrong uppercase initial", expectedUpper, convertToCodeCompliantName(input, true))
     }
@@ -45,7 +49,7 @@ internal class TestCodeGeneration {
         checkConvert("VRefOfs", "vRefOfs", "VRefOfs")
         checkConvert("VMax", "vMax", "VMax")
         checkConvert("VArMaxQ1", "vArMaxQ1", "VArMaxQ1")
-        checkConvert("Active power (over-Excited$) rating","activePowerOverExcitedRating","ActivePowerOverExcitedRating")
+        checkConvert("Active power (over-Excited$) rating", "activePowerOverExcitedRating", "ActivePowerOverExcitedRating")
         checkConvert("Today's Minimum Battery Voltage", "todaySMinimumBatteryVoltage", "TodaySMinimumBatteryVoltage")
         checkConvert("Data Log Daily (kWh)", "dataLogDailyKWh", "DataLogDailyKWh")
     }

@@ -28,11 +28,13 @@ import nl.basjes.modbus.schema.utils.ByteConversions
 class IEEE754Float64(
     private val byteArray: RegistersExpression,
     notImplemented: List<String>,
-) : NotImplemented(nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER, notImplemented), NumericalExpression {
+) : NotImplemented(
+        nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
+        notImplemented,
+    ),
+    NumericalExpression {
 
-    override fun toString(): String {
-        return "ieee754_64($byteArray)"
-    }
+    override fun toString(): String = "ieee754_64($byteArray)"
 
     override val subExpressions: List<Expression>
         get() = listOf(byteArray)
@@ -43,17 +45,19 @@ class IEEE754Float64(
         get() = ReturnType.DOUBLE
 
     override val problems: List<Problem>
-        get() = combine(
-            "ieee754_64",
-            super<NumericalExpression>.problems,
-            super<NotImplemented>.problems,
-            checkFatal(byteArray.returnedRegisters == nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
-                "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}"),
-        )
+        get() =
+            combine(
+                "ieee754_64",
+                super<NumericalExpression>.problems,
+                super<NotImplemented>.problems,
+                checkFatal(
+                    byteArray.returnedRegisters ==
+                        nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
+                    "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}",
+                ),
+            )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return byteArray.getRegisterValues(schemaDevice)
-    }
+    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = byteArray.getRegisterValues(schemaDevice)
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
         val bytes = byteArray.getByteArray(schemaDevice) ?: return null

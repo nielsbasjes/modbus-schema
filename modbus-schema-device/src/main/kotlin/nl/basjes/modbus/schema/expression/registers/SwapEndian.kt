@@ -22,11 +22,11 @@ import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.utils.ByteConversions
 
-class SwapEndian(val registers: RegistersExpression) : RegistersExpression {
+class SwapEndian(
+    val registers: RegistersExpression,
+) : RegistersExpression {
 
-    override fun toString(): String {
-        return "swapendian($registers)"
-    }
+    override fun toString(): String = "swapendian($registers)"
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
@@ -39,13 +39,16 @@ class SwapEndian(val registers: RegistersExpression) : RegistersExpression {
 
     override var isImmutable: Boolean
         get() = registers.isImmutable
-        set(value) { registers.isImmutable = value }
+        set(value) {
+            registers.isImmutable = value
+        }
 
     override val problems: List<Problem>
-        get() = combine(
-            "swapendian",
-            checkFatal(registers.returnedRegisters == 1, "Need exactly 1 register")
-        )
+        get() =
+            combine(
+                "swapendian",
+                checkFatal(registers.returnedRegisters == 1, "Need exactly 1 register"),
+            )
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray? {
         val input = registers.getByteArray(schemaDevice) ?: return null

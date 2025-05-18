@@ -23,13 +23,13 @@ class RegisterValue(
     /**
      * The modbus register address.
      */
-    val address: Address
+    val address: Address,
 ) : Comparable<RegisterValue> {
     /**
      * An identifier to that can be used to ensure some registers are retrieved together.
      * By default, filled with a random unique value because we assume they are all independent.
      */
-    var fetchGroup = "FG_"+ address.toCleanFormat()
+    var fetchGroup = "FG_" + address.toCleanFormat()
 
     /**
      * Some registers will NEVER change and thus do not need to be retrieved a second time
@@ -66,9 +66,7 @@ class RegisterValue(
         return registerValue
     }
 
-    fun setValue(value: Short): RegisterValue {
-        return setValue(value, System.currentTimeMillis())
-    }
+    fun setValue(value: Short): RegisterValue = setValue(value, System.currentTimeMillis())
 
     fun setValue(registerValue: RegisterValue): RegisterValue {
         this.value           = registerValue.value
@@ -77,24 +75,17 @@ class RegisterValue(
         return this
     }
 
-    fun setValue(value: Short, timestamp: Long): RegisterValue {
+    fun setValue(
+        value: Short,
+        timestamp: Long,
+    ): RegisterValue {
         this.value = value
         this.fetchTimestamp = timestamp
         this.hardReadError = false
         return this
     }
 
-    fun hasValue(): Boolean {
-        return value != null
-    }
-
-    /** 1900-01-01T00:00:00.000Z */
-    val EPOCH_1900 = -2208988800000
-    /** 1888-08-08T08:08:08.888Z */
-    val EPOCH_1888 = -2568642711112
-
-    val NEVER_VALID_BEFORE  = EPOCH_1900
-    val READERROR_TIMESTAMP = EPOCH_1888
+    fun hasValue(): Boolean = value != null
 
     // If a read error is NOT hard it can be reset
     // If a read error IS hard it cannot be reset
@@ -112,9 +103,7 @@ class RegisterValue(
         this.hardReadError = true
     }
 
-    fun isReadError(): Boolean {
-        return value == null && fetchTimestamp == READERROR_TIMESTAMP
-    }
+    fun isReadError(): Boolean = (value == null && fetchTimestamp == READERROR_TIMESTAMP)
 
     fun clearSoftReadError() {
         if (!hardReadError) {
@@ -123,7 +112,10 @@ class RegisterValue(
         }
     }
 
-    fun needsToBeUpdated(now: Long, maxAge: Long): Boolean {
+    fun needsToBeUpdated(
+        now: Long,
+        maxAge: Long,
+    ): Boolean {
         if (isReadError()) {
             return false
         }
@@ -145,10 +137,10 @@ class RegisterValue(
         fetchTimestamp = Long.MIN_VALUE
     }
 
+    /**
+     * @return The current register value as a 4 digit HEX string in uppercase. Or "----" in case of null.
+     */
     val hexValue: String
-        /**
-         * @return The current register value as a 4 digit HEX string in uppercase. Or "----" in case of null.
-         */
         get() {
             if (hasValue()) {
                 return String.format("%04X", value)
@@ -165,12 +157,12 @@ class RegisterValue(
     override fun toString(): String {
         var stringComment = ""
         if (!comment.isNullOrBlank()) {
-            stringComment = " /* ${comment} */"
+            stringComment = " /* $comment */"
         }
         if (hasValue()) {
-            return "{$address=0x$hexValue}${stringComment}"
+            return "{$address=0x$hexValue}$stringComment"
         }
-        return "{$address= $hexValue${stringComment}"
+        return "{$address=$hexValue}$stringComment"
     }
 
     override fun compareTo(other: RegisterValue): Int {
@@ -188,6 +180,7 @@ class RegisterValue(
         if (other !is RegisterValue) {
             return false
         }
+        @Suppress("ktlint:standard:indent")
         return  immutable       == other.immutable &&
                 value           == other.value &&
                 fetchTimestamp  == other.fetchTimestamp &&
@@ -202,3 +195,15 @@ class RegisterValue(
         return result
     }
 }
+
+/** 1900-01-01T00:00:00.000Z */
+const val EPOCH_1900 = -2208988800000
+
+/** 1888-08-08T08:08:08.888Z */
+const val EPOCH_1888 = -2568642711112
+
+/** All timestamps before 1900 are considered to be invalid */
+const val NEVER_VALID_BEFORE  = EPOCH_1900
+
+/** Use this timestamp in case of a read error */
+const val READERROR_TIMESTAMP = EPOCH_1888

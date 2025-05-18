@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import java.io.File
 
+@Suppress("unused") // Use reflection via @Mojo annotation
 @Mojo(name = "generate-main", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
 class GenerateMainMojo: AbstractMojo() {
     @Parameter(defaultValue = "\${project.build.directory}/generated-sources/modbus-schema/", required = true)
@@ -57,7 +58,7 @@ class GenerateMainMojo: AbstractMojo() {
             packageName,
             className,
             language,
-            "main"
+            "main",
         )
         if (project != null && outputDirectory != null) {
             project!!.addCompileSourceRoot(outputDirectory.absolutePath + File.separator + language)

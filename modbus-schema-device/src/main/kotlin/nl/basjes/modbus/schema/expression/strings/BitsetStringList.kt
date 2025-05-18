@@ -29,34 +29,38 @@ class BitsetStringList(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
     val mappings: Map<Int, String>,
-) : NotImplemented(registers.returnedRegisters, notImplemented), StringListExpression {
+) : NotImplemented(registers.returnedRegisters, notImplemented),
+    StringListExpression {
 
-    override fun toString(): String {
-        return "bitset(" + registers + super<NotImplemented>.toString() +
+    override fun toString(): String =
+        "bitset(" + registers + super<NotImplemented>.toString() +
             " ; " + mappings.entries.joinToString(" ; ") { "${it.key}->'${it.value}'" } +
             ")"
-    }
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
 
     override var isImmutable: Boolean
         get() = registers.isImmutable
-        set(value) { registers.isImmutable = value }
+        set(value) {
+            registers.isImmutable = value
+        }
 
     override val problems: List<Problem>
         get() =
             combine(
                 "bitset",
                 checkFatal(registers.returnedRegisters > 0, "No registers"),
-                checkFatal(registers.returnedRegisters <= nl.basjes.modbus.schema.expression.LONG_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER, "Too many registers"),
+                checkFatal(
+                    registers.returnedRegisters <=
+                        nl.basjes.modbus.schema.expression.LONG_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
+                    "Too many registers",
+                ),
                 super<StringListExpression>.problems,
                 super<NotImplemented>.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return registers.getRegisterValues(schemaDevice)
-    }
+    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
     override fun getValue(schemaDevice: SchemaDevice): List<String>? {
         val bytes = registers.getByteArray(schemaDevice)

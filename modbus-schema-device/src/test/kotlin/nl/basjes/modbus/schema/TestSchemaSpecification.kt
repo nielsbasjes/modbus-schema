@@ -35,16 +35,16 @@ class TestSchemaSpecification {
         fun listFilesInJar(jar: URL): List<String> {
             val result = mutableListOf<String>()
             LOG.warn("Said to open $jar")
-            val zip = ZipInputStream(jar.openStream());
+            val zip = ZipInputStream(jar.openStream())
             LOG.warn("Have zipfile: $zip")
 
-            while(true) {
-                val entry = zip.nextEntry ?: break;
-                val name = entry.name;
+            while (true) {
+                val entry = zip.nextEntry ?: break
+                val name = entry.name
 //                LOG.warn("Found entry: $name")
-                result.add(name);
+                result.add(name)
             }
-            return result;
+            return result
         }
 
         @JvmStatic
@@ -56,13 +56,13 @@ class TestSchemaSpecification {
             val result = mutableListOf<String>()
 
             File(dir.file).walkTopDown().forEach {
-                file: File -> if (file.extension == "yaml") {
-                    result.add(file.absolutePath)
+                if (it.extension == "yaml") {
+                    result.add(it.absolutePath)
                 }
             }
             if (result.isEmpty()) {
                 LOG.info("Trying to load from reading ZIP file")
-                val zipfileUrl = URI(dir.toString().split('!', limit = 2)[0].replace("jar:","")).toURL();
+                val zipfileUrl = URI(dir.toString().split('!', limit = 2)[0].replace("jar:", "")).toURL()
                 result.addAll(listFilesInJar(zipfileUrl))
             }
             if (result.isEmpty()) {
@@ -97,5 +97,4 @@ class TestSchemaSpecification {
         }
         require(!failed) { "Unable to verify all tests defined in the schema definition" }
     }
-
 }

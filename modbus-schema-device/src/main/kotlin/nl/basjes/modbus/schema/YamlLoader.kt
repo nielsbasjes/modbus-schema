@@ -37,13 +37,13 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 
-
-val yamlConfiguration = YamlConfiguration(
-    encodeDefaults = false,
-    breakScalarsAt = 100000,
-    singleLineStringStyle = SingleLineStringStyle.SingleQuoted,
-    multiLineStringStyle = MultiLineStringStyle.Literal,
-    sequenceBlockIndent = 2,
+val yamlConfiguration =
+    YamlConfiguration(
+        encodeDefaults = false,
+        breakScalarsAt = 100000,
+        singleLineStringStyle = SingleLineStringStyle.SingleQuoted,
+        multiLineStringStyle = MultiLineStringStyle.Literal,
+        sequenceBlockIndent = 2,
     )
 
 val yaml: Yaml = Yaml(configuration = yamlConfiguration)
@@ -57,22 +57,24 @@ fun String.toSchemaDevice(): SchemaDevice {
     }
 
     for (schemaBlock in parsedSchema.blocks) {
-        val block = Block(
-            schemaDevice = schemaDevice,
-            id            = schemaBlock.id,
-            description   = schemaBlock.description
-        )
+        val block =
+            Block(
+                schemaDevice = schemaDevice,
+                id = schemaBlock.id,
+                description = schemaBlock.description,
+            )
         schemaDevice.addBlock(block)
         for (schemaField in schemaBlock.fields) {
-            val field = Field(
-                block       = block,
-                id          = schemaField.id,
-                description = schemaField.description,
-                expression  = schemaField.expression,
-                unit        = schemaField.unit,
-                immutable   = schemaField.immutable,
-                system = schemaField.system,
-            )
+            val field =
+                Field(
+                    block = block,
+                    id = schemaField.id,
+                    description = schemaField.description,
+                    expression = schemaField.expression,
+                    unit = schemaField.unit,
+                    immutable = schemaField.immutable,
+                    system = schemaField.system,
+                )
             block.addField(field)
         }
     }
@@ -88,7 +90,7 @@ fun String.toSchemaDevice(): SchemaDevice {
         }
 
         for (testBlock in schemaTest.blocks) {
-            val expectedBlock= ExpectedBlock(testBlock.id)
+            val expectedBlock = ExpectedBlock(testBlock.id)
             testBlock.expected.forEach { (field, value) -> expectedBlock.addExpectation(field, value) }
             testScenario.addExpectedBlock(expectedBlock)
         }
@@ -107,7 +109,7 @@ fun String.toSchemaDevice(): SchemaDevice {
                 } else {
                     "\n[FAIL] Schema test \"${it.testName}\":\nFailed fields:\n${it.toTable(true)}"
                 }
-            }
+            },
         )
     }
 
@@ -131,7 +133,8 @@ fun InputStream.toSchemaDevice(): SchemaDevice {
 
 // ------------------------------------------
 
-fun Field.toSchema(): SchemaField = SchemaField(
+fun Field.toSchema(): SchemaField =
+    SchemaField(
         id,
         description,
         immutable = isImmutable,
@@ -147,7 +150,7 @@ fun Block.toSchema(): SchemaBlock {
         schemaFields.add(field.toSchema())
     }
 
-    var schemaDescription:String? = null
+    var schemaDescription: String? = null
     val blockDescription = description
     if (!blockDescription.isNullOrEmpty()) {
         schemaDescription = blockDescription
@@ -156,13 +159,13 @@ fun Block.toSchema(): SchemaBlock {
     return SchemaBlock(
         id,
         schemaDescription,
-        schemaFields
+        schemaFields,
     )
 }
 
 fun TestScenario.toSchema(): SchemaTest {
-    val testRegisters:  MutableList<SchemaTestRegisters>    = mutableListOf()
-    val testBlocks:     MutableList<SchemaTestBlock>        = mutableListOf()
+    val testRegisters: MutableList<SchemaTestRegisters> = mutableListOf()
+    val testBlocks: MutableList<SchemaTestBlock> = mutableListOf()
 
     for (registerBlock in registerBlocks) {
         testRegisters.add(registerBlock.toSchema())
@@ -173,10 +176,10 @@ fun TestScenario.toSchema(): SchemaTest {
     }
 
     return SchemaTest(
-        name ,
+        name,
         if (description.isNullOrEmpty()) null else description,
         testRegisters,
-        testBlocks
+        testBlocks,
     )
 }
 
@@ -192,7 +195,7 @@ fun RegisterBlock.toSchema(): SchemaTestRegisters {
             sb.append("\n\n# " + comment.replace("\n", "\n# ") + "\n")
             lineCount = 0
         }
-        if (lineCount>0) {
+        if (lineCount > 0) {
             sb.append(" ")
         }
         sb.append(registerValue.hexValue)
@@ -205,7 +208,7 @@ fun RegisterBlock.toSchema(): SchemaTestRegisters {
 
     return SchemaTestRegisters(
         firstAddress.toCleanFormat(),
-        sb.toString()
+        sb.toString(),
     )
 }
 
@@ -260,18 +263,15 @@ data class SchemaBlock(
      * So "CamelCase" (without spaces, starting with a letter) is a good choice.
      */
     val id: String,
-
     /**
      * The human-readable description of the block.
      */
     val description: String? = null,
-
     /** A list of all the fields in this block */
     val fields: List<SchemaField>,
 ) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }
-
 
 @Serializable
 data class SchemaField(
@@ -281,10 +281,8 @@ data class SchemaField(
      * So "CamelCase" (without spaces) is a good choice.
      */
     val id: String,
-
     /** Human-readable description of the field. */
     val description: String = "",
-
     /**
      * If a field NEVER changes then this can be se to true.
      * This allows a library to only read this value the first time
@@ -292,26 +290,22 @@ data class SchemaField(
      * An example of these are software version numbers and the scaling factor as used by SunSpec.
      */
     val immutable: Boolean = false,
-
     /**
      * Some fields are system fields which means they should not be used by the application.
      * An example of these are the scaling factor as used by SunSpec.
      */
     val system: Boolean = false,
-
     /**
      * The expression that defines how this Field gets its value.
      */
     @YamlSingleLineStringStyle(SingleLineStringStyle.SingleQuoted)
     @YamlMultiLineStringStyle(MultiLineStringStyle.Literal)
     val expression: String,
-
     /** Human-readable unit of the field (like 'V' for Volt or '%' for percentage).     */
     val unit: String = "",
 ) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }
-
 
 @Serializable
 data class SchemaTest(
@@ -326,8 +320,8 @@ data class SchemaTest(
     /** A list of 1 or more register blocks used for the test. */
     val input: List<SchemaTestRegisters>,
     /** Per block which field values are expected. */
-    val blocks: List<SchemaTestBlock>
-)  {
+    val blocks: List<SchemaTestBlock>,
+) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }
 
@@ -339,7 +333,7 @@ data class SchemaTestRegisters(
     @YamlSingleLineStringStyle(SingleLineStringStyle.Plain)
     @YamlMultiLineStringStyle(MultiLineStringStyle.Literal)
     val registers: String,
-)  {
+) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }
 
@@ -351,9 +345,8 @@ data class SchemaTestBlock(
      * So "CamelCase" (without spaces, starting with a letter) is a good choice.
      */
     val id: String,
-
     /** A map of all field ids and the expected value given the provided registers. */
-    val expected: Map<String, List<String>>
-)  {
+    val expected: Map<String, List<String>>,
+) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }

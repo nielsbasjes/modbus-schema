@@ -17,8 +17,6 @@
 package nl.basjes.modbus.device.digitalpetri
 
 import com.digitalpetri.modbus.client.ModbusClient
-import com.digitalpetri.modbus.exceptions.ModbusException as DPModbusException
-import com.digitalpetri.modbus.exceptions.ModbusResponseException as DPModbusResponseException
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest
 import com.digitalpetri.modbus.pdu.ReadInputRegistersRequest
 import nl.basjes.modbus.device.api.Address
@@ -33,6 +31,8 @@ import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
 import nl.basjes.modbus.device.exception.createReadErrorResponse
+import com.digitalpetri.modbus.exceptions.ModbusException as DPModbusException
+import com.digitalpetri.modbus.exceptions.ModbusResponseException as DPModbusResponseException
 
 /**
  * An instance of a ModbusDevice that uses the DigitalPetri library for the Modbus connection
@@ -47,7 +47,6 @@ class ModbusDeviceDigitalPetri(
      */
     private val unitId: Int,
 ) : ModbusDevice() {
-
     init {
         require(client.isConnected) { "The provided client must be connected" }
 
@@ -61,52 +60,65 @@ class ModbusDeviceDigitalPetri(
     }
 
     @Throws(ModbusException::class)
-    override fun getRegisters(firstRegister: Address, count: Int): RegisterBlock {
+    override fun getRegisters(
+        firstRegister: Address,
+        count: Int,
+    ): RegisterBlock {
         when (val functionCode = forReading(firstRegister.addressClass)) {
             READ_COIL,
-            READ_DISCRETE_INPUT ->
+            READ_DISCRETE_INPUT,
+            -> {
                 throw NotYetImplementedException("Reading a ${firstRegister.addressClass} has not yet been implemented")
+            }
 
             READ_HOLDING_REGISTERS -> {
-                    try {
-                        val response = client.readHoldingRegisters(
+                try {
+                    val response =
+                        client.readHoldingRegisters(
                             unitId,
-                            ReadHoldingRegistersRequest(firstRegister.physicalAddress, count)
+                            ReadHoldingRegistersRequest(firstRegister.physicalAddress, count),
                         )
-                        return buildRegisterBlock(firstRegister, response.registers)
-                    } catch (_: DPModbusResponseException) {
-                        return createReadErrorResponse(firstRegister, count)
-                    } catch (e: DPModbusException) {
-                        throw ModbusException(
-                            "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
-                            e,
-                        )
-                    }
+                    return buildRegisterBlock(firstRegister, response.registers)
+                } catch (_: DPModbusResponseException) {
+                    return createReadErrorResponse(firstRegister, count)
+                } catch (e: DPModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
+                        e,
+                    )
                 }
+            }
 
             READ_INPUT_REGISTERS -> {
-                    try {
-                        val response = client.readInputRegisters(
+                try {
+                    val response =
+                        client.readInputRegisters(
                             unitId,
-                            ReadInputRegistersRequest(firstRegister.physicalAddress, count)
+                            ReadInputRegistersRequest(firstRegister.physicalAddress, count),
                         )
-                        return buildRegisterBlock(firstRegister, response.registers)
-                    } catch (_: DPModbusResponseException) {
-                        return createReadErrorResponse(firstRegister, count)
-                    } catch (e: com.digitalpetri.modbus.exceptions.ModbusException) {
-                        throw ModbusException(
-                            "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
-                            e,
-                        )
-                    }
+                    return buildRegisterBlock(firstRegister, response.registers)
+                } catch (_: DPModbusResponseException) {
+                    return createReadErrorResponse(firstRegister, count)
+                } catch (e: ModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
+                        e,
+                    )
                 }
+            }
 
-            else ->
-                throw NotYetImplementedException("The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented")
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented",
+                )
+            }
         }
     }
 
-    private fun buildRegisterBlock(firstAddress: Address, bytes: ByteArray?): RegisterBlock {
+    private fun buildRegisterBlock(
+        firstAddress: Address,
+        bytes: ByteArray?,
+    ): RegisterBlock {
         // Record all received values under the current timestamp.
         // Many devices have a bad clock.
         val now = System.currentTimeMillis()
@@ -121,15 +133,15 @@ class ModbusDeviceDigitalPetri(
             throw ModbusException("Received an odd number of bytes (${bytes.size}) for the registers")
         }
 
-        for (registerNr in 0 until bytes.size/2) {
-            val byte0: Int = bytes[registerNr*2].toInt()
-            val byte1: Int = bytes[(registerNr*2)+1].toInt()
-            val register:Short =
+        for (registerNr in 0 until bytes.size / 2) {
+            val byte0: Int = bytes[registerNr * 2].toInt()
+            val byte1: Int = bytes[(registerNr * 2) + 1].toInt()
+            val register: Short =
                 (
                     (
                         ((byte0 shl 8) and 0xFF00)
                             or
-                        (byte1 and 0x00FF)
+                            (byte1 and 0x00FF)
                     ) and 0xFFFF
                 ).toShort()
 

@@ -38,7 +38,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class TestAddress {
-    private fun checkAllAreEqual(expectedAddress: Address, vararg registerTags: String) {
+    private fun checkAllAreEqual(
+        expectedAddress: Address,
+        vararg registerTags: String,
+    ) {
         checkAllAreEqualInternal(expectedAddress, *registerTags)
 
         // Now convert the provided address to the Modicon 5 format and do the same again
@@ -82,7 +85,10 @@ internal class TestAddress {
         checkAllAreEqualInternal(cleanAddress, *registerTags)
     }
 
-    private fun checkAllAreEqualInternal(expectedAddress: Address, vararg registerTags: String) {
+    private fun checkAllAreEqualInternal(
+        expectedAddress: Address,
+        vararg registerTags: String,
+    ) {
         assertNotNull(expectedAddress)
         for (registerTag in registerTags) {
             val address = Address.of(registerTag)
@@ -96,74 +102,103 @@ internal class TestAddress {
         }
     }
 
-
     @Test
     fun checkAddressParsingAndComparing() {
         // A coil at address 4321.
         checkAllAreEqual(
             Address.of(COIL, 4321),
-            "coil:4321", "c:000000004321",
+            "coil:4321",
+            "c:000000004321",
             // Old style using register number instead of physical address
-            "004322", "0x000004322", "04322", "0x4322"
+            "004322",
+            "0x000004322",
+            "04322",
+            "0x4322",
         )
 
         // A discrete input at address 4321.
         checkAllAreEqual(
             Address.of(DISCRETE_INPUT, 4321),
-            "discrete-input:4321", "di:000004321",
+            "discrete-input:4321",
+            "di:000004321",
             // Old style using register number instead of physical address
-            "104322", "1x000004322", "14322", "1x4322"
+            "104322",
+            "1x000004322",
+            "14322",
+            "1x4322",
         )
 
         // An input register at address 1234.
         checkAllAreEqual(
             Address.of(INPUT_REGISTER, 1234),
-            "input-register:1234", "ir:000000001234",
+            "input-register:1234",
+            "ir:000000001234",
             // Old style using register number instead of physical address
-            "301235", "3x000001235", "31235", "3x1235"
+            "301235",
+            "3x000001235",
+            "31235",
+            "3x1235",
         )
 
         // A holding register at address 20.
         checkAllAreEqual(
             Address.of(HOLDING_REGISTER, 20),
-            "holding-register:20", "hr:0000020",
+            "holding-register:20",
+            "hr:0000020",
             // Old style using register number instead of physical address
-            "400021", "4x000000021", "40021", "4x0021"
+            "400021",
+            "4x000000021",
+            "40021",
+            "4x0021",
         )
 
         // A holding register at address 5678.
         checkAllAreEqual(
             Address.of(HOLDING_REGISTER, 5678),
-            "holding-register:5678", "hr:000005678",
+            "holding-register:5678",
+            "hr:000005678",
             // Old style using register number instead of physical address
-            "405679", "4x000005679", "45679", "4x5679"
+            "405679",
+            "4x000005679",
+            "45679",
+            "4x5679",
         )
 
         // A holding register number 9999 (last possible modicon 5).
         assertEquals("49999", Address.of("409999").toModicon5())
         checkAllAreEqual(
             Address.of(HOLDING_REGISTER, 9998),
-            "holding-register:9998", "hr:000009998",
+            "holding-register:9998",
+            "hr:000009998",
             // Old style using register number instead of physical address
-            "409999", "4x000009999", "49999", "4x9999"
+            "409999",
+            "4x000009999",
+            "49999",
+            "4x9999",
         )
 
         // A holding register number 10000 (NOT possible modicon 5).
         assertNull(Address.of("410000").toModicon5())
         checkAllAreEqual(
             Address.of(HOLDING_REGISTER, 9999),
-            "holding-register:9999", "hr:000009999",
+            "holding-register:9999",
+            "hr:000009999",
             // Old style using register number instead of physical address
-            "410000", "4x0000010000", "4x10000"
+            "410000",
+            "4x0000010000",
+            "4x10000",
         )
 
         // A holding register at address 12345 (i.e. > 9999 so NO modicon 5 digit possible!).
         assertNull(Address.of("412346").toModicon5())
         checkAllAreEqual(
             Address.of(HOLDING_REGISTER, 12345),
-            "holding-register:12345", "hr:0000012345",
+            "holding-register:12345",
+            "hr:0000012345",
             // Old style using register number instead of physical address
-            "4x0000012346", "412346", "4x12346"
+            "4x0000012346",
+            "412346",
+            "4x12346",
         )
     }
 
@@ -187,8 +222,7 @@ internal class TestAddress {
 
         // Write many
         assertEquals(WRITE_MULTIPLE_COILS,                  forWritingMultiple(COIL))
-        assertEquals(WRITE_MULTIPLE_HOLDING_REGISTERS,      forWritingMultiple(HOLDING_REGISTER)
-        )
+        assertEquals(WRITE_MULTIPLE_HOLDING_REGISTERS,      forWritingMultiple(HOLDING_REGISTER))
     }
 
     @Test
@@ -233,30 +267,31 @@ internal class TestAddress {
         assertEquals(23, Address.of("hr:0100").distance(Address.of("hr:0123")))
         assertEquals(-23, Address.of("hr:0123").distance(Address.of("hr:0100")))
 
-        val list = listOf(
-            Address.of(" hr:00217"),
-            Address.of(" hr:00218"),
-            Address.of(" hr:00219"),
-            Address.of(" hr:00220"),
-            Address.of(" hr:00221"),
-            Address.of(" hr:00222"),
-            Address.of(" hr:00223"),
-            Address.of(" hr:00224"),
-            Address.of(" hr:00225"),
-            Address.of(" hr:00226"),
-            Address.of(" hr:00227"),
-            Address.of(" hr:00228"),
-            Address.of(" hr:00229"),
-            Address.of(" hr:00230"),
-            Address.of(" hr:00231"),
-            Address.of(" hr:00232"),
-            Address.of(" hr:00233"),
-            Address.of(" hr:00234"),
-            Address.of(" hr:00235"),
-            Address.of(" hr:00236"),
-            Address.of(" hr:00237"),
-            Address.of(" hr:00238"),
-        )
+        val list =
+            listOf(
+                Address.of(" hr:00217"),
+                Address.of(" hr:00218"),
+                Address.of(" hr:00219"),
+                Address.of(" hr:00220"),
+                Address.of(" hr:00221"),
+                Address.of(" hr:00222"),
+                Address.of(" hr:00223"),
+                Address.of(" hr:00224"),
+                Address.of(" hr:00225"),
+                Address.of(" hr:00226"),
+                Address.of(" hr:00227"),
+                Address.of(" hr:00228"),
+                Address.of(" hr:00229"),
+                Address.of(" hr:00230"),
+                Address.of(" hr:00231"),
+                Address.of(" hr:00232"),
+                Address.of(" hr:00233"),
+                Address.of(" hr:00234"),
+                Address.of(" hr:00235"),
+                Address.of(" hr:00236"),
+                Address.of(" hr:00237"),
+                Address.of(" hr:00238"),
+            )
 
         val firstAddress = Address.of("hr:00199")
 
@@ -265,7 +300,10 @@ internal class TestAddress {
         }
     }
 
-    fun List<Address>.overlaps(firstAddress: Address, count: Int): Boolean {
+    fun List<Address>.overlaps(
+        firstAddress: Address,
+        count: Int,
+    ): Boolean {
         if (this.isEmpty()) {
             return false
         }
@@ -273,7 +311,7 @@ internal class TestAddress {
 
         return this
             .mapNotNull { firstAddress.distance(it) }
-            .any { it in 0 .. count }
+            .any { it in 0..count }
     }
 
     companion object {

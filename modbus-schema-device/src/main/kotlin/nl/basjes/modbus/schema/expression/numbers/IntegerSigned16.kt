@@ -32,5 +32,4 @@ class IntegerSigned16(
         }
         return ByteConversions.bytesToShort(bytes).toLong()
     }
-
 }

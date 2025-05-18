@@ -18,6 +18,7 @@ package nl.basjes.modbus.schema.utils
 
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToFloat
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToInteger
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToLong
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToShort
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToString
 import nl.basjes.modbus.schema.utils.ByteConversions.stringToBytes
@@ -40,28 +41,35 @@ internal class TestScenarioByteConversions {
         verifyHexString("    ", byteArrayOf())
         verifyHexString("00", byteArrayOf(0x00.toByte()))
         verifyHexString(" 0 0 ", byteArrayOf(0x00.toByte()))
-        verifyHexString("0123456789AbCdEf",byteArrayOf(0x01.toByte(),0x23.toByte(),0x45.toByte(),0x67.toByte(),0x89.toByte(),0xAB.toByte(),0xCD.toByte(),0xEF.toByte()))
-        verifyHexString("0 12 345 678 9Ab CdE f",byteArrayOf(0x01.toByte(),0x23.toByte(),0x45.toByte(),0x67.toByte(),0x89.toByte(),0xAB.toByte(),0xCD.toByte(),0xEF.toByte()))
-        verifyHexString("0x0123 0x4567 0x89 0xAbCd 0xEf",byteArrayOf(0x01.toByte(),0x23.toByte(),0x45.toByte(),0x67.toByte(),0x89.toByte(),0xAB.toByte(),0xCD.toByte(),0xEF.toByte())
-       )
+
+        val theByteArray = byteArrayOf(0x01.toByte(),0x23.toByte(),0x45.toByte(),0x67.toByte(),0x89.toByte(),0xAB.toByte(),0xCD.toByte(),0xEF.toByte())
+        verifyHexString("0123456789AbCdEf", theByteArray)
+        verifyHexString("0 12 345 678 9Ab CdE f", theByteArray)
+        verifyHexString("0x0123 0x4567 0x89 0xAbCd 0xEf", theByteArray)
     }
 
-    private fun verifyHexString(input: String, bytes: ByteArray) {
+    private fun verifyHexString(
+        input: String,
+        bytes: ByteArray,
+    ) {
         logger.info("\"{}\" --> \"{}\" ", input, ByteConversions.bytesToHexString(ByteConversions.hexStringToBytes(input)))
         assertArrayEquals(
             bytes,
             ByteConversions.hexStringToBytes(input),
-            "Mismatch in bytes for input: \"$input\""
+            "Mismatch in bytes for input: \"$input\"",
         )
         assertArrayEquals(
             bytes,
             ByteConversions.hexStringToBytes(ByteConversions.bytesToHexString(bytes)),
-            "byte[]-String-byte[] round trip for $input"
+            "byte[]-String-byte[] round trip for $input",
         )
     }
 
-
-    private fun checkSplit(input: String, size: Int, vararg splits: String) {
+    private fun checkSplit(
+        input: String,
+        size: Int,
+        vararg splits: String,
+    ) {
         assertEquals(listOf(*splits), ByteConversions.splitStringBySize(input, size))
     }
 
@@ -101,7 +109,10 @@ internal class TestScenarioByteConversions {
     }
 
     // ------------------------------------------------------------
-    private fun verifyString(value: String, expectedChars: Int) {
+    private fun verifyString(
+        value: String,
+        expectedChars: Int,
+    ) {
         verifyString(value)
         assertEquals(expectedChars, value.toCharArray().size)
     }
@@ -113,7 +124,7 @@ internal class TestScenarioByteConversions {
             "[STRING] {} --> | {} | --> {}",
             "\"$value\"",
             ByteConversions.bytesToHexString(bytes),
-            if (result == null) "null" else "\"" + result + "\""
+            if (result == null) "null" else "\"" + result + "\"",
         )
         assertEquals(value, result)
     }
@@ -219,7 +230,7 @@ internal class TestScenarioByteConversions {
     // ------------------------------------------------------------
     private fun verifyLong(value: Long) {
         val bytes = ByteConversions.longToBytes(value)
-        val result = ByteConversions.bytesToLong(bytes)
+        val result = bytesToLong(bytes)
         logger.info("[LONG] {} --> | {} | --> {}", value, ByteConversions.bytesToHexString(bytes), result)
         assertEquals(value, result)
     }
@@ -237,7 +248,6 @@ internal class TestScenarioByteConversions {
         verifyLong(Long.MAX_VALUE)
     }
 
-
     // ------------------------------------------------------------
     private fun verifyFloat(value: Float) {
         val bytes = ByteConversions.floatToBytes(value)
@@ -249,17 +259,16 @@ internal class TestScenarioByteConversions {
     @Test
     fun testFloat() {
         verifyFloat(Float.MIN_VALUE)
-        verifyFloat(-1234567.890f)
+        verifyFloat(-1234567.8f)
         verifyFloat(-1.2f)
         verifyFloat(0f)
         verifyFloat(1.2f)
-        verifyFloat(1234567.890f)
+        verifyFloat(1234567.8f)
         verifyFloat(Float.MAX_VALUE)
         verifyFloat(Float.NEGATIVE_INFINITY)
         verifyFloat(Float.POSITIVE_INFINITY)
         verifyFloat(Float.NaN)
     }
-
 
     // ------------------------------------------------------------
     private fun verifyDouble(value: Double) {
@@ -289,79 +298,79 @@ internal class TestScenarioByteConversions {
         assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf()) }
         assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00)) }
         // 2 bytes is the only valid number
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09))}
-        assertThrows<IllegalArgumentException> {bytesToShort(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A))}
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09)) }
+        assertThrows<IllegalArgumentException> { bytesToShort(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A)) }
     }
 
     @Test
     fun testInvalidBytesToInteger() {
         assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf()) }
         assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00)) }
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02))}//
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02)) }
         // 4 bytes is the only valid number
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09))}
-        assertThrows<IllegalArgumentException> {bytesToInteger(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A))}
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09)) }
+        assertThrows<IllegalArgumentException> { bytesToInteger(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A)) }
     }
 
     @Test
     fun testInvalidBytesToLong() {
-        assertThrows<IllegalArgumentException> { ByteConversions.bytesToLong(byteArrayOf()) }
-        assertThrows<IllegalArgumentException> { ByteConversions.bytesToLong(byteArrayOf(0x00)) }
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03,0x04))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06))}
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf()) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06)) }
         // 8 bytes is the only valid number
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToLong(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A))}
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09)) }
+        assertThrows<IllegalArgumentException> { bytesToLong(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A)) }
     }
 
     @Test
     fun testInvalidBytesToFloat() {
         assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf()) }
         assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02)) }
         // 4 bytes is the only valid number
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09)) }
-        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09)) }
+        assertThrows<IllegalArgumentException> { bytesToFloat(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A)) }
     }
 
     @Test
     fun testInvalidBytesToDouble() {
         assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf()) }
         assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00)) }
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03,0x04))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06))}
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06)) }
         // 8 bytes is the only valid number
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09))}
-        assertThrows<IllegalArgumentException> {ByteConversions.bytesToDouble(byteArrayOf(0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A))}
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09)) }
+        assertThrows<IllegalArgumentException> { ByteConversions.bytesToDouble(byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A)) }
     }
 
 }

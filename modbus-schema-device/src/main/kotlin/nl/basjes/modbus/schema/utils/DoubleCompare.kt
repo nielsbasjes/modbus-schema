@@ -71,7 +71,7 @@ object DoubleCompare {
     fun closeEnough(
         one: Double,
         two: Double,
-        closeEnoughLog10Difference: Double = CLOSE_ENOUGH_LOG10_DIFFERENCE
+        closeEnoughLog10Difference: Double = CLOSE_ENOUGH_LOG10_DIFFERENCE,
     ): Boolean {
         if (one.isFinite() && two.isFinite()) {
             val oneLog10 = log10(one)

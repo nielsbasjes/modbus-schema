@@ -37,5 +37,4 @@ class IntegerUnsigned64(
         }
         return ByteConversions.bytesToLong(bytes)
     }
-
 }

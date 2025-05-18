@@ -22,28 +22,29 @@ import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 
-class StringFromNumber(val numericalExpression: NumericalExpression): StringExpression {
-    override fun toString(): String {
-        return "$numericalExpression"
-    }
+class StringFromNumber(
+    val numericalExpression: NumericalExpression,
+) : StringExpression {
+
+    override fun toString(): String = "$numericalExpression"
 
     override val subExpressions: List<Expression>
         get() = listOf(numericalExpression)
 
     override fun getValue(schemaDevice: SchemaDevice): String =
-        when(numericalExpression.returnType) {
-            ReturnType.DOUBLE ->     (numericalExpression.getValueAsDouble(schemaDevice) ?: "").toString()
-            ReturnType.LONG ->       (numericalExpression.getValueAsLong(schemaDevice)   ?: "").toString()
-            ReturnType.UNKNOWN ->     error("Should never have a NumericalExpression that returns a UNKNOWN")
-            ReturnType.BOOLEAN ->     error("Should never have a NumericalExpression that returns a BOOLEAN")
-            ReturnType.STRING ->      error("Should never have a NumericalExpression that returns a STRING")
-            ReturnType.STRINGLIST ->  error("Should never have a NumericalExpression that returns a STRINGLIST")
+        when (numericalExpression.returnType) {
+            ReturnType.DOUBLE     -> (numericalExpression.getValueAsDouble(schemaDevice) ?: "").toString()
+            ReturnType.LONG       -> (numericalExpression.getValueAsLong(schemaDevice) ?: "").toString()
+            ReturnType.UNKNOWN    -> error("Should never have a NumericalExpression that returns a UNKNOWN")
+            ReturnType.BOOLEAN    -> error("Should never have a NumericalExpression that returns a BOOLEAN")
+            ReturnType.STRING     -> error("Should never have a NumericalExpression that returns a STRING")
+            ReturnType.STRINGLIST -> error("Should never have a NumericalExpression that returns a STRINGLIST")
         }
 
     override val problems: List<Problem>
-        get() = combine(
-            "StringFromNumber",
-            super.problems,
-        )
-
+        get() =
+            combine(
+                "StringFromNumber",
+                super.problems,
+            )
 }

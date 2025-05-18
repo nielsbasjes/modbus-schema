@@ -16,6 +16,7 @@
  */
 package nl.basjes.modbus.device.api
 
+@Suppress("ktlint:standard:paren-spacing")
 enum class AddressClass(
     /** The "offset" used in the modicon notation. (I.e. the address is shifted by this much (* 10000, or * 100000) when specified).  */
     val baseOffset: Int,
@@ -30,16 +31,20 @@ enum class AddressClass(
     /** The additional labels on which the instance must also be returned.  */
     val shortLabel: String,
     val longLabel: String,
-    vararg labels: String
+    vararg labels: String,
 ) {
     /** A Coil is a read/write single bit value */
     COIL(             0,  1, 1, "Coil",             "COIL",             "c",  "coil",             "coil",             "coils"),
+
     /** A Discrete Input is a readonly single bit value */
     DISCRETE_INPUT(   1,  1, 1, "Discrete Input",   "DISCRETE_INPUT",   "di", "discrete-input",   "discrete input",   "discrete inputs"),
+
     /** An Input Register is a readonly 16 bit register */
-    INPUT_REGISTER(   3, 16, 1, "Input Register",   "INPUT_REGISTER",   "ir", "input-register",   "input register",   "input registers" ),
+    INPUT_REGISTER(   3, 16, 1, "Input Register",   "INPUT_REGISTER",   "ir", "input-register",   "input register",   "input registers"),
+
     /** A Holding Register is a read/write 16 bit register */
-    HOLDING_REGISTER( 4, 16, 1, "Holding Register", "HOLDING_REGISTER", "hr", "holding-register", "holding register", "holding registers" );
+    HOLDING_REGISTER( 4, 16, 1, "Holding Register", "HOLDING_REGISTER", "hr", "holding-register", "holding register", "holding registers"),
+    ;
 
     val labels: MutableList<String> = ArrayList()
 
@@ -84,8 +89,6 @@ enum class AddressClass(
          * @return The requested AddressClass or null if not found
          */
         @JvmStatic
-        fun of(baseOffset: Int): AddressClass {
-            return of(baseOffset.toString())
-        }
+        fun of(baseOffset: Int): AddressClass = of(baseOffset.toString())
     }
 }

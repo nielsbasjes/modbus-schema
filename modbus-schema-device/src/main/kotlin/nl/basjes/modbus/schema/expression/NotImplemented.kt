@@ -24,9 +24,8 @@ import nl.basjes.modbus.schema.utils.ByteConversions.hexStringToBytes
 
 abstract class NotImplemented(
     private val expectedRegisters: Int,
-    notImplementedStrings: List<String>
-): Expression {
-
+    notImplementedStrings: List<String>,
+) : Expression {
     override fun toString(): String {
         if (notImplementedStrings.isEmpty()) {
             return ""
@@ -41,24 +40,23 @@ abstract class NotImplemented(
     init {
         for (notImplementedByte in notImplementedBytes) {
             this.notImplementedStrings.add(
-                "0x" + bytesToSeparatedTwoByteHexString(notImplementedByte," 0x")
+                "0x" + bytesToSeparatedTwoByteHexString(notImplementedByte, " 0x"),
             )
             this.notImplemented.add(bytesToTwoByteHexStringList(notImplementedByte))
         }
     }
 
     override val problems: List<Problem>
-        get() = combine(
-            "NotImplemented",
-            checkFatal(isValidNotImplemented(expectedRegisters * nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER),
-                "Wrong number of registers: Got ${notImplementedBytes.size}, need ${expectedRegisters * nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}"),
-        )
+        get() =
+            combine(
+                "NotImplemented",
+                checkFatal(
+                    isValidNotImplemented(expectedRegisters * BYTES_PER_REGISTER),
+                    "Wrong number of registers: Got ${notImplementedBytes.size}, need ${expectedRegisters * BYTES_PER_REGISTER}",
+                ),
+            )
 
-    fun isValidNotImplemented(byteCount: Int): Boolean {
-        return ByteConversions.allAreOfSize(notImplementedBytes, byteCount)
-    }
+    fun isValidNotImplemented(byteCount: Int): Boolean = ByteConversions.allAreOfSize(notImplementedBytes, byteCount)
 
-    fun isNotImplemented(bytes: ByteArray): Boolean {
-        return ByteConversions.arrayOfByteArraysContains(notImplementedBytes, bytes)
-    }
+    fun isNotImplemented(bytes: ByteArray): Boolean = ByteConversions.arrayOfByteArraysContains(notImplementedBytes, bytes)
 }

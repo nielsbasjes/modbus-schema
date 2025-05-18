@@ -23,7 +23,10 @@ import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 
-class StringField(val fieldName: String) : StringExpression {
+class StringField(
+    val fieldName: String,
+) : StringExpression {
+
     private lateinit var field: Field
     private var fieldExpression: StringExpression = MissingField(fieldName)
 
@@ -47,6 +50,7 @@ class StringField(val fieldName: String) : StringExpression {
                 fieldExpression = expression
                 return true
             }
+
             is NumericalExpression -> {
                 fieldExpression = StringFromNumber(expression)
                 return true
@@ -66,15 +70,16 @@ class StringField(val fieldName: String) : StringExpression {
 
     override var isImmutable: Boolean
         get() = fieldExpression.isImmutable
-        set(value) {fieldExpression.isImmutable = value}
+        set(value) {
+            fieldExpression.isImmutable = value
+        }
 
     override val problems: List<Problem>
-        get() = combine(
-            "StringField",
-            super.problems,
-        )
+        get() =
+            combine(
+                "StringField",
+                super.problems,
+            )
 
-    override fun getValue(schemaDevice: SchemaDevice): String? {
-        return fieldExpression.getValue(schemaDevice)
-    }
+    override fun getValue(schemaDevice: SchemaDevice): String? = fieldExpression.getValue(schemaDevice)
 }

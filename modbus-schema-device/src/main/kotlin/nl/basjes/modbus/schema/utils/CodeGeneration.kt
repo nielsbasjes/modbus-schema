@@ -17,10 +17,11 @@
 package nl.basjes.modbus.schema.utils
 
 object CodeGeneration {
-    private val DROP_LEADING_TRAILING: List<Int> = listOf(
-        '_'.code,
-        '-'.code
-    )
+    private val DROP_LEADING_TRAILING: List<Int> =
+        listOf(
+            '_'.code,
+            '-'.code,
+        )
 
     /**
      * In many cases the name or identifier of a thing needs to be available in a form that it can be used as a
@@ -30,7 +31,10 @@ object CodeGeneration {
      * @return A cleaned version of the provided input.
      */
     @JvmStatic
-    fun convertToCodeCompliantName(name: String, firstUppercase: Boolean): String {
+    fun convertToCodeCompliantName(
+        name: String,
+        firstUppercase: Boolean,
+    ): String {
         val finalName = StringBuilder(name.length)
 
         var sawSeparator = false
@@ -82,6 +86,3 @@ object CodeGeneration {
         return result
     }
 }
-
-fun String.convertToCodeCompliantName(firstUppercase: Boolean): String =
-    CodeGeneration.convertToCodeCompliantName(this, firstUppercase)

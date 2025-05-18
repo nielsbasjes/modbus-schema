@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package nl.basjes.modbus.device.sunspec
+
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass.HOLDING_REGISTER
 import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
@@ -25,11 +26,15 @@ import nl.basjes.modbus.device.exception.ModbusException
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
-
-private const val sunSpecModelHeaderSize = 2
+private const val SUNSPEC_MODEL_HEADER_SIZE = 2
 
 /** The list of starting addresses where the SunSpec Model chain can begin. */
-private val sunSpecStandardStartPhysicalAddress = arrayOf( Address(HOLDING_REGISTER, 0), Address(HOLDING_REGISTER, 40000), Address(HOLDING_REGISTER, 50000))
+private val sunSpecStandardStartPhysicalAddress =
+    arrayOf(
+        Address(HOLDING_REGISTER, 0),
+        Address(HOLDING_REGISTER, 40000),
+        Address(HOLDING_REGISTER, 50000),
+    )
 
 const val SUNSPEC_STANDARD_UNITID: Int = 126
 
@@ -38,8 +43,9 @@ const val SUNSPEC_STANDARD_UNITID: Int = 126
  * It simply walks the SunSpec model chain and prints some information.
  * This is useful when testing a modbus api implementation.
  */
-class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
-
+class SunSpecBasicsPrinter(
+    private val modbusDevice: ModbusDevice,
+) {
     private val sunSpecChainHeaderSize = 2
 
     fun print(onlyModelHeaders: Boolean = true) {
@@ -49,7 +55,6 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
         val fullDump = RegisterBlock(HOLDING_REGISTER)
 
         for (sunSpecChainStartAddress in sunSpecStandardStartPhysicalAddress) {
-
             LOG.info("Looking for SunSpec header at {}", sunSpecChainStartAddress)
 
             // Read and verify the 'SunS' header.
@@ -58,8 +63,11 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
 
             fullDump.merge(registers)
             if (registerValues.size >= 2 &&
-                0x5375.toShort() == registerValues[0].value &&   // 'S' 'u'
-                0x6E53.toShort() == registerValues[1].value) {   // 'n' 'S'
+                // 'S' 'u'
+                0x5375.toShort() == registerValues[0].value &&
+                // 'n' 'S'
+                0x6E53.toShort() == registerValues[1].value
+            ) {
                 sunSpecFirstModelAddress = sunSpecChainStartAddress.increment(sunSpecChainHeaderSize)
                 LOG.info("Found the SunSpec header at {}", sunSpecChainStartAddress)
                 break // Found it.
@@ -75,7 +83,7 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
             sunSpecModelHeader = SunSpecModelHeader(modbusDevice, modelAddress)
             sunSpecModels.add(sunSpecModelHeader)
             LOG.info("Model: {}", sunSpecModelHeader)
-            modelAddress = modelAddress.increment(sunSpecModelHeaderSize + sunSpecModelHeader.modelSize)
+            modelAddress = modelAddress.increment(SUNSPEC_MODEL_HEADER_SIZE + sunSpecModelHeader.modelSize)
             modelId = sunSpecModelHeader.modelId
         } while (modelId != -1 && modelId != 0) // Apparently some devices do this incorrectly https://github.com/sunspec/models/issues/44
 
@@ -96,7 +104,6 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
 
         LOG.info("FullDump: {}", fullDump)
 
-
         val values: Collection<RegisterValue> = fullDump.values
         require(values.isNotEmpty())
         var dumpAddress = values.first().address
@@ -111,8 +118,10 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
         }
     }
 
-    private class SunSpecModelHeader(device: ModbusDevice, address: Address) {
-
+    private class SunSpecModelHeader(
+        device: ModbusDevice,
+        address: Address,
+    ) {
         // The first useful data address (i.e. the next one AFTER the modelId and modelSize)
         val modelAddress: Address
 
@@ -129,14 +138,14 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
         val registers: RegisterBlock
 
         init {
-            val modelHeader = device.getRegisters(address, sunSpecModelHeaderSize)
+            val modelHeader = device.getRegisters(address, SUNSPEC_MODEL_HEADER_SIZE)
             val modelHeaderValues = modelHeader.values.toTypedArray<RegisterValue>()
             modelId = modelHeaderValues[0].value!!.toInt()
             modelSize = modelHeaderValues[1].value!!.toInt()
             header = RegisterBlock(address.addressClass)
             registers = RegisterBlock(address.addressClass)
             header.merge(modelHeader)
-            modelAddress = address.increment(sunSpecModelHeaderSize)
+            modelAddress = address.increment(SUNSPEC_MODEL_HEADER_SIZE)
         }
 
         @Throws(ModbusException::class)
@@ -152,13 +161,12 @@ class SunSpecBasicsPrinter(private val modbusDevice: ModbusDevice) {
             registers.merge(device.getRegisters(readAddress, toRead))
         }
 
-        override fun toString(): String {
-            return "SunSpecModel{" + modelAddress +
-                    ", Id=" + modelId +
-                    ", Size=" + modelSize +
-                    ", registers= [" + registers.values.joinToString(", ") { "0x" + it.hexValue } + "]" +
-                    '}'
-        }
+        override fun toString(): String =
+            "SunSpecModel{" + modelAddress +
+                ", Id=" + modelId +
+                ", Size=" + modelSize +
+                ", registers= [" + registers.values.joinToString(", ") { "0x" + it.hexValue } + "]" +
+                '}'
     }
 
     companion object {

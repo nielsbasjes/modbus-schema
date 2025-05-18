@@ -20,7 +20,6 @@ import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 
-
 interface StringListExpression : Expression {
 
     override val returnType: ReturnType
@@ -31,5 +30,3 @@ interface StringListExpression : Expression {
      */
     fun getValue(schemaDevice: SchemaDevice): List<String>?
 }
-
-

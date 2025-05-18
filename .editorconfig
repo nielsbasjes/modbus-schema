@@ -28,11 +28,8 @@ indent_style = space
 [*.{java,kt,kts}]
 indent_size = 4
 
-# Tab indentation (no size specified)
-[Makefile]
-indent_style = tab
-
 [*.{kt,kts}]
+# Ktlint
 ktlint_code_style = ktlint_official
 ktlint_standard = enabled
 ktlint_experimental = enabled
@@ -40,15 +37,24 @@ ktlint_experimental = enabled
 # Allow names of unit tests to exceed the max_line_length when wrapped between backticks
 ktlint_ignore_back_ticked_identifier = true
 
-#  - High count is to make sure it never convert to start import
-ij_kotlin_name_count_to_use_star_import = 2147483647
-ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
-
-# Don't allow any wildcard imports
-ij_kotlin_packages_to_use_import_on_demand = unset
-
 # Allow a table like layout of the code using extra spaces
 ktlint_standard_no-multi-spaces = disabled
 
 # Readability above all
 ktlint_standard_no-blank-lines-in-chained-method-calls = disabled
+
+# "First line of body expression fits on same line as function signature"
+# I don't care if it fits: Readability above all
+ktlint_standard_function-signature = disabled
+
+# For readability having a newline at the start of a class is helpful
+ktlint_standard_no-empty-first-line-in-class-body = disabled
+
+# IntelliJ IDEA settings
+# High count is to make sure it never convert to star import
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+
+# Don't allow any wildcard imports
+ij_kotlin_packages_to_use_import_on_demand = true
+

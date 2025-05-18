@@ -23,7 +23,7 @@ import java.io.FileInputStream
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
-class TestDeviceSchema{
+class TestDeviceSchema {
 
     private val log: Logger = LogManager.getLogger()
 
@@ -44,6 +44,6 @@ class TestDeviceSchema{
                 failed = true
             }
         }
-        assertFalse(failed, "Unable to verify all tests defined in the schema definition" )
+        assertFalse(failed, "Unable to verify all tests defined in the schema definition")
     }
 }

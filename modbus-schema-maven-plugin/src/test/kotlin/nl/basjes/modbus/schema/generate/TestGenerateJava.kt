@@ -43,10 +43,13 @@ class TestGenerateJava{
         generate(
             File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
             null,
-            "java", "main",
-            "nl.klokko.demo", "Foo",
-            output)
-        log.info("\n${output}")
+            "java",
+            "main",
+            "nl.klokko.demo",
+            "Foo",
+            output,
+        )
+        log.info("\n$output")
     }
 
     @Test
@@ -55,9 +58,12 @@ class TestGenerateJava{
         generate(
             File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
             null,
-            "java", "test",
-            "nl.klokko.demo", "Foo",
-            output)
-        log.info("\n${output}")
+            "java",
+            "test",
+            "nl.klokko.demo",
+            "Foo",
+            output,
+        )
+        log.info("\n$output")
     }
 }

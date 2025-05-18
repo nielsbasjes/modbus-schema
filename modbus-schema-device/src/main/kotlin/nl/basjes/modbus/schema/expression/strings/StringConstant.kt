@@ -18,11 +18,11 @@ package nl.basjes.modbus.schema.expression.strings
 
 import nl.basjes.modbus.schema.SchemaDevice
 
-class StringConstant(val value: String) : StringExpression {
+class StringConstant(
+    val value: String,
+) : StringExpression {
 
-    override fun toString(): String {
-        return "'$value'"
-    }
+    override fun toString(): String = "'$value'"
 
     override var isImmutable: Boolean = true
 

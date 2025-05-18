@@ -24,7 +24,8 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.util.*
+import java.util.Objects
+import java.util.TreeMap
 
 /**
  * A RegisterBlockFetcher needs to have a Schema, a target RegisterBlock and a ModbusDevice
@@ -44,9 +45,10 @@ open class RegisterBlockFetcher(
                 val fieldImmutable = field.isImmutable
                 val requiredRegisters = field.requiredRegisters
                 for (requiredRegister in requiredRegisters) {
-                    val registerValue = schemaDevice
-                        .getRegisterBlock(requiredRegister.addressClass)
-                        .computeIfAbsent(requiredRegister) { RegisterValue(it) }
+                    val registerValue =
+                        schemaDevice
+                            .getRegisterBlock(requiredRegister.addressClass)
+                            .computeIfAbsent(requiredRegister) { RegisterValue(it) }
 
                     registerValue.immutable = fieldImmutable
                     registerValue.fetchGroup = fieldFetchGroup
@@ -69,7 +71,7 @@ open class RegisterBlockFetcher(
             val numberOfAddresses = fetchGroupAddresses.size
             val lastAddress = fetchGroupAddresses[numberOfAddresses - 1]
             check(
-                firstAddress.increment(numberOfAddresses - 1) == lastAddress
+                firstAddress.increment(numberOfAddresses - 1) == lastAddress,
             ) { "There are gaps in the addresses for fetch group \"$key\": $fetchGroupAddresses" }
         }
         return fetchGroupToAddresses
@@ -129,13 +131,10 @@ open class RegisterBlockFetcher(
             return count == other.count && start == other.start
         }
 
-        override fun hashCode(): Int {
-            return Objects.hash(start, count)
-        }
+        override fun hashCode(): Int = Objects.hash(start, count)
 
-        override fun toString(): String {
-            return "FetchBatch { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
-        }
+        override fun toString(): String =
+            "FetchBatch { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
     }
 
     /**
@@ -143,8 +142,12 @@ open class RegisterBlockFetcher(
      * This is the class to hold such a combination.
      * This is needed to be able to handle the retry in case of a read error
      */
-    class MergedFetchBatch(start: Address, count: Int): FetchBatch(start, count) {
+    class MergedFetchBatch(
+        start: Address,
+        count: Int,
+    ) : FetchBatch(start, count) {
         val fetchBatches: MutableList<FetchBatch> = ArrayList()
+
         fun add(fetchBatch: FetchBatch) {
             fetchBatches.add(fetchBatch)
             fields.addAll(fetchBatch.fields)
@@ -209,7 +212,7 @@ open class RegisterBlockFetcher(
             if (requiredRegisters
                     .map { registerBlock[it] }
                     .firstOrNull { it.needsToBeUpdated(now, maxAge) }
-                    != null
+                != null
             ) {
                 fieldsThatMustBeUpdated.add(field)
             }

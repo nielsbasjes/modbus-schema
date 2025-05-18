@@ -19,16 +19,18 @@ package nl.basjes.modbus.schema.fetcher
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.schema.SchemaDevice
-import java.util.ArrayList
 
-class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: ModbusDevice) :
-        RegisterBlockFetcher(schemaDevice, modbusDevice) {
+class OptimizingRegisterBlockFetcher(
+    schemaDevice: SchemaDevice,
+    modbusDevice: ModbusDevice,
+) : RegisterBlockFetcher(schemaDevice, modbusDevice) {
+
     /**
      * How many registers may needlessly be read to optimize fetching
      */
     var allowedGapReadSize = 0
         set(value) {
-            require(value>=0) { "A negative Gap Read Size is not allowed" }
+            require(value >= 0) { "A negative Gap Read Size is not allowed" }
             field = value
         }
 
@@ -40,28 +42,31 @@ class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: M
 
         // Any raw fetch batch that contains ANY ReadError register is dropped
         // Since these are the smallest possible ones this cannot be repaired.
-        val baseFetchBatchList = rawFetchBatchList
-            .filter {
-                for (field in it.fields) {
-                    if (field.isUsingReadErrorRegisters()) {
-                        return@filter false
+        val baseFetchBatchList =
+            rawFetchBatchList
+                .filter {
+                    for (field in it.fields) {
+                        if (field.isUsingReadErrorRegisters()) {
+                            return@filter false
+                        }
                     }
+                    return@filter true
                 }
-                return@filter true
-            }
 
-        val usedAddressClasses = baseFetchBatchList
-            .flatMap { it.fields }
-            .flatMap { it.requiredRegisters }
-            .map     { it.addressClass }
-            .sorted()
-            .distinct()
+        val usedAddressClasses =
+            baseFetchBatchList
+                .flatMap { it.fields }
+                .flatMap { it.requiredRegisters }
+                .map { it.addressClass }
+                .sorted()
+                .distinct()
 
-        val readErrorAddresses = usedAddressClasses
-            .flatMap    { schemaDevice.getRegisterBlock(it).values }
-            .filter     { it.isReadError() }
-            .map        { it.address }
-            .toList()
+        val readErrorAddresses =
+            usedAddressClasses
+                .flatMap { schemaDevice.getRegisterBlock(it).values }
+                .filter { it.isReadError() }
+                .map { it.address }
+                .toList()
 
         val fetchBatchIterator = baseFetchBatchList.iterator()
 
@@ -112,9 +117,9 @@ class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: M
             val nextInputStart = nextInput.start.physicalAddress
             val gapSize = nextInputStart - (nextBatchStart + nextBatch.count)
             val mergedCount = nextInputStart + nextInput.count - nextBatchStart
-            if (gapSize <= allowedGapReadSize &&  // Do NOT jump more than N registers
+            if (gapSize <= allowedGapReadSize && // Do NOT jump more than N registers
                 mergedCount <= modbusDevice.maxRegistersPerModbusRequest &&
-                !readErrorAddresses.overlaps(nextBatch.start, mergedCount)// Do NOT try to read read errors
+                !readErrorAddresses.overlaps(nextBatch.start, mergedCount) // Do NOT try to read read errors
             ) {
                 nextBatch.count = mergedCount
                 nextBatch.add(nextInput)
@@ -129,7 +134,10 @@ class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: M
         return fetchBatches
     }
 
-    fun List<Address>.overlaps(firstAddress: Address, count: Int): Boolean {
+    fun List<Address>.overlaps(
+        firstAddress: Address,
+        count: Int,
+    ): Boolean {
         if (this.isEmpty()) {
             return false
         }
@@ -137,8 +145,6 @@ class OptimizingRegisterBlockFetcher(schemaDevice: SchemaDevice, modbusDevice: M
 
         return this
             .mapNotNull { firstAddress.distance(it) }
-            .any { it in 0 .. count }
+            .any { it in 0..count }
     }
-
-
 }

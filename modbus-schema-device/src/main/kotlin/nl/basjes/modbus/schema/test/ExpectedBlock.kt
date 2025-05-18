@@ -22,7 +22,10 @@ class ExpectedBlock(
     private val mutableExpected: MutableMap<String, List<String>> = mutableMapOf()
     val expected: Map<String, List<String>> = mutableExpected
 
-    fun addExpectation(fieldId: String, value: List<String>) {
+    fun addExpectation(
+        fieldId: String,
+        value: List<String>,
+    ) {
         mutableExpected[fieldId] = value
     }
 }

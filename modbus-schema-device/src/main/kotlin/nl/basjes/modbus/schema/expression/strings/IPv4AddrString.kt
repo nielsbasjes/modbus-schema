@@ -24,16 +24,15 @@ import nl.basjes.modbus.schema.expression.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
-const val IPv4Addr_REGISTERS = 2
+const val IPV4ADDR_REGISTERS = 2
 
 class IPv4AddrString(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
-) : NotImplemented(IPv4Addr_REGISTERS, notImplemented), StringExpression {
+) : NotImplemented(IPV4ADDR_REGISTERS, notImplemented),
+    StringExpression {
 
-    override fun toString(): String {
-        return "ipv4addr(" + registers + super<NotImplemented>.toString() + ")"
-    }
+    override fun toString(): String = "ipv4addr(" + registers + super<NotImplemented>.toString() + ")"
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
@@ -44,14 +43,15 @@ class IPv4AddrString(
         get() =
             combine(
                 "ipv4addr",
-                checkFatal(registers.returnedRegisters == IPv4Addr_REGISTERS, "Must have $IPv4Addr_REGISTERS registers (got ${registers.returnedRegisters})"),
+                checkFatal(
+                    registers.returnedRegisters == IPV4ADDR_REGISTERS,
+                    "Must have $IPV4ADDR_REGISTERS registers (got ${registers.returnedRegisters})",
+                ),
                 super<StringExpression>.problems,
                 super<NotImplemented>.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return registers.getRegisterValues(schemaDevice)
-    }
+    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
     override fun getValue(schemaDevice: SchemaDevice): String? {
         val bytes = registers.getByteArray(schemaDevice) ?: return null

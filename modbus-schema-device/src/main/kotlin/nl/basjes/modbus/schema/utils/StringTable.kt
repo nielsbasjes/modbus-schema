@@ -46,7 +46,10 @@ class StringTable {
         return sb.toString()
     }
 
-    private fun writeSeparator(sb: StringBuilder, columnWidths: List<Int>) {
+    private fun writeSeparator(
+        sb: StringBuilder,
+        columnWidths: List<Int>,
+    ) {
         var first = true
         for (columnWidth in columnWidths) {
             if (first) {
@@ -61,7 +64,11 @@ class StringTable {
         sb.append('\n')
     }
 
-    private fun writeLine(sb: StringBuilder, columnWidths: List<Int>, fields: List<String>) {
+    private fun writeLine(
+        sb: StringBuilder,
+        columnWidths: List<Int>,
+        fields: List<String>,
+    ) {
         if (fields.isEmpty()) {
             writeSeparator(sb, columnWidths)
             return

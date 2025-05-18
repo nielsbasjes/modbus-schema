@@ -36,7 +36,8 @@ class TestImmutableFieldOptimizer {
         val modbusDevice = AssertingMockedModbusDevice()
         modbusDevice.logRequests = true
         modbusDevice.addRegisters(
-            AddressClass.HOLDING_REGISTER, 101,
+            AddressClass.HOLDING_REGISTER,
+            101,
             """
             # abcdefghijklmnopqrstuvwxyz
             6162 6364 6566 6768 696a 6b6c 6d6e 6f70 7172 7374 7576 7778 797a
@@ -54,7 +55,7 @@ class TestImmutableFieldOptimizer {
             000A    # The number 10
 
             2B67    // The number 11111
-            """
+            """,
         )
         return modbusDevice
     }
@@ -62,7 +63,7 @@ class TestImmutableFieldOptimizer {
     private fun createTestSchemaDevice(): SchemaDevice {
         val schemaDevice = SchemaDevice("First test device")
 
-        val block = Block(schemaDevice,"Block", "Block")
+        val block = Block(schemaDevice, "Block", "Block")
 
         // Field names are chosen to have a different logical (by required registers) from a sorted by name ordering.
         // A field registers itself with the mentioned Block
@@ -77,15 +78,17 @@ class TestImmutableFieldOptimizer {
         return schemaDevice
     }
 
-    private fun assertCloseEnough(value1: Double?, value2: Double?) {
+    private fun assertCloseEnough(
+        value1: Double?,
+        value2: Double?,
+    ) {
         assertNotNull(value1)
         assertNotNull(value2)
         assertTrue(
             DoubleCompare.closeEnough(value1, value2),
-            "Values $value1 and $value2  are not close enough together."
+            "Values $value1 and $value2  are not close enough together.",
         )
     }
-
 
     @OptIn(ExperimentalTime::class)
     @Test
@@ -125,13 +128,14 @@ class TestImmutableFieldOptimizer {
         require(fieldValue2.requiredFields.isNotEmpty()) { "Missing required fields" }
     }
 
-    private fun printRawExpression(expression: Expression, depth:Int = 0) {
+    private fun printRawExpression(
+        expression: Expression,
+        depth: Int = 0,
+    ) {
         log.info("  ".repeat(depth) + "- name: " + expression.javaClass.simpleName)
         log.info("  ".repeat(depth) + "  immu: " + expression.isImmutable)
         expression.subExpressions.forEach {
-            printRawExpression(it, depth+1)
+            printRawExpression(it, depth + 1)
         }
     }
-
-
 }

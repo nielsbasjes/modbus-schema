@@ -43,13 +43,16 @@ class TestScenarioExpressions {
     )
 
     @Throws(ModbusException::class)
-    private fun buildVerifier(bytes: String, vararg fields: TestField): SchemaDevice {
+    private fun buildVerifier(
+        bytes: String,
+        vararg fields: TestField,
+    ): SchemaDevice {
         val modbusDevice = MockedModbusDevice()
         //        modbusDevice.setLogRequests(true);
         modbusDevice.addRegisters(HOLDING_REGISTER, 0, bytes)
 
         val schemaDevice = SchemaDevice("Device")
-        val block = Block(schemaDevice,"Block")
+        val block = Block(schemaDevice, "Block")
         for (field in fields) {
             Field(block = block, id = field.name, expression = field.expression)
         }
@@ -59,9 +62,10 @@ class TestScenarioExpressions {
         return schemaDevice
     }
 
-    private fun getField(schemaDevice: SchemaDevice, name: String): Field? {
-        return schemaDevice.getBlock("Block")!!.getField(name)
-    }
+    private fun getField(
+        schemaDevice: SchemaDevice,
+        name: String,
+    ): Field? = schemaDevice.getBlock("Block")!!.getField(name)
 
     // TODO: Boolean --> Coils and Direct Inputs
     //    private void verify(String bytes, String expression, Boolean expected) throws ModbusException {
@@ -69,12 +73,17 @@ class TestScenarioExpressions {
     //        assertEquals(expected, getField(schemaDevice, "test")  .getLongValue());
     //    }
     @Throws(ModbusException::class)
-    private fun verify(expression: String, expected: Int, parseOutput: String) {
-        val schemaDevice = buildVerifier(
-            "",
-            TestField("test1", expression),
-            TestField("test2", "test1")
-        )
+    private fun verify(
+        expression: String,
+        expected: Int,
+        parseOutput: String,
+    ) {
+        val schemaDevice =
+            buildVerifier(
+                "",
+                TestField("test1", expression),
+                TestField("test2", "test1"),
+            )
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -94,12 +103,17 @@ class TestScenarioExpressions {
     }
 
     @Throws(ModbusException::class)
-    private fun verify(expression: String, expected: Double?, parseOutput: String) {
-        val schemaDevice = buildVerifier(
-            "",
-            TestField("test1", expression),
-            TestField("test2", "test1")
-        )
+    private fun verify(
+        expression: String,
+        expected: Double?,
+        parseOutput: String,
+    ) {
+        val schemaDevice =
+            buildVerifier(
+                "",
+                TestField("test1", expression),
+                TestField("test2", "test1"),
+            )
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -117,19 +131,24 @@ class TestScenarioExpressions {
         assertNotNull(parsedExpression1)
         assertEquals(parseOutput, parsedExpression1.toString(), "Unexpected parse tree")
         val registers =
-            parsedExpression1.getRegisterValues(schemaDevice)
+            parsedExpression1
+                .getRegisterValues(schemaDevice)
                 .joinToString(separator = ",") { it.toString() }
         assertTrue(registers.isEmpty(), "Registers was not empty $registers")
     }
 
-
     @Throws(ModbusException::class)
-    private fun verify(bytes: String, expression: String, expected: Long?) {
-        val schemaDevice = buildVerifier(
-            bytes,
-            TestField("test1", expression),
-            TestField("test2", "test1")
-        )
+    private fun verify(
+        bytes: String,
+        expression: String,
+        expected: Long?,
+    ) {
+        val schemaDevice =
+            buildVerifier(
+                bytes,
+                TestField("test1", expression),
+                TestField("test2", "test1"),
+            )
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -145,7 +164,7 @@ class TestScenarioExpressions {
                 assertCloseEnough(
                     expected.toDouble(),
                     test2.doubleValue,
-                    test2.parsedExpression
+                    test2.parsedExpression,
                 )
             }
         }
@@ -154,19 +173,25 @@ class TestScenarioExpressions {
         assertNotNull(parsedExpression1)
         assertEquals(
             bytes,
-            parsedExpression1.getRegisterValues(schemaDevice)
+            parsedExpression1
+                .getRegisterValues(schemaDevice)
                 .joinToString(separator = " ") { it.hexValue }
-                .replace("0x".toRegex(), "")
+                .replace("0x".toRegex(), ""),
         )
     }
 
     @Throws(ModbusException::class)
-    private fun verify(bytes: String, expression: String, expected: Double?) {
-        val schemaDevice = buildVerifier(
-            bytes,
-            TestField("test1", expression),
-            TestField("test2", "test1")
-        )
+    private fun verify(
+        bytes: String,
+        expression: String,
+        expected: Double?,
+    ) {
+        val schemaDevice =
+            buildVerifier(
+                bytes,
+                TestField("test1", expression),
+                TestField("test2", "test1"),
+            )
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -184,15 +209,19 @@ class TestScenarioExpressions {
         assertNotNull(parsedExpression1)
         assertEquals(
             bytes,
-            parsedExpression1.getRegisterValues(schemaDevice)
-                .map(RegisterValue::hexValue)
-                .joinToString(separator = " ")
-                .replace("0x".toRegex(), "")
+            parsedExpression1
+                .getRegisterValues(schemaDevice)
+                .joinToString(separator = " ", transform = RegisterValue::hexValue)
+                .replace("0x".toRegex(), ""),
         )
     }
 
     @Throws(ModbusException::class)
-    private fun verify(bytes: String, expression: String, expected: String?) {
+    private fun verify(
+        bytes: String,
+        expression: String,
+        expected: String?,
+    ) {
         val schemaDevice = buildVerifier(bytes, TestField("test", expression))
         val testField = getField(schemaDevice, "test")
         requireNotNull(testField)
@@ -202,7 +231,11 @@ class TestScenarioExpressions {
     }
 
     @Throws(ModbusException::class)
-    private fun verify(bytes: String, expression: String, expected: List<String>?) {
+    private fun verify(
+        bytes: String,
+        expression: String,
+        expected: List<String>?,
+    ) {
         val schemaDevice = buildVerifier(bytes, TestField("test", expression))
         val testField = getField(schemaDevice, "test")
         requireNotNull(testField)
@@ -211,11 +244,18 @@ class TestScenarioExpressions {
         assertEquals(expected, testField.stringListValue)
     }
 
-    private fun isVALID(expression: String, returnType: ReturnType) {
+    private fun isVALID(
+        expression: String,
+        returnType: ReturnType,
+    ) {
         isVALID(expression, returnType, null)
     }
 
-    private fun isVALID(expression: String, returnType: ReturnType, expectedExpression: String?) {
+    private fun isVALID(
+        expression: String,
+        returnType: ReturnType,
+        expectedExpression: String?,
+    ) {
         try {
             val bytes =
                 "0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF "
@@ -224,8 +264,12 @@ class TestScenarioExpressions {
             if (expectedExpression != null) {
                 val field = schemaDevice.getBlock("Block")?.getField("test")
                 requireNotNull(field)
-                assertEquals(returnType, field.returnType )
-                assertEquals(expectedExpression, field.parsedExpression.toString(), "The parsed expression was incorrect.")
+                assertEquals(returnType, field.returnType)
+                assertEquals(
+                    expectedExpression,
+                    field.parsedExpression.toString(),
+                    "The parsed expression was incorrect.",
+                )
             }
         } catch (e: Exception) {
             error("Expression " + expression + " should be valid:" + e.message)
@@ -238,16 +282,20 @@ class TestScenarioExpressions {
                 "0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF "
             val schemaDevice = buildVerifier(bytes, TestField("test", expression))
             val field = schemaDevice.getBlock("Block")?.getField("test")
-            assertFalse(schemaDevice.initialize(),
-                "The expression $expression MUST trigger an exception but it did not.\n"+
-            "The field was parsed as: ${field?.parsedExpression}")
+            assertFalse(
+                schemaDevice.initialize(),
+                "The expression $expression MUST trigger an exception but it did not.\n" +
+                    "The field was parsed as: ${field?.parsedExpression}",
+            )
         } catch (e: ModbusSchemaParseException) {
             // Success !
         }
     }
 
-    @Throws(ModbusException::class)
-    private fun verifyToString(expression: String, expected: String) {
+    private fun verifyToString(
+        expression: String,
+        expected: String,
+    ) {
         val schemaDevice1 = buildVerifier("DEAD", TestField("test", expression))
         val fieldToString = getField(schemaDevice1, "test")!!.parsedExpression.toString()
         assertEquals(expected, fieldToString)
@@ -257,7 +305,6 @@ class TestScenarioExpressions {
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun testBitManipulation() {
         // Reverse 16 bits: 0xABCD ( 10101011 11001101 ) into 0xB3D5 ( 10110011 11010101 )
         verify("ABCD", "hexstring(swapendian(hr:0))", "0xB3 0xD5")
@@ -272,14 +319,13 @@ class TestScenarioExpressions {
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun testStringUtf8() {
         // UTF8         BRACEOPEN registers=registerlist BRACECLOSE
         verifyToString("utf8(hr:0#13)", "utf8(hr:00000 # 13)")
         verify(
             "6162 6364 6566 6768 696a 6b6c 6d6e 6f70 7172 7374 7576 7778 797a",
             "utf8(hr:0#13)",
-            "abcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyz",
         )
         verify("6162 6364 6566 6700 0000 0000 0000 0000 0000 0000 0000 0000 0000", "utf8(hr:0#13)", "abcdefg")
     }
@@ -292,23 +338,21 @@ class TestScenarioExpressions {
         verify(
             "6162   6364   6566   6700  0000   ",
             "hexstring(hr:0#5)",
-            "0x61 0x62 0x63 0x64 0x65 0x66 0x67 0x00 0x00 0x00"
+            "0x61 0x62 0x63 0x64 0x65 0x66 0x67 0x00 0x00 0x00",
         )
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun testStringConstant() {
         verifyToString("'Hello World!'", "'Hello World!'")
         verify(
             "0000",
             "'Hello World!'",
-            "Hello World!"
+            "Hello World!",
         )
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun testStringConcat() {
         // CONCAT BRACEOPEN string ( COMMA string )* BRACECLOSE
         verifyToString("concat('Hello World!')", "concat('Hello World!')")
@@ -316,25 +360,23 @@ class TestScenarioExpressions {
         verify(
             "  0000   ",
             "concat('Hello' , ' ' , 'World', '!')",
-            "Hello World!"
+            "Hello World!",
         )
 
         verify(
-        //    H e  l l  o    W o  r l  d    ! !
+            //    H e  l l  o    W o  r l  d    ! !
             "4865 6C6C 6F00 576F 726C 6400 2121",
             "concat(utf8(hr:0#3), ' ' , utf8(hr:3#3), '!')",
-            "Hello World!"
+            "Hello World!",
         )
-
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun testStringEUI48() {
         // EUI48        BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )* BRACECLOSE
         verifyToString(
             "eui48(hr:0#4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD )",
-            "eui48(hr:00000 # 4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)"
+            "eui48(hr:00000 # 4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)",
         )
         verifyToString("eui48(hr:0#4  )", "eui48(hr:00000 # 4)")
 
@@ -345,33 +387,33 @@ class TestScenarioExpressions {
         verify(
             "0102 0304 0506 0708",
             "eui48(hr:0#3 ; 0xDEAD 0xDEAD 0xDEAD )",
-            "01:02:03:04:05:06"
+            "01:02:03:04:05:06",
         )
         verify(
             "0102 0304 0506 0708",
             "eui48(hr:0#3)",
-            "01:02:03:04:05:06"
+            "01:02:03:04:05:06",
         )
         verify(
             "DEAD DEAD DEAD DEAD",
             "eui48(hr:0#3 ; 0xDEAD 0xDEAD 0xDEAD)",
-            null as String?
+            null as String?,
         )
 
         verify(
             "0102 0304 0506 0708",
             "eui48(hr:0#4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)",
-            "03:04:05:06:07:08"
+            "03:04:05:06:07:08",
         )
         verify(
             "0102 0304 0506 0708",
             "eui48(hr:0#4)",
-            "03:04:05:06:07:08"
+            "03:04:05:06:07:08",
         )
         verify(
             "DEAD DEAD DEAD DEAD",
             "eui48(hr:0#4 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)",
-            null as String?
+            null as String?,
         )
 
         // Wrong "not implemented" sizes (it must be the exact same size as the retrieve number of registers)
@@ -428,24 +470,24 @@ class TestScenarioExpressions {
         verify(
             "0001 0203 0405 0607 0809 0A0B 0C0D 0E0F",
             "ipv6addr(hr:0#8 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD)",
-            "0001:0203:0405:0607:0809:0A0B:0C0D:0E0F"
+            "0001:0203:0405:0607:0809:0A0B:0C0D:0E0F",
         )
         verify(
             "0001 0203 0405 0607 0809 0A0B 0C0D 0E0F",
             "ipv6addr(hr:0#8                                                          )",
-            "0001:0203:0405:0607:0809:0A0B:0C0D:0E0F"
+            "0001:0203:0405:0607:0809:0A0B:0C0D:0E0F",
         )
         verify(
             "DEAD DEAD DEAD DEAD DEAD DEAD DEAD DEAD",
             "ipv6addr(hr:0#8 ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD)",
-            null as String?
+            null as String?,
         )
 
         // Missing byte
         verify(
             "DEAD null null null null null null null",
             "ipv6addr(hr:0#8                                                          )",
-            null as String?
+            null as String?,
         )
 
         // NotImplemented size mismatch
@@ -478,12 +520,12 @@ class TestScenarioExpressions {
         verify(
             "0004",
             "enum(hr:0 ; 0xDEAD ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')",
-            "No mapping for value 0x00 0x04"
+            "No mapping for value 0x00 0x04",
         )
         verify(
             "0004",
             "enum(hr:0          ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')",
-            "No mapping for value 0x00 0x04"
+            "No mapping for value 0x00 0x04",
         )
         verify("DEAD", "enum(hr:0 ; 0xDEAD ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')", null as String?)
 
@@ -491,12 +533,12 @@ class TestScenarioExpressions {
         verify(
             "000F 4240",
             "enum(hr:0#2 ; 0xDEAD 0xDEAD ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic'; 1000000 -> 'Million')",
-            "Million"
+            "Million",
         )
         verify(
             "DEAD DEAD",
             "enum(hr:0#2 ; 0xDEAD 0xDEAD ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic'; 1000000 -> 'Million')",
-            null as String?
+            null as String?,
         )
 
         // NotImplemented size mismatch
@@ -533,17 +575,17 @@ class TestScenarioExpressions {
         verify(
             "000F",
             "bitset(hr:0 ; 0xDEAD ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')",
-            listOf("Zero", "One", "Two", "Bit 3")
+            listOf("Zero", "One", "Two", "Bit 3"),
         )
         verify(
             "000F",
             "bitset(hr:0          ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')",
-            listOf("Zero", "One", "Two", "Bit 3")
+            listOf("Zero", "One", "Two", "Bit 3"),
         )
         verify(
             "100F",
             "bitset(hr:0          ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')",
-            listOf("Zero", "One", "Two", "Bit 3", "Bit 12")
+            listOf("Zero", "One", "Two", "Bit 3", "Bit 12"),
         )
 
         // 2 bytes
@@ -551,39 +593,77 @@ class TestScenarioExpressions {
             "100F 100F",
             "bitset(hr:0#2   ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )",
             listOf(
-                "Zero", "One", "Two", "Bit 3", "Bit 12",
-                "Sixteen", "Seventeen", "Eighteen", "Bit 19", "Bit 28"
-            )
+                "Zero",
+                "One",
+                "Two",
+                "Bit 3",
+                "Bit 12",
+                "Sixteen",
+                "Seventeen",
+                "Eighteen",
+                "Bit 19",
+                "Bit 28",
+            ),
         )
 
         // 3 bytes
         verify(
-            "100F 100F 100F", "bitset(hr:0#3   " +
-                    "; 0  -> '0' ;  1-> '1' ;  2-> '2'" +
-                    "; 16 -> '16'; 17-> '17'; 18-> '18' " +
-                    "; 32 -> '32'; 33-> '33'; 34-> '34' " +
-                    ")",
+            "100F 100F 100F",
+            "bitset(hr:0#3   " +
+                "; 0  -> '0' ;  1-> '1' ;  2-> '2'" +
+                "; 16 -> '16'; 17-> '17'; 18-> '18' " +
+                "; 32 -> '32'; 33-> '33'; 34-> '34' " +
+                ")",
             listOf(
-                "0", "1", "2", "Bit 3", "Bit 12",
-                "16", "17", "18", "Bit 19", "Bit 28",
-                "32", "33", "34", "Bit 35", "Bit 44"
-            )
+                "0",
+                "1",
+                "2",
+                "Bit 3",
+                "Bit 12",
+                "16",
+                "17",
+                "18",
+                "Bit 19",
+                "Bit 28",
+                "32",
+                "33",
+                "34",
+                "Bit 35",
+                "Bit 44",
+            ),
         )
 
         // 4 bytes
         verify(
-            "100F 100F 100F 100F", "bitset(hr:0#4   " +
-                    "; 0  -> '0' ;  1-> '1' ;  2-> '2'" +
-                    "; 16 -> '16'; 17-> '17'; 18-> '18' " +
-                    "; 32 -> '32'; 33-> '33'; 34-> '34' " +
-                    "; 48 -> '48'; 49-> '49'; 50-> '50' " +
-                    ")",
+            "100F 100F 100F 100F",
+            "bitset(hr:0#4   " +
+                "; 0  -> '0' ;  1-> '1' ;  2-> '2'" +
+                "; 16 -> '16'; 17-> '17'; 18-> '18' " +
+                "; 32 -> '32'; 33-> '33'; 34-> '34' " +
+                "; 48 -> '48'; 49-> '49'; 50-> '50' " +
+                ")",
             listOf(
-                "0", "1", "2", "Bit 3", "Bit 12",
-                "16", "17", "18", "Bit 19", "Bit 28",
-                "32", "33", "34", "Bit 35", "Bit 44",
-                "48", "49", "50", "Bit 51", "Bit 60"
-            )
+                "0",
+                "1",
+                "2",
+                "Bit 3",
+                "Bit 12",
+                "16",
+                "17",
+                "18",
+                "Bit 19",
+                "Bit 28",
+                "32",
+                "33",
+                "34",
+                "Bit 35",
+                "Bit 44",
+                "48",
+                "49",
+                "50",
+                "Bit 51",
+                "Bit 60",
+            ),
         )
 
         // NotImplemented size mismatch
@@ -859,8 +939,8 @@ class TestScenarioExpressions {
 
     @Test
     fun testFailOnMixingAddressClasses() {
-        val schemaDevice = SchemaDevice ("Device")
-        val block = Block(schemaDevice,"Block")
+        val schemaDevice = SchemaDevice("Device")
+        val block = Block(schemaDevice, "Block")
         block.addField(Field(block, "test", expression = "int32(ir:1, hr:1)"))
         assertFalse(schemaDevice.initialize())
         println(schemaDevice.initializationProblems())
@@ -868,8 +948,8 @@ class TestScenarioExpressions {
 
     @Test
     fun testFailOnMixingAddressClassesInSubExpressions() {
-        val schemaDevice = SchemaDevice ("Device")
-        val block = Block(schemaDevice,"Block")
+        val schemaDevice = SchemaDevice("Device")
+        val block = Block(schemaDevice, "Block")
         block.addField(Field(block, "test", expression = "int16(ir:1)/int16(hr:1)"))
         assertThrows<ModbusSchemaParseException> {
             schemaDevice.initialize()
@@ -896,11 +976,11 @@ class TestScenarioExpressions {
         schemaDevice.needAll()
         schemaDevice.update(0)
 
-        val oneValue      = one.doubleValue
-        val twoValue      = two.doubleValue
-        val threeValue    = three.longValue
-        val fourValue     = four.longValue
-        val factorValue   = factor.longValue
+        val oneValue = one.doubleValue
+        val twoValue = two.doubleValue
+        val threeValue = three.longValue
+        val fourValue = four.longValue
+        val factorValue = factor.longValue
         val combinedValue = combined.doubleValue
 
         assertNotNull(oneValue)
@@ -912,14 +992,18 @@ class TestScenarioExpressions {
 
         assertEquals(1234.567, oneValue, 0.001)
         assertEquals(1234.568, twoValue, 0.001)
-        assertEquals(12345,     threeValue)
-        assertEquals(-12345,    fourValue)
-        assertEquals(1,         factorValue)
+        assertEquals(12345, threeValue)
+        assertEquals(-12345, fourValue)
+        assertEquals(1, factorValue)
         assertEquals(24691.349, combinedValue, 0.001)
     }
 
     companion object {
-        fun assertCloseEnough(expected: Double?, actual: Double?, expression: Expression?) {
+        fun assertCloseEnough(
+            expected: Double?,
+            actual: Double?,
+            expression: Expression?,
+        ) {
             if (actual == null && expected == null) {
                 return
             }
@@ -929,7 +1013,7 @@ class TestScenarioExpressions {
                 expected,
                 actual,
                 0.001,
-                "The value $actual was not close enough to the expected $expected: $expression"
+                "The value $actual was not close enough to the expected $expected: $expression",
             )
         }
     }

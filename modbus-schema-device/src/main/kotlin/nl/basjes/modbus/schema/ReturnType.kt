@@ -16,22 +16,21 @@
  */
 package nl.basjes.modbus.schema
 
-enum class ReturnType(val enumName: String) {
+enum class ReturnType(
+    val enumName: String,
+) {
     /** Used to indicate we do not know the actual return type yet */
     UNKNOWN("Unknown"),
     BOOLEAN("boolean"),
     LONG("long"),
     DOUBLE("double"),
     STRING("string"),
-    STRINGLIST("stringList");
+    STRINGLIST("stringList"),
+    ;
 
-    override fun toString(): String {
-        return this.enumName
-    }
+    override fun toString(): String = this.enumName
 
-    fun value(): String {
-        return this.enumName
-    }
+    fun value(): String = this.enumName
 
     companion object {
         private val CONSTANTS: MutableMap<String, ReturnType> = HashMap()

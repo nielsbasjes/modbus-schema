@@ -21,11 +21,11 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 
-class SwapBytes(val registers: RegistersExpression) : RegistersExpression {
+class SwapBytes(
+    val registers: RegistersExpression,
+) : RegistersExpression {
 
-    override fun toString(): String {
-        return "swapbytes($registers)"
-    }
+    override fun toString(): String = "swapbytes($registers)"
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
@@ -38,13 +38,16 @@ class SwapBytes(val registers: RegistersExpression) : RegistersExpression {
 
     override var isImmutable: Boolean
         get() = registers.isImmutable
-        set(value) { registers.isImmutable = value }
+        set(value) {
+            registers.isImmutable = value
+        }
 
     override val problems: List<Problem>
-        get() = combine(
-            "swapbytes",
-            checkFatal(registers.returnedRegisters == 1, "Need exactly 1 register)")
-        )
+        get() =
+            combine(
+                "swapbytes",
+                checkFatal(registers.returnedRegisters == 1, "Need exactly 1 register)"),
+            )
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray? {
         val input = registers.getByteArray(schemaDevice) ?: return null

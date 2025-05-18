@@ -43,10 +43,13 @@ class TestGenerateKotlin{
         generate(
             File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
             null,
-            "kotlin", "main",
-            "nl.klokko.demo", "Foo",
-            output)
-        log.info("\n${output}")
+            "kotlin",
+            "main",
+            "nl.klokko.demo",
+            "Foo",
+            output,
+        )
+        log.info("\n$output")
     }
 
     @Test
@@ -55,9 +58,12 @@ class TestGenerateKotlin{
         generate(
             File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
             null,
-            "kotlin", "test",
-            "nl.klokko.demo", "Foo",
-            output)
-        log.info("\n${output}")
+            "kotlin",
+            "test",
+            "nl.klokko.demo",
+            "Foo",
+            output,
+        )
+        log.info("\n$output")
     }
 }

@@ -30,17 +30,17 @@ class IntegerUnsigned16(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        val longBytes = byteArrayOf(
-            0x00.toByte(),
-            0x00.toByte(),
-            0x00.toByte(),
-            0x00.toByte(),
-            0x00.toByte(),
-            0x00.toByte(),
-            bytes[0],
-            bytes[1]
-        )
+        val longBytes =
+            byteArrayOf(
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                bytes[0],
+                bytes[1],
+            )
         return ByteConversions.bytesToLong(longBytes)
     }
-
 }

@@ -23,10 +23,7 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 
 interface Expression {
-
-    fun toString(isTop: Boolean): String {
-        return toString()
-    }
+    fun toString(isTop: Boolean): String = toString()
 
     /**
      * Initialize the expression.
@@ -44,20 +41,27 @@ interface Expression {
         get() = emptyList()
 
     val requiredRegisters: List<Address>
-        get() = subExpressions.flatMap { it.requiredRegisters } .toList()
+        get() = subExpressions.flatMap { it.requiredRegisters }.toList()
 
     val requiredMutableRegisters: List<Address>
-        get() = if (isImmutable) { emptyList() } else { subExpressions.flatMap { it.requiredMutableRegisters }.toList() }
+        get() =
+            if (isImmutable) {
+                emptyList()
+            } else {
+                subExpressions.flatMap { it.requiredMutableRegisters }.toList()
+            }
 
     val requiredFields: List<String>
         get() = subExpressions.flatMap { it.requiredFields }.toList()
 
     var isImmutable: Boolean
         get() = subExpressions.all { it.isImmutable }
-        set(value) { subExpressions.forEach { it.isImmutable = value } }
+        set(value) {
+            subExpressions.forEach { it.isImmutable = value }
+        }
 
     val returnType: ReturnType
-        get () = throw ModbusSchemaParseException("No return type specified for expression class: ${this.javaClass.name}")
+        get() = throw ModbusSchemaParseException("No return type specified for expression class: ${this.javaClass.name}")
 
     val problems: List<Problem>
         get() = subExpressions.flatMap { it.problems }
@@ -65,42 +69,53 @@ interface Expression {
     /**
      * @return The list of Register values that are used to calculate this value.
      */
-    fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return emptyList()
-    }
+    fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = emptyList()
 
-    open class Problem(val explain:String) {
+    open class Problem(
+        val explain: String,
+    ) {
         override fun toString(): String = explain
     }
 
-    class Warning(reason: String): Problem(reason)
-    class Fatal(reason: String): Problem(reason)
+    class Warning(
+        reason: String,
+    ) : Problem(reason)
+
+    class Fatal(
+        reason: String,
+    ) : Problem(reason)
 
     /**
      * If the condition is false the explain value is used to report a Problem
      */
-    fun check(condition:Boolean, explain:String): List<Problem> =
+    fun check(
+        condition: Boolean,
+        explain: String,
+    ): List<Problem> =
         if (condition) {
             listOf()
         } else {
             listOf(Warning(explain))
         }
 
-    fun checkFatal(condition:Boolean, explain:String): List<Problem> =
+    fun checkFatal(
+        condition: Boolean,
+        explain: String,
+    ): List<Problem> =
         if (condition) {
             listOf()
         } else {
             listOf(Fatal(explain))
         }
 
-    fun combine(function:String, vararg problems: List<Problem>) =
-        problems.flatMap { it }.map {
-            when (it) {
-                is Fatal -> Fatal("${function}(${it.explain})")
-                is Warning -> Warning("${function}(${it.explain})")
-                else -> Problem("${function}(${it.explain})")
-            }
+    fun combine(
+        function: String,
+        vararg problems: List<Problem>,
+    ) = problems.flatMap { it }.map {
+        when (it) {
+            is Fatal -> Fatal("$function(${it.explain})")
+            is Warning -> Warning("$function(${it.explain})")
+            else -> Problem("$function(${it.explain})")
         }
+    }
 }
-
-

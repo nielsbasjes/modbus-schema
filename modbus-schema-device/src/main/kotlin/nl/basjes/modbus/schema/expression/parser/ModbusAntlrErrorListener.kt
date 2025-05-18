@@ -25,7 +25,9 @@ import org.antlr.v4.runtime.atn.ATNConfigSet
 import org.antlr.v4.runtime.dfa.DFA
 import java.util.BitSet
 
-class ModbusAntlrErrorListener(private val expression: String) : ANTLRErrorListener {
+class ModbusAntlrErrorListener(
+    private val expression: String,
+) : ANTLRErrorListener {
 
     override fun reportAmbiguity(
         recognizer: Parser,
@@ -34,7 +36,7 @@ class ModbusAntlrErrorListener(private val expression: String) : ANTLRErrorListe
         stopIndex: Int,
         exact: Boolean,
         ambigAlts: BitSet,
-        configs: ATNConfigSet
+        configs: ATNConfigSet,
     ) {
         // Ignore this always.
     }
@@ -45,7 +47,7 @@ class ModbusAntlrErrorListener(private val expression: String) : ANTLRErrorListe
         startIndex: Int,
         stopIndex: Int,
         conflictingAlts: BitSet,
-        configs: ATNConfigSet
+        configs: ATNConfigSet,
     ) {
         // Ignore this always.
     }
@@ -56,7 +58,7 @@ class ModbusAntlrErrorListener(private val expression: String) : ANTLRErrorListe
         startIndex: Int,
         stopIndex: Int,
         prediction: Int,
-        configs: ATNConfigSet
+        configs: ATNConfigSet,
     ) {
         // Ignore this always.
     }
@@ -67,8 +69,6 @@ class ModbusAntlrErrorListener(private val expression: String) : ANTLRErrorListe
         line: Int,
         charPositionInLine: Int,
         msg: String,
-        e: RecognitionException
-    ) {
-        throw ModbusSchemaParseException("Syntax error \"$msg\" in line $line at character $charPositionInLine of \"$expression\".")
-    }
+        e: RecognitionException,
+    ): Unit = throw ModbusSchemaParseException("Syntax error \"$msg\" in line $line at character $charPositionInLine of \"$expression\".")
 }

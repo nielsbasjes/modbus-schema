@@ -23,16 +23,15 @@ import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 
-abstract class IntegerSigned (
+abstract class IntegerSigned(
     private val name: String,
     private val bytesPerValue: Int,
     private val byteArray: RegistersExpression,
     notImplemented: List<String>,
-) : NotImplemented(bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER, notImplemented), NumericalExpression {
+) : NotImplemented(bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER, notImplemented),
+    NumericalExpression {
 
-    override fun toString(): String {
-        return "$name(" + byteArray + super<NotImplemented>.toString() + ")"
-    }
+    override fun toString(): String = "$name(" + byteArray + super<NotImplemented>.toString() + ")"
 
     override val subExpressions: List<Expression>
         get() = listOf(byteArray)
@@ -43,16 +42,18 @@ abstract class IntegerSigned (
         get() = ReturnType.LONG
 
     override val problems: List<Problem>
-        get() = combine(
-            name,
-            super<NumericalExpression>.problems,
-            super<NotImplemented>.problems,
-            checkFatal(byteArray.returnedRegisters == bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
-                "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}"),
-        )
+        get() =
+            combine(
+                name,
+                super<NumericalExpression>.problems,
+                super<NotImplemented>.problems,
+                checkFatal(
+                    byteArray.returnedRegisters == bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
+                    "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}",
+                ),
+            )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice) =
-        byteArray.getRegisterValues(schemaDevice)
+    override fun getRegisterValues(schemaDevice: SchemaDevice) = byteArray.getRegisterValues(schemaDevice)
 
     abstract override fun getValueAsLong(schemaDevice: SchemaDevice): Long?
 }

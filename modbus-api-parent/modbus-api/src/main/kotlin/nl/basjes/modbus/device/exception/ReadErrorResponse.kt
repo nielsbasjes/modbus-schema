@@ -21,7 +21,10 @@ import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 
-fun createReadErrorResponse(firstRegister: Address, count: Int): RegisterBlock {
+fun createReadErrorResponse(
+    firstRegister: Address,
+    count: Int,
+): RegisterBlock {
     val registerBlock = RegisterBlock(firstRegister.addressClass)
     var address = firstRegister
     for (i in 0 until count) {

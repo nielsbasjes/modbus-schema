@@ -42,12 +42,12 @@ internal class TestMockedModbusDevice {
         registerBlock: RegisterBlock,
         addressClass: AddressClass,
         registerNumber: Int,
-        expectedHexValue: String?
+        expectedHexValue: String?,
     ) {
         if (expectedHexValue == null) {
             assertNull(
                 registerBlock[Address.of(addressClass, registerNumber)].value,
-                "Invalid value for register $registerNumber"
+                "Invalid value for register $registerNumber",
             )
         } else {
             val registerValue: RegisterValue = registerBlock[Address.of(addressClass, registerNumber)]
@@ -61,12 +61,13 @@ internal class TestMockedModbusDevice {
 
         builder()
             .withRegisters(addressClass, 0, registerString!!)
-            .build().use { device ->
+            .build()
+            .use { device ->
                 val registers = device.getRegisters(Address.of(addressClass, 0), 20)
                 assertEquals(
                     17,
                     registers.size,
-                    "Should have only 17 registers as that is all there is in the device"
+                    "Should have only 17 registers as that is all there is in the device",
                 )
 
                 assertAddressValue(registers, addressClass, 0, "F001")
@@ -93,7 +94,7 @@ internal class TestMockedModbusDevice {
         modbusDevice: ModbusDevice,
         addressClass: AddressClass,
         registerNumber: Int,
-        expectedHexValue: String?
+        expectedHexValue: String?,
     ) {
         val registers = modbusDevice.getRegisters(Address.of(addressClass, registerNumber), 1)
         assertAddressValue(registers, addressClass, registerNumber, expectedHexValue)
@@ -111,14 +112,16 @@ internal class TestMockedModbusDevice {
 
         val addressClass = AddressClass.INPUT_REGISTER
 
-        val modbusDevice = builder()
-            .withRegisters(addressClass, 1, registerString)
-            .build()
+        val modbusDevice =
+            builder()
+                .withRegisters(addressClass, 1, registerString)
+                .build()
 
         // The Read Error should make the entire block return a read error
         modbusDevice
             .getRegisters(Address.of(addressClass, 0), 20)
-            .values.forEach { assertTrue { it.isReadError() } }
+            .values
+            .forEach { assertTrue { it.isReadError() } }
 
         // Reading them one at a time should only return a read error on the bad one.
         assertAddressValue(modbusDevice, addressClass, 1, "0001")

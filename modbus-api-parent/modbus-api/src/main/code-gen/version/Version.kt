@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("unused") // Some of these will only be used by projects that use this library
 
 package nl.basjes.modbus.version
 
@@ -25,3 +26,19 @@ const val COPYRIGHT                    = "@version.copyright@"
 const val LICENSE                      = "@version.license@"
 const val URL                          = "@version.url@"
 const val BUILD_KOTLIN_VERSION         = "@kotlin.version@"
+
+class Version {
+    val gitCommitId              = GIT_COMMIT_ID
+    val gitCommitIdDescribeShort = GIT_COMMIT_ID_DESCRIBE_SHORT
+    val buildTimeStamp           = BUILD_TIME_STAMP
+    val projectVersion           = PROJECT_VERSION
+    val copyright                = COPYRIGHT
+    val license                  = LICENSE
+    val url                      = URL
+    val buildKotlinVersion       = BUILD_KOTLIN_VERSION
+
+    companion object {
+        @JvmField
+        val INSTANCE = Version()
+    }
+}

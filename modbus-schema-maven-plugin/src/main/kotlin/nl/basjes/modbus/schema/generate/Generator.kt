@@ -62,7 +62,6 @@ class Generator {
             require(language.matches("[a-zA-Z0-9]+".toRegex())) { throw MojoExecutionException("Invalid programming language name was provided.") }
             require(type == "main" || type == "test") { throw MojoExecutionException("Invalid type was provided.") }
 
-
             val languageSpecificOutputDirectoryPath = (outputDirectory.absolutePath + File.separator + language).replace(Regex(Pattern.quote(File.separator) + "+"), File.separator)
             val languageSpecificOutputDirectory =  File(languageSpecificOutputDirectoryPath)
 
@@ -76,10 +75,11 @@ class Generator {
                 throw MojoExecutionException("The specified Schema file does not exist $modbusSchemaFile")
             }
 
-            val outputFileName = buildFullFileName(
-                languageSpecificOutputDirectoryPath,
-                fileName(templateDirectory, language, type, packageName, className)
-            )
+            val outputFileName =
+                buildFullFileName(
+                    languageSpecificOutputDirectoryPath,
+                    fileName(templateDirectory, language, type, packageName, className),
+                )
 
             try {
                 val outputFile = File(outputFileName)
@@ -97,7 +97,7 @@ class Generator {
                     type,
                     packageName,
                     className,
-                    output
+                    output,
                 )
                 log.info("Generated ($language ; $type): $outputFileName")
             }
@@ -109,7 +109,11 @@ class Generator {
             }
         }
 
-        fun getTemplateConfiguration(templateDirectory: File?, language: String, type:String ): Configuration {
+        fun getTemplateConfiguration(
+            templateDirectory: File?,
+            language: String,
+            type: String,
+        ): Configuration {
             val cfg = Configuration(Configuration.VERSION_2_3_34)
             if (templateDirectory == null) {
                 cfg.setClassForTemplateLoading(Generator::class.java, "/${language}/${type}")
@@ -122,11 +126,17 @@ class Generator {
             cfg.logTemplateExceptions = false
             cfg.wrapUncheckedExceptions = true
             cfg.fallbackOnNullLoopVariable = false
-            cfg.setSQLDateAndTimeTimeZone(TimeZone.getDefault())
+            cfg.sqlDateAndTimeTimeZone = TimeZone.getDefault()
             return cfg
         }
 
-        fun fileName(templateDirectory: File?, language: String, type:String, packageName: String, className: String): String {
+        fun fileName(
+            templateDirectory: File?,
+            language: String,
+            type: String,
+            packageName: String,
+            className: String,
+        ): String {
             val templateConfig = getTemplateConfiguration(templateDirectory, language, type)
             val template: Template = templateConfig.getTemplate("filename.ftl")
             val output = ByteArrayOutputStream()
@@ -134,13 +144,14 @@ class Generator {
             return output.toString().replace("\r\n", "").replace("\n", "")
         }
 
-        fun generate(schemaDevice: SchemaDevice?,
-                     templateDirectory: File?,
-                     language:String,
-                     type: String,
-                     packageName: String,
-                     className: String,
-                     output: Writer
+        fun generate(
+            schemaDevice: SchemaDevice?,
+            templateDirectory: File?,
+            language: String,
+            type: String,
+            packageName: String,
+            className: String,
+            output: Writer,
         ) {
             val templateConfig = getTemplateConfiguration(templateDirectory, language, type)
             val template: Template = templateConfig.getTemplate("code.ftl")
@@ -151,10 +162,13 @@ class Generator {
                     "className"     to className,
                     "schemaDevice" to schemaDevice,
                 ),
-                output)
+                output,
+            )
         }
 
-        fun buildFullFileName(directory: String, fileName: String) =
-            directory.trim { it <= ' ' } + '/' + fileName.trim { it <= ' ' } .replace("/+".toRegex(), "/")
+        fun buildFullFileName(
+            directory: String,
+            fileName: String,
+        ) = directory.trim { it <= ' ' } + '/' + fileName.trim { it <= ' ' }.replace("/+".toRegex(), "/")
     }
 }

@@ -19,21 +19,21 @@ package nl.basjes.modbus.schema.utils
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import java.util.regex.Pattern
 
-fun isValidIdentifier(
-    id: String,
-)  = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*$").matcher(id).matches()
+fun isValidIdentifier(id: String) = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*$").matcher(id).matches()
 
 fun requireValidIdentifier(
     id: String,
     fieldName: String,
-    )  {
-        if (!isValidIdentifier(id)) {
-            throw ModbusSchemaParseException("Illegal $fieldName: $id")
-        }
+) {
+    if (!isValidIdentifier(id)) {
+        throw ModbusSchemaParseException("Illegal $fieldName: $id")
     }
+}
 
 @JvmInline
-value class NameUsableAsClassName(val value: String) {
+value class NameUsableAsClassName(
+    val value: String,
+) {
     init {
         require(value.matches(Regex("^[A-Z][a-zA-Z0-9_]*$")))
     }

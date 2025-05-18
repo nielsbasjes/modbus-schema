@@ -24,8 +24,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class TestRegisterBlock {
-
-    val LOG: Logger = LogManager.getLogger()
+    val logger: Logger = LogManager.getLogger()
 
     @Test
     fun testToHexString() {
@@ -42,16 +41,15 @@ internal class TestRegisterBlock {
         registerBlock.setValue(Address.of("4x00013"), 13.toShort(), 13L) // 000D
 
         val firstAddress = registerBlock.firstAddress.toString()
-        val registersString ="0005 0006 ---- 0008 ---- xxxx 000B ---- 000D"
+        val registersString = "0005 0006 ---- 0008 ---- xxxx 000B ---- 000D"
 
         assertEquals("hr:00004", firstAddress)
-        assertEquals("0005 0006 ---- 0008 ---- xxxx 000B ---- 000D",registersString)
+        assertEquals("0005 0006 ---- 0008 ---- xxxx 000B ---- 000D", registersString)
 
         // Because a RegisterBlock is an instance of Map: Log4j will handle it in a special way.
         // So the toString() here will actually give a different result !
-        LOG.info("As String: {}", registerBlock.toString())
+        logger.info("As String: {}", registerBlock.toString())
     }
-
 
     @Test
     fun testInvalidCombinations() {
@@ -63,7 +61,7 @@ internal class TestRegisterBlock {
                         registerBlock.setValue(
                             Address.of(valueAddressClass, 1),
                             1.toShort(),
-                            1L
+                            1L,
                         )
                     }
                 } else {

@@ -19,23 +19,30 @@ package nl.basjes.modbus.schema.expression.strings
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
+import nl.basjes.modbus.schema.expression.INTEGER_BYTES
+import nl.basjes.modbus.schema.expression.LONG_BYTES
 import nl.basjes.modbus.schema.expression.NotImplemented
+import nl.basjes.modbus.schema.expression.SHORT_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToInteger
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToLong
+import nl.basjes.modbus.schema.utils.ByteConversions.bytesToShort
 
 class EnumString(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
-    val mappings: Map<Long, String>
-) : NotImplemented(registers.returnedRegisters, notImplemented), StringExpression {
+    val mappings: Map<Long, String>,
+) : NotImplemented(registers.returnedRegisters, notImplemented),
+    StringExpression {
 
-    override fun toString(): String {
-        return "enum(" + registers + super<NotImplemented>.toString() + " ; " +
+    override fun toString(): String =
+        "enum(" + registers + super<NotImplemented>.toString() + " ; " +
             mappings.entries.joinToString(" ; ") { "${it.key}->'${it.value}'" } +
             ")"
-    }
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
@@ -47,14 +54,12 @@ class EnumString(
             combine(
                 "enum",
                 checkFatal(registers.returnedRegisters > 0, "No registers"),
-                checkFatal(registers.returnedRegisters <= nl.basjes.modbus.schema.expression.LONG_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER, "Too many registers"),
+                checkFatal(registers.returnedRegisters <= LONG_BYTES / BYTES_PER_REGISTER, "Too many registers"),
                 super<StringExpression>.problems,
                 super<NotImplemented>.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return registers.getRegisterValues(schemaDevice)
-    }
+    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
     @Throws(ModbusException::class)
     override fun getValue(schemaDevice: SchemaDevice): String? {
@@ -62,14 +67,13 @@ class EnumString(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        var value: Long? = null
-        if (bytes.size == nl.basjes.modbus.schema.expression.SHORT_BYTES) {
-            value = ByteConversions.bytesToShort(bytes).toLong()
-        } else if (bytes.size == nl.basjes.modbus.schema.expression.INTEGER_BYTES) {
-            value = ByteConversions.bytesToInteger(bytes).toLong()
-        } else if (bytes.size == nl.basjes.modbus.schema.expression.LONG_BYTES) {
-            value = ByteConversions.bytesToLong(bytes)
-        }
+        val value =
+            when (bytes.size) {
+                SHORT_BYTES -> bytesToShort(bytes).toLong()
+                INTEGER_BYTES -> bytesToInteger(bytes).toLong()
+                LONG_BYTES -> bytesToLong(bytes)
+                else -> null
+            }
         var mappedValue = mappings[value]
         if (mappedValue == null) {
             mappedValue = "No mapping for value " + ByteConversions.bytesToHexString(bytes)

@@ -21,8 +21,12 @@ import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.Expression.Warning
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 
-class MissingField(private val fieldName: String) : StringExpression, NumericalExpression {
-    override fun toString(): String = "<<MISSING FIELD: ${fieldName}>>"
+class MissingField(
+    private val fieldName: String,
+) : StringExpression,
+    NumericalExpression {
+
+    override fun toString(): String = "<<MISSING FIELD: $fieldName>>"
 
     override var isImmutable: Boolean = true
 

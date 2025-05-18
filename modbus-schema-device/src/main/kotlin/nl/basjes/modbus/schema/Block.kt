@@ -16,7 +16,6 @@
  */
 package nl.basjes.modbus.schema
 
-import nl.basjes.modbus.device.api.AddressClass
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.utils.StringTable
 import java.util.TreeMap
@@ -27,20 +26,19 @@ open class Block(
      * The schema device of which this block is a part
      */
     val schemaDevice: SchemaDevice,
-
     /**
      * The technical id of the block.
      * Must be usable as an identifier in 'all' common programming languages.
      * So "CamelCase" (without spaces, starting with a letter) is a good choice.
      */
     id: String,
-
     /**
      * The human-readable description of the block.
      */
     val description: String? = null,
 ) {
     // ------------------------------------------
+
     /**
      * The technical id of the block.
      * Must be usable as an identifier in 'all' common programming languages.
@@ -49,6 +47,7 @@ open class Block(
     val id: String = id.trim()
 
     // ------------------------------------------
+
     /**
      * The set of fields defined in this block
      */
@@ -69,13 +68,9 @@ open class Block(
         return this
     }
 
-    fun getField(fieldName: String): Field? {
-        return fieldMap[fieldName]
-    }
+    fun getField(fieldName: String): Field? = fieldMap[fieldName]
 
-    operator fun get(fieldId: String): Field? {
-        return fieldMap[fieldId]
-    }
+    operator fun get(fieldId: String): Field? = fieldMap[fieldId]
 
     fun sortFieldsByAddress() {
         initialize()
@@ -110,15 +105,19 @@ open class Block(
         }
     }
 
-    private fun findCircularReference(usageChainSoFar: List<String>, field: Field): List<String> {
+    private fun findCircularReference(
+        usageChainSoFar: List<String>,
+        field: Field,
+    ): List<String> {
         if (usageChainSoFar.contains(field.id)) {
             return usageChainSoFar
         }
         val usageChain: MutableList<String> = ArrayList(usageChainSoFar)
         usageChain.add(field.id)
         for (requiredFieldName in field.requiredFieldNames) {
-            val requiredField = fieldMap[requiredFieldName]
-                ?: throw ModbusSchemaParseException("Required field \"$requiredFieldName\" (needed for \"${field.id}\") is missing.")
+            val requiredField =
+                fieldMap[requiredFieldName]
+                    ?: throw ModbusSchemaParseException("Required field \"$requiredFieldName\" (needed for \"${field.id}\") is missing.")
             val circularReference = findCircularReference(usageChain, requiredField)
             if (circularReference.isNotEmpty()) {
                 return circularReference
@@ -127,20 +126,22 @@ open class Block(
         return emptyList()
     }
 
-    fun toTable(table: StringTable, onlyUseFullFields: Boolean) {
+    fun toTable(
+        table: StringTable,
+        onlyUseFullFields: Boolean,
+    ) {
         table.addRow(
             id,
             "",
             "",
-            description ?: "")
+            description ?: "",
+        )
         for (field in fields) {
             field.toTable(table, onlyUseFullFields)
         }
     }
 
-    override fun toString(): String {
-        return "Block(id='$id', description=$description, fieldMap=$fieldMap)"
-    }
+    override fun toString(): String = "Block(id='$id', description=$description, fieldMap=$fieldMap)"
 
     init {
 //        requireValidIdentifier(id, "Block id")
@@ -179,8 +180,8 @@ open class Block(
          * The schema device to which this block must be linked
          */
         fun schemaDevice(schemaDevice: SchemaDevice) = apply { this.schemaDevice = schemaDevice }
+
         private var schemaDevice: SchemaDevice by Delegates.notNull()
-            private set
 
         /**
          * The technical id of this block.
@@ -188,12 +189,14 @@ open class Block(
          * So "CamelCase" (without spaces) is a good choice.
          */
         fun id(id: String) = apply { this.id = id }
+
         private var id: String by Delegates.notNull()
 
         /**
          * A human-readable description of this block.
          */
         fun description(description: String) = apply { this.description = description }
+
         private var description: String? = null
 
         /**

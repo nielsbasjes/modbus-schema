@@ -32,7 +32,7 @@ class TestExpressionReturnTypes {
 
     private fun getExpression(expression: String): NumericalExpression {
         val schemaDevice = SchemaDevice("Device")
-        val block = Block(schemaDevice,"Block")
+        val block = Block(schemaDevice, "Block")
         val field = Field(block = block, id = "Field", expression = expression)
         assertTrue(field.initialize())
         val parsedExpression = field.parsedExpression
@@ -64,6 +64,7 @@ class TestExpressionReturnTypes {
             "The expression \"$this\" should guarantee a positive value."
         }
     }
+
     private fun NumericalExpression.assertNegative() {
         require(this.getGuarantee() == NEGATIVE) {
             "The expression \"$this\" should guarantee a negative value."
@@ -217,5 +218,4 @@ class TestExpressionReturnTypes {
         assertIsDouble("ieee754_32(hr:0#2)").assertNoGuarantees()
         assertIsDouble("ieee754_64(hr:0#4)").assertNoGuarantees()
     }
-
 }

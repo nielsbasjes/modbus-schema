@@ -59,63 +59,61 @@ import nl.basjes.modbus.schema.expression.strings.UTF8String
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 
-val expressionMappings = mapOf(
-    // Registers
-    "ExpressionRegistersConstant"          to RegistersConstantExpression::class,
-    "ExpressionGetModbus"                  to RegistersModbusExpression::class,
-    "ExpressionSwapBytes"                  to SwapBytes::class,
-    "ExpressionSwapEndian"                 to SwapEndian::class,
+val expressionMappings =
+    mapOf(
+        // Registers
+        "ExpressionRegistersConstant"          to RegistersConstantExpression::class,
+        "ExpressionGetModbus"                  to RegistersModbusExpression::class,
+        "ExpressionSwapBytes"                  to SwapBytes::class,
+        "ExpressionSwapEndian"                 to SwapEndian::class,
+        // Numerical Values
+        "ExpressionLongConstant"               to LongConstant::class,
+        "ExpressionDoubleConstant"             to DoubleConstant::class,
+        "ExpressionNumericalField"             to NumericalField::class,
+        "ExpressionIEEE754Float32"             to IEEE754Float32::class,
+        "ExpressionIEEE754Float64"             to IEEE754Float64::class,
+        "ExpressionIntegerSigned16"            to IntegerSigned16::class,
+        "ExpressionIntegerSigned32"            to IntegerSigned32::class,
+        "ExpressionIntegerSigned64"            to IntegerSigned64::class,
+        "ExpressionIntegerUnsigned16"          to IntegerUnsigned16::class,
+        "ExpressionIntegerUnsigned32"          to IntegerUnsigned32::class,
+        "ExpressionIntegerUnsigned64"          to IntegerUnsigned64::class,
+        // Numerical Operations
+        "ExpressionAdd"                        to Add::class,
+        "ExpressionSubtract"                   to Subtract::class,
+        "ExpressionMultiply"                   to Multiply::class,
+        "ExpressionDivide"                     to Divide::class,
+        "ExpressionPower"                      to Power::class,
+        // String list
+        "ExpressionBitsetStringList"           to BitsetStringList::class,
+        // String values
+        "ExpressionStringConstant"             to StringConstant::class,
+        "ExpressionEnumString"                 to EnumString::class,
+        "ExpressionEui48String"                to Eui48String::class,
+        "ExpressionHexString"                  to HexString::class,
+        "ExpressionIPv4AddrString"             to IPv4AddrString::class,
+        "ExpressionIPv6AddrString"             to IPv6AddrString::class,
+        "ExpressionStringField"                to StringField::class,
+        "ExpressionUTF8String"                 to UTF8String::class,
+        // String Operations
+        "ExpressionStringConcat"               to StringConcat::class,
+        "ExpressionStringFromNumber"           to StringFromNumber::class,
+    )
 
-    // Numerical Values
-    "ExpressionLongConstant"               to LongConstant::class,
-    "ExpressionDoubleConstant"             to DoubleConstant::class,
-    "ExpressionNumericalField"             to NumericalField::class,
-    "ExpressionIEEE754Float32"             to IEEE754Float32::class,
-    "ExpressionIEEE754Float64"             to IEEE754Float64::class,
-    "ExpressionIntegerSigned16"            to IntegerSigned16::class,
-    "ExpressionIntegerSigned32"            to IntegerSigned32::class,
-    "ExpressionIntegerSigned64"            to IntegerSigned64::class,
-    "ExpressionIntegerUnsigned16"          to IntegerUnsigned16::class,
-    "ExpressionIntegerUnsigned32"          to IntegerUnsigned32::class,
-    "ExpressionIntegerUnsigned64"          to IntegerUnsigned64::class,
-    // Numerical Operations
-    "ExpressionAdd"                        to Add::class,
-    "ExpressionSubtract"                   to Subtract::class,
-    "ExpressionMultiply"                   to Multiply::class,
-    "ExpressionDivide"                     to Divide::class,
-    "ExpressionPower"                      to Power::class,
-
-    // String list
-    "ExpressionBitsetStringList"           to BitsetStringList::class,
-
-    // String values
-    "ExpressionStringConstant"             to StringConstant::class,
-    "ExpressionEnumString"                 to EnumString::class,
-    "ExpressionEui48String"                to Eui48String::class,
-    "ExpressionHexString"                  to HexString::class,
-    "ExpressionIPv4AddrString"             to IPv4AddrString::class,
-    "ExpressionIPv6AddrString"             to IPv6AddrString::class,
-    "ExpressionStringField"                to StringField::class,
-    "ExpressionUTF8String"                 to UTF8String::class,
-    // String Operations
-    "ExpressionStringConcat"               to StringConcat::class,
-    "ExpressionStringFromNumber"           to StringFromNumber::class,
-)
-
-fun Configuration.registerAdditionalMethods() = run {
-    this.setSharedVariable("packageAsPath",                        PackageAsPath())
-    this.setSharedVariable("asClassName",                          MakeCodeCompliantName(true))
-    this.setSharedVariable("asVariableName",                       MakeCodeCompliantName(false))
-    this.setSharedVariable("yamlSchema",                           SchemaDeviceAsYamlSchema())
-    this.setSharedVariable("breakStringBlock",                     BreakStringBlock())
-    this.setSharedVariable("jvmReturnType",                        ReturnTypeToJVMType())
-    this.setSharedVariable("valueGetter",                          ReturnTypeValueGetter())
-    this.setSharedVariable("hexString",                            RegisterBlockAsHexString())
-
-    // Determine if an expression is of a specific expression type
-    // Usage:  <#if isExpressionType(expr, "ExpressionRegistersConstant")>...</#if>
-    this.setSharedVariable("isExpressionType",                           IsExpressionType())
-}
+fun Configuration.registerAdditionalMethods() =
+    run {
+        this.setSharedVariable("packageAsPath",                        PackageAsPath())
+        this.setSharedVariable("asClassName",                          MakeCodeCompliantName(true))
+        this.setSharedVariable("asVariableName",                       MakeCodeCompliantName(false))
+        this.setSharedVariable("yamlSchema",                           SchemaDeviceAsYamlSchema())
+        this.setSharedVariable("breakStringBlock",                     BreakStringBlock())
+        this.setSharedVariable("jvmReturnType",                        ReturnTypeToJVMType())
+        this.setSharedVariable("valueGetter",                          ReturnTypeValueGetter())
+        this.setSharedVariable("hexString",                            RegisterBlockAsHexString())
+        // Determine if an expression is of a specific expression type
+        // Usage:  <#if isExpressionType(expr, "ExpressionRegistersConstant")>...</#if>
+        this.setSharedVariable("isExpressionType",                     IsExpressionType())
+    }
 
 abstract class BaseSingleStringMethod : TemplateMethodModelEx {
     override fun exec(arguments: MutableList<Any?>): Any {
@@ -132,7 +130,9 @@ abstract class BaseSingleStringMethod : TemplateMethodModelEx {
     abstract fun transform(input: String): String
 }
 
-class MakeCodeCompliantName(private val firstUppercase: Boolean) : BaseSingleStringMethod() {
+class MakeCodeCompliantName(
+    private val firstUppercase: Boolean,
+) : BaseSingleStringMethod() {
     override fun transform(input: String) = convertToCodeCompliantName(input, firstUppercase)
 }
 
@@ -163,10 +163,10 @@ class BreakStringBlock : TemplateMethodModelEx {
 
         var count = 0
         val result = mutableListOf<String>()
-        for(line in source.lines()) {
+        for (line in source.lines()) {
             result.add(line)
             if (++count > 500) {
-                count=0
+                count = 0
                 result.add(extraLine)
             }
         }
@@ -206,7 +206,6 @@ class SchemaDeviceAsYamlSchema : TemplateMethodModelEx {
     }
 }
 
-
 abstract class BaseSingleReturnTypeMethod : TemplateMethodModelEx {
     override fun exec(arguments: MutableList<Any?>): Any {
         if (arguments.size != 1) {
@@ -228,7 +227,7 @@ abstract class BaseSingleReturnTypeMethod : TemplateMethodModelEx {
 
 class ReturnTypeToJVMType : BaseSingleReturnTypeMethod() {
     override fun transform(input: ReturnType) =
-        when(input) {
+        when (input) {
             ReturnType.BOOLEAN -> TODO()
             ReturnType.LONG -> "Long"
             ReturnType.DOUBLE -> "Double"
@@ -240,7 +239,7 @@ class ReturnTypeToJVMType : BaseSingleReturnTypeMethod() {
 
 class ReturnTypeValueGetter : BaseSingleReturnTypeMethod() {
     override fun transform(input: ReturnType) =
-        when(input) {
+        when (input) {
             ReturnType.BOOLEAN -> TODO()
             ReturnType.LONG -> "longValue"
             ReturnType.DOUBLE -> "doubleValue"
@@ -249,8 +248,6 @@ class ReturnTypeValueGetter : BaseSingleReturnTypeMethod() {
             else -> "**UNKNOWN**"
         }
 }
-
-
 
 class RegisterBlockAsHexString : TemplateMethodModelEx {
     override fun exec(arguments: MutableList<Any?>): Any {
@@ -272,7 +269,9 @@ class RegisterBlockAsHexString : TemplateMethodModelEx {
 class IsExpressionType : TemplateMethodModelEx {
     override fun exec(arguments: MutableList<Any?>): Any {
         if (arguments.size != 2) {
-            throw TemplateModelException("Wrong arguments for method 'isExpressionType'. Method has two required parameters: expression and the template name of the type of expression")
+            throw TemplateModelException(
+                "Wrong arguments for method 'isExpressionType'. Method has two required parameters: expression and the template name of the type of expression",
+            )
         }
         // -----
         val arg0 = arguments[0] ?: return false

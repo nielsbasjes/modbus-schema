@@ -35,17 +35,21 @@ internal class TestReadErrorSkipping {
         val modbusDevice = AssertingMockedModbusDevice()
         modbusDevice.logRequests = false
         modbusDevice.addRegisters(
-            HOLDING_REGISTER, 100,
-            """
-            002A 002A 002A 002A 002A 002A 002A xxxx 002A xxxx 002A 002A 002A 002A 002A 002A
-            """
+            HOLDING_REGISTER,
+            100,
+            "002A 002A 002A 002A 002A 002A 002A xxxx 002A xxxx 002A 002A 002A 002A 002A 002A",
         )
         return modbusDevice
     }
 
-    fun assertCorrectFieldValues(schemaDevice: SchemaDevice, valid: List<Field>, softReadError: List<Field>,hardReadError: List<Field>) {
-        valid.forEach { field -> assertEquals(42L , field.longValue, "Field `${field.id}` should be 42") }
-        val registerBlock =schemaDevice.getRegisterBlock(HOLDING_REGISTER)
+    fun assertCorrectFieldValues(
+        schemaDevice: SchemaDevice,
+        valid: List<Field>,
+        softReadError: List<Field>,
+        hardReadError: List<Field>,
+    ) {
+        valid.forEach { field -> assertEquals(42L, field.longValue, "Field `${field.id}` should be 42") }
+        val registerBlock = schemaDevice.getRegisterBlock(HOLDING_REGISTER)
         softReadError
             .forEach { field ->
                 registerBlock
@@ -72,27 +76,24 @@ internal class TestReadErrorSkipping {
 
         val schemaDevice = SchemaDevice("First test device")
 
-        val block = Block(schemaDevice,"Block1", "Block 1")
+        val block = Block(schemaDevice, "Block1", "Block 1")
 
-        val int100 = Field(block, "int 100",  expression = "int16( hr:100 ) ", immutable = true)
-        val int101 = Field(block, "int 101",  expression = "int16( hr:101 ) ", immutable = true)
-        val int102 = Field(block, "int 102",  expression = "int16( hr:102 ) ", immutable = true)
-        val int103 = Field(block, "int 103",  expression = "int16( hr:103 ) ", immutable = true)
-        val int104 = Field(block, "int 104",  expression = "int16( hr:104 ) ", immutable = true)
-        val int105 = Field(block, "int 105",  expression = "int16( hr:105 ) ")
-        val int106 = Field(block, "int 106",  expression = "int16( hr:106 ) ")
-        val int107 = Field(block, "int 107",  expression = "int16( hr:107 ) ")
-        val int108 = Field(block, "int 108",  expression = "int16( hr:108 ) ", immutable = true)
-        val int109 = Field(block, "int 109",  expression = "int16( hr:109 ) ")
-        val int110 = Field(block, "int 110",  expression = "int16( hr:110 ) ")
-        val int111 = Field(block, "int 111",  expression = "int16( hr:111 ) ")
-        val int112 = Field(block, "int 112",  expression = "int16( hr:112 ) ")
-        val int113 = Field(block, "int 113",  expression = "int16( hr:113 ) ")
-        val int114 = Field(block, "int 114",  expression = "int16( hr:114 ) ")
-        val int115 = Field(block, "int 115",  expression = "int16( hr:115 ) ")
-
-        // The fields that will always result in a readerror
-        val readErrorFields = listOf(int107, int109)
+        val int100 = Field(block, "int 100", expression = "int16( hr:100 ) ", immutable = true)
+        val int101 = Field(block, "int 101", expression = "int16( hr:101 ) ", immutable = true)
+        val int102 = Field(block, "int 102", expression = "int16( hr:102 ) ", immutable = true)
+        val int103 = Field(block, "int 103", expression = "int16( hr:103 ) ", immutable = true)
+        val int104 = Field(block, "int 104", expression = "int16( hr:104 ) ", immutable = true)
+        val int105 = Field(block, "int 105", expression = "int16( hr:105 ) ")
+        val int106 = Field(block, "int 106", expression = "int16( hr:106 ) ")
+        val int107 = Field(block, "int 107", expression = "int16( hr:107 ) ")
+        val int108 = Field(block, "int 108", expression = "int16( hr:108 ) ", immutable = true)
+        val int109 = Field(block, "int 109", expression = "int16( hr:109 ) ")
+        val int110 = Field(block, "int 110", expression = "int16( hr:110 ) ")
+        val int111 = Field(block, "int 111", expression = "int16( hr:111 ) ")
+        val int112 = Field(block, "int 112", expression = "int16( hr:112 ) ")
+        val int113 = Field(block, "int 113", expression = "int16( hr:113 ) ")
+        val int114 = Field(block, "int 114", expression = "int16( hr:114 ) ")
+        val int115 = Field(block, "int 115", expression = "int16( hr:115 ) ")
 
         schemaDevice.initialize()
         val registerBlock = schemaDevice.getRegisterBlock(HOLDING_REGISTER)
@@ -118,7 +119,8 @@ internal class TestReadErrorSkipping {
         println("Registers after update: $registerBlock")
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
 
-        assertCorrectFieldValues(schemaDevice,
+        assertCorrectFieldValues(
+            schemaDevice,
             listOf(
                 int100,
                 int102,
@@ -139,8 +141,7 @@ internal class TestReadErrorSkipping {
                 int113,
                 int114,
             ),
-            listOf(
-            )
+            listOf(),
         )
 
         println("------------------ SET OF REGISTERS 1: Update 2 (Skipping immutables at the start)")
@@ -163,7 +164,8 @@ internal class TestReadErrorSkipping {
         println("Registers after update: $registerBlock")
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
 
-        assertCorrectFieldValues(schemaDevice,
+        assertCorrectFieldValues(
+            schemaDevice,
             listOf(
                 int100,
                 int101,
@@ -184,8 +186,7 @@ internal class TestReadErrorSkipping {
                 int112,
                 int114,
             ),
-            listOf(
-            )
+            listOf(),
         )
         println("------------------ SET OF REGISTERS 2: Update 2")
         schemaDevice.update()
@@ -217,7 +218,8 @@ internal class TestReadErrorSkipping {
         println("Registers after update: $registerBlock")
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
 
-        assertCorrectFieldValues(schemaDevice,
+        assertCorrectFieldValues(
+            schemaDevice,
             listOf(
                 int100,
                 int101,
@@ -239,7 +241,7 @@ internal class TestReadErrorSkipping {
             ),
             listOf(
                 int107, // No longer a soft error because we KNOW this one is the problem
-            )
+            ),
         )
 
         println("------------------ FULL SET OF REGISTERS: Update 2")
@@ -257,7 +259,8 @@ internal class TestReadErrorSkipping {
         println("Registers after update: $registerBlock")
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
 
-        assertCorrectFieldValues(schemaDevice,
+        assertCorrectFieldValues(
+            schemaDevice,
             listOf(
                 int100,
                 int101,
@@ -274,12 +277,11 @@ internal class TestReadErrorSkipping {
                 int114,
                 int115,
             ),
-            listOf(
-            ),
+            listOf(),
             listOf(
                 int107, // No longer a soft error because we KNOW this one is the problem
                 int109, // No longer a soft error because we KNOW this one is the problem
-            )
+            ),
         )
 
         println("------------------ FULL SET OF REGISTERS: Update 2")
@@ -288,7 +290,5 @@ internal class TestReadErrorSkipping {
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
 
         println(schemaDevice.toTable(true))
-
     }
-
 }

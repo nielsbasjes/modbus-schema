@@ -82,8 +82,7 @@ class Field(
 
 //    /** The return type that the programming language must support. */
 //    returnType: ReturnType = UNKNOWN,
-
-    ) : Comparable<Field> {
+) : Comparable<Field> {
 
     val id: String = id.trim()
 
@@ -92,19 +91,23 @@ class Field(
         private set
 
     private var initialized = false
+
     fun initialize(): Boolean {
         if (!initialized) {
             if (parsedExpression == null && expression.isNotBlank()) {
                 try {
                     parsedExpression = parse(expression)
                 } catch (e: ModbusSchemaParseException) {
-                    throw ModbusSchemaParseException("Field \"$id\": Unable to parse the expression >>$expression<< --> ${e.message}", e)
+                    throw ModbusSchemaParseException(
+                        "Field \"$id\": Unable to parse the expression >>$expression<< --> ${e.message}",
+                        e,
+                    )
                 }
             }
             val theExpression = parsedExpression
             if (theExpression != null) {
                 initialized = theExpression.initialize(this) &&
-                              theExpression.problems.isEmpty()
+                    theExpression.problems.isEmpty()
                 if (initialized) {
                     // --------
                     // Before we can do checks on needed registers and such we must make sure all dependencies have been initialized.
@@ -113,8 +116,11 @@ class Field(
                     for (retry in 0..5) {
                         allHaveBeenInitialized = true
                         for (requiredFieldName in theExpression.requiredFields) {
-                            val requiredField = block.getField(requiredFieldName)
-                                ?: throw ModbusSchemaMissingFieldException("In block ${block.id} the field $id needs the field $requiredFieldName which is missing.")
+                            val requiredField =
+                                block.getField(requiredFieldName)
+                                    ?: throw ModbusSchemaMissingFieldException(
+                                        "In block ${block.id} the field $id needs the field $requiredFieldName which is missing.",
+                                    )
                             if (!requiredField.initialize()) {
                                 allHaveBeenInitialized = false
                             }
@@ -146,7 +152,9 @@ class Field(
                         addressClass = requiredRegisters[0].addressClass
                         for (requiredRegister in requiredRegisters) {
                             if (addressClass != requiredRegister.addressClass) {
-                                throw ModbusSchemaParseException("For field ${block.id}::$id the expression $theExpression requires values from multiple AddressClasses (which is illegal)")
+                                throw ModbusSchemaParseException(
+                                    "For field ${block.id}::$id the expression $theExpression requires values from multiple AddressClasses (which is illegal)",
+                                )
                             }
                         }
                     }
@@ -203,14 +211,15 @@ class Field(
         }
 
     val value: Any?
-        get() = when (returnType) {
-            UNKNOWN ->      TODO("Unknown returnType (Field $id) means we do not know yet")
-            BOOLEAN ->      TODO("Coils are not supported yet")
-            LONG ->         longValue
-            DOUBLE ->       doubleValue
-            STRING ->       stringValue
-            STRINGLIST ->   stringListValue
-        }
+        get() =
+            when (returnType) {
+                UNKNOWN    -> TODO("Unknown returnType (Field $id) means we do not know yet")
+                BOOLEAN    -> TODO("Coils are not supported yet")
+                LONG       -> longValue
+                DOUBLE     -> doubleValue
+                STRING     -> stringValue
+                STRINGLIST -> stringListValue
+            }
 
     val stringValue: String?
         get() {
@@ -258,7 +267,8 @@ class Field(
             if (addressClass == null) {
                 return null
             }
-            val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(parsedExpression.requiredMutableRegisters)
+            val registerValues =
+                block.schemaDevice.getRegisterBlock(addressClass).get(parsedExpression.requiredMutableRegisters)
             val timestamps = registerValues.mapNotNull { it.timestamp }
             if (timestamps.isEmpty()) {
                 return null
@@ -270,10 +280,11 @@ class Field(
         get() = parsedExpression?.requiredFields ?: emptyList()
 
     val requiredFields: List<Field>
-        get() = parsedExpression
-            ?.requiredFields
-            ?.mapNotNull { block.getField(it) }
-            ?.toList() ?: listOf()
+        get() =
+            parsedExpression
+                ?.requiredFields
+                ?.mapNotNull { block.getField(it) }
+                ?.toList() ?: listOf()
 
     val requiredRegisters: List<Address>
         get() = parsedExpression?.requiredRegisters ?: emptyList()
@@ -322,22 +333,43 @@ class Field(
     fun isNeeded() = neededCount > 0
 
     val testCompareValue: List<String>
-        get() = when (returnType) {
-            UNKNOWN ->      TODO("Unknown returnType (Field $id) means we do not know yet")
-            BOOLEAN ->      TODO("Coils are not supported yet")
-            LONG ->         if (longValue!= null) listOf(longValue.toString()) else listOf()
-            DOUBLE ->       when {
-                                doubleValue == null -> listOf()
-                                doubleValue!!.isNaN() -> listOf("NaN")
-                                doubleValue == Double.POSITIVE_INFINITY -> listOf("+Infinite")
-                                doubleValue == Double.NEGATIVE_INFINITY -> listOf("-Infinite")
-                                else -> listOf(String.format("%.3f", doubleValue))
-                            }
-            STRING ->       if (stringValue == null) listOf() else listOf(stringValue!!)
-            STRINGLIST ->   if (stringListValue == null) listOf() else stringListValue!!
-        }
+        get() =
+            when (returnType) {
+                UNKNOWN -> {
+                    TODO("Unknown returnType (Field $id) means we do not know yet")
+                }
 
-    fun toTable(table: StringTable, onlyUseFullFields: Boolean) {
+                BOOLEAN -> {
+                    TODO("Coils are not supported yet")
+                }
+
+                LONG -> {
+                    if (longValue != null) listOf(longValue.toString()) else listOf()
+                }
+
+                DOUBLE -> {
+                    when {
+                        doubleValue == null -> listOf()
+                        doubleValue!!.isNaN() -> listOf("NaN")
+                        doubleValue == Double.POSITIVE_INFINITY -> listOf("+Infinite")
+                        doubleValue == Double.NEGATIVE_INFINITY -> listOf("-Infinite")
+                        else -> listOf(String.format("%.3f", doubleValue))
+                    }
+                }
+
+                STRING -> {
+                    if (stringValue == null) listOf() else listOf(stringValue!!)
+                }
+
+                STRINGLIST -> {
+                    if (stringListValue == null) listOf() else stringListValue!!
+                }
+            }
+
+    fun toTable(
+        table: StringTable,
+        onlyUseFullFields: Boolean,
+    ) {
         if (onlyUseFullFields && isSystem) {
             return
         }
@@ -386,8 +418,10 @@ class Field(
 
         var bytes = ""
         if (parsedExpression != null) {
-            bytes = parsedExpression!!.getRegisterValues(block.schemaDevice)
-                .joinToString(" ") { it.hexValue }
+            bytes =
+                parsedExpression!!
+                    .getRegisterValues(block.schemaDevice)
+                    .joinToString(" ") { it.hexValue }
         }
         var truncatedDescription = description
         if (truncatedDescription.length > 75) {
@@ -396,7 +430,7 @@ class Field(
         table.addRow(
             block.id,
             id,
-            if ( isSystem ) "*" else "",
+            if (isSystem) "*" else "",
             truncatedDescription,
             value.toString(),
             unit,
@@ -422,9 +456,8 @@ class Field(
         return thisAddress.compareTo(otherAddress)
     }
 
-    override fun toString(): String {
-        return "Field(id='$id', isSystem=$isSystem, isImmutable=$isImmutable, unit=$unit, fetchGroup='$fetchGroup',  returnType=$returnType, initialized=$initialized, expression='$expression', parsedExpression=$parsedExpression, addressClass=$addressClass)"
-    }
+    override fun toString(): String =
+        "Field(id='$id', isSystem=$isSystem, isImmutable=$isImmutable, unit=$unit, fetchGroup='$fetchGroup',  returnType=$returnType, initialized=$initialized, expression='$expression', parsedExpression=$parsedExpression, addressClass=$addressClass)"
 
     init {
 //        requireValidIdentifier(id, "Field id")
@@ -441,6 +474,7 @@ class Field(
          * The block to which this block must be linked
          */
         fun block(block: Block) = apply { this.block = block }
+
         private var block: Block by Delegates.notNull()
 
         /**
@@ -449,12 +483,14 @@ class Field(
          * So "CamelCase" (without spaces) is a good choice.
          */
         fun id(id: String) = apply { this.id = id }
+
         private var id: String by Delegates.notNull()
 
         /**
          * A human-readable description of this field.
          */
         fun description(description: String) = apply { this.description = description }
+
         private var description: String = ""
 
         /**
@@ -463,22 +499,26 @@ class Field(
          * and on subsequent updates skip reading this value.
          */
         fun immutable(immutable: Boolean) = apply { this.immutable = immutable }
+
         private var immutable: Boolean = false
 
         /**
          * Some fields are system fields which means they should not be used by the application.
          */
         fun system(system: Boolean) = apply { this.system = system }
+
         private var system: Boolean = false
 
         /**
          * The expression that defines how this Field gets its value.
          */
         fun expression(expression: String) = apply { this.expression = expression }
+
         private var expression: String by Delegates.notNull()
 
         /** Human-readable unit of the field (like 'V' for Volt or '%' for percentage).     */
         fun unit(unit: String?) = apply { this.unit = unit ?: "" }
+
         private var unit: String = ""
 
         /**
@@ -486,6 +526,7 @@ class Field(
          * By default, filled with a random unique value or what was dictated by the block
          */
         fun fetchGroup(fetchGroup: String) = apply { this.fetchGroup = fetchGroup }
+
         private var fetchGroup: String? = null
 
         /**
@@ -495,24 +536,24 @@ class Field(
             val fetchGroup = this.fetchGroup
             return if (fetchGroup == null) {
                 Field(
-                    block       = block,
-                    id          = id,
+                    block = block,
+                    id = id,
                     description = description,
-                    immutable   = immutable,
-                    system      = system,
-                    expression  = expression,
-                    unit        = unit,
+                    immutable = immutable,
+                    system = system,
+                    expression = expression,
+                    unit = unit,
                 )
             } else {
                 Field(
-                    block       = block,
-                    id          = id,
+                    block = block,
+                    id = id,
                     description = description,
-                    immutable   = immutable,
-                    system      = system,
-                    expression  = expression,
-                    unit        = unit,
-                    fetchGroup  = fetchGroup,
+                    immutable = immutable,
+                    system = system,
+                    expression = expression,
+                    unit = unit,
+                    fetchGroup = fetchGroup,
                 )
             }
         }

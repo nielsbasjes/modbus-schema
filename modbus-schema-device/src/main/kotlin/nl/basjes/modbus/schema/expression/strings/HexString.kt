@@ -24,11 +24,11 @@ import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
-class HexString(private val registers: RegistersExpression) : StringExpression {
+class HexString(
+    private val registers: RegistersExpression,
+) : StringExpression {
 
-    override fun toString(): String {
-        return "hexstring($registers)"
-    }
+    override fun toString(): String = "hexstring($registers)"
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
@@ -42,12 +42,9 @@ class HexString(private val registers: RegistersExpression) : StringExpression {
                 registers.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        return registers.getRegisterValues(schemaDevice)
-    }
+    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
     @Throws(ModbusException::class)
-    override fun getValue(schemaDevice: SchemaDevice): String? {
-        return registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToHexString(it) }
-    }
+    override fun getValue(schemaDevice: SchemaDevice): String? =
+        registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToHexString(it) }
 }

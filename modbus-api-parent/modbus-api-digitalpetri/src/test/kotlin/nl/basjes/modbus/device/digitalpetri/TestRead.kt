@@ -38,10 +38,10 @@ internal class TestRead {
 
         val transport = NettyTcpClientTransport(configBuilder.build())
 
-        val client = ModbusTcpClient.create(transport);
+        val client = ModbusTcpClient.create(transport)
 
         try {
-            client.connect();
+            client.connect()
             val modbusDevice: ModbusDevice = ModbusDeviceDigitalPetri(client, SUNSPEC_STANDARD_UNITID)
             SunSpecBasicsPrinter(modbusDevice).print()
         } catch (e: Exception) {

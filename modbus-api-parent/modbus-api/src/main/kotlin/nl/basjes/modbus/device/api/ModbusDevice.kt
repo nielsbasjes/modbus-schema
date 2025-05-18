@@ -31,10 +31,10 @@ abstract class ModbusDevice : AutoCloseable {
             if (value < 1 || value > MODBUS_MAX_REGISTERS_PER_REQUEST) {
                 throw ModbusException(
                     "The maxRegistersPerModbusRequest must be between 1 and $MODBUS_MAX_REGISTERS_PER_REQUEST" +
-                        " (was set to $value)."
+                        " (was set to $value).",
                 )
             }
-            field = value ;
+            field = value
         }
 
     /**
@@ -45,7 +45,10 @@ abstract class ModbusDevice : AutoCloseable {
      * @return A RegisterBlock with of all the retrieved registers
      */
     @Throws(ModbusException::class)
-    abstract fun getRegisters(firstRegister: Address, count: Int): RegisterBlock
+    abstract fun getRegisters(
+        firstRegister: Address,
+        count: Int,
+    ): RegisterBlock
 
     // Explicitly override with a more restricted kind of exception because of
     // https://bugs.openjdk.org/browse/JDK-8155591

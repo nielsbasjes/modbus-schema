@@ -16,4 +16,9 @@
  */
 package nl.basjes.modbus.device.exception
 
-open class ModbusException @JvmOverloads constructor(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class ModbusException
+    @JvmOverloads
+    constructor(
+        message: String,
+        cause: Throwable? = null,
+    ) : Exception(message, cause)

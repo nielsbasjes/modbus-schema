@@ -32,6 +32,7 @@ import nl.basjes.modbus.schema.expression.numbers.IntegerUnsigned64
 import nl.basjes.modbus.schema.expression.numbers.LongConstant
 import nl.basjes.modbus.schema.expression.numbers.Multiply
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
+import nl.basjes.modbus.schema.expression.numbers.NumericalField
 import nl.basjes.modbus.schema.expression.numbers.Power
 import nl.basjes.modbus.schema.expression.numbers.Subtract
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsLexer
@@ -57,6 +58,7 @@ import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParse
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegisterRangeContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegisterSwapBytesContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegisterSwapEndianContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegisterValuesContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegistersContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringConcatContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringConstantContext
@@ -95,7 +97,11 @@ import java.util.TreeMap
 
 // Sonar calls this a Monster Class
 class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
-    override fun aggregateResult(aggregate: Expression?, nextResult: Expression?): Expression? {
+
+    override fun aggregateResult(
+        aggregate: Expression?,
+        nextResult: Expression?,
+    ): Expression? {
         if (nextResult == null) {
             return aggregate
         }
@@ -107,7 +113,9 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         if (expression is RegistersExpression) {
             return expression
         }
-        throw IllegalStateException("The provided Expression MUST be an instance of ByteArrayExpression but was a " + expression.javaClass)
+        throw IllegalStateException(
+            "The provided Expression MUST be an instance of ByteArrayExpression but was a " + expression.javaClass,
+        )
     }
 
     private fun visitNumericalExpression(context: ParserRuleContext): NumericalExpression {
@@ -115,7 +123,8 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         if (expression is NumericalExpression) {
             return expression
         }
-        throw IllegalStateException("The provided Expression MUST be an instance of NumericalExpression but was a " + expression.javaClass
+        throw IllegalStateException(
+            "The provided Expression MUST be an instance of NumericalExpression but was a " + expression.javaClass,
         )
     }
 
@@ -124,7 +133,9 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         if (expression is StringExpression) {
             return expression
         }
-        throw IllegalStateException( "The provided Expression MUST be an instance of StringExpression but was a " + expression.javaClass)
+        throw IllegalStateException(
+            "The provided Expression MUST be an instance of StringExpression but was a " + expression.javaClass,
+        )
     }
 
     // Constants
@@ -142,9 +153,8 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         return DoubleConstant(-1 * ctx.DOUBLE().text.toDouble())
     }
 
-    override fun visitRegisterValues(ctx: FieldExpressionsParser.RegisterValuesContext): Expression {
-        return RegistersConstantExpression(ctx.constantHexString().text)
-    }
+    override fun visitRegisterValues(ctx: RegisterValuesContext): Expression =
+        RegistersConstantExpression(ctx.constantHexString().text)
 
     // Getting the raw register Addresses needed. !!MAINTAINING THE PROVIDED ORDER!!
     override fun visitRegisters(ctx: RegistersContext): Expression =
@@ -174,34 +184,26 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         return RegistersModbusExpression((0 until totalRegisters).map { count -> startRegister.increment(count) }.toList())
     }
 
-    override fun visitRegisterSwapEndian(ctx: RegisterSwapEndianContext): Expression {
-        return SwapEndian(visitRegistersExpression(ctx.registers))
-    }
+    override fun visitRegisterSwapEndian(ctx: RegisterSwapEndianContext): Expression =
+        SwapEndian(visitRegistersExpression(ctx.registers))
 
-    override fun visitRegisterSwapBytes(ctx: RegisterSwapBytesContext): Expression {
-        return SwapBytes(visitRegistersExpression(ctx.registers))
-    }
+    override fun visitRegisterSwapBytes(ctx: RegisterSwapBytesContext): Expression =
+        SwapBytes(visitRegistersExpression(ctx.registers))
 
-    override fun visitStringUtf8(ctx: StringUtf8Context): Expression {
-        return UTF8String(visitRegistersExpression(ctx.registers))
-    }
+    override fun visitStringUtf8(ctx: StringUtf8Context): Expression =
+        UTF8String(visitRegistersExpression(ctx.registers))
 
-    override fun visitStringHex(ctx: StringHexContext): Expression {
-        return HexString(visitRegistersExpression(ctx.registers))
-    }
+    override fun visitStringHex(ctx: StringHexContext): Expression =
+        HexString(visitRegistersExpression(ctx.registers))
 
-    override fun visitStringConstant(ctx: StringConstantContext): Expression {
-        return StringConstant(ctx.STRING().text)
-    }
+    override fun visitStringConstant(ctx: StringConstantContext): Expression =
+        StringConstant(ctx.STRING().text)
 
-    override fun visitStringField(ctx: StringFieldContext): Expression {
-        return StringField(ctx.FIELDNAME().text)
-    }
+    override fun visitStringField(ctx: StringFieldContext): Expression =
+        StringField(ctx.FIELDNAME().text)
 
-    override fun visitStringNumber(ctx: StringNumberContext): Expression {
-        val numericalExpression = visitNumericalExpression(ctx.number())
-        return StringFromNumber(numericalExpression)
-    }
+    override fun visitStringNumber(ctx: StringNumberContext): Expression =
+        StringFromNumber(visitNumericalExpression(ctx.number()))
 
     override fun visitStringConcat(ctx: StringConcatContext): Expression {
         val expressions = mutableListOf<StringExpression>()
@@ -219,20 +221,14 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         return notImplemented
     }
 
-    override fun visitStringEui48(ctx: StringEui48Context): Expression {
-        val registers = visitRegistersExpression(ctx.registers)
-        return Eui48String(registers, notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitStringEui48(ctx: StringEui48Context): Expression =
+        Eui48String(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitStringIPv4Addr(ctx: StringIPv4AddrContext): Expression {
-        val registers = visitRegistersExpression(ctx.registers)
-        return IPv4AddrString(registers, notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitStringIPv4Addr(ctx: StringIPv4AddrContext): Expression =
+        IPv4AddrString(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitStringIPv6Addr(ctx: StringIPv6AddrContext): Expression {
-        val registers = visitRegistersExpression(ctx.registers)
-        return IPv6AddrString(registers, notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitStringIPv6Addr(ctx: StringIPv6AddrContext): Expression =
+        IPv6AddrString(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
     override fun visitStringEnum(ctx: StringEnumContext): Expression {
         val registers = visitRegistersExpression(ctx.registers)
@@ -252,45 +248,33 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         return BitsetStringList(registers, notImplementedToStringList(ctx.notImplemented()), bitsetMappings)
     }
 
-    override fun visitLoadInt16(ctx: LoadInt16Context): Expression {
-        return IntegerSigned16(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadInt16(ctx: LoadInt16Context): Expression =
+        IntegerSigned16(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadInt32(ctx: LoadInt32Context): Expression {
-        return IntegerSigned32(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadInt32(ctx: LoadInt32Context): Expression =
+        IntegerSigned32(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadInt64(ctx: LoadInt64Context): Expression {
-        return IntegerSigned64(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadInt64(ctx: LoadInt64Context): Expression =
+        IntegerSigned64(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadUInt16(ctx: LoadUInt16Context): Expression {
-        return IntegerUnsigned16(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadUInt16(ctx: LoadUInt16Context): Expression =
+        IntegerUnsigned16(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadUInt32(ctx: LoadUInt32Context): Expression {
-        return IntegerUnsigned32(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadUInt32(ctx: LoadUInt32Context): Expression =
+        IntegerUnsigned32(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadUInt64(ctx: LoadUInt64Context): Expression {
-        return IntegerUnsigned64(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadUInt64(ctx: LoadUInt64Context): Expression =
+        IntegerUnsigned64(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadIeee754_32(ctx: LoadIeee754_32Context): Expression {
-        return IEEE754Float32(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadIeee754_32(ctx: LoadIeee754_32Context): Expression =
+        IEEE754Float32(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitLoadIeee754_64(ctx: LoadIeee754_64Context): Expression {
-        return IEEE754Float64(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
-    }
+    override fun visitLoadIeee754_64(ctx: LoadIeee754_64Context): Expression =
+        IEEE754Float64(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
 
-    override fun visitNumberField(ctx: NumberFieldContext): Expression {
-        return nl.basjes.modbus.schema.expression.numbers.NumericalField(ctx.text)
-    }
+    override fun visitNumberField(ctx: NumberFieldContext): Expression = NumericalField(ctx.text)
 
-    override fun visitExtraBraces(ctx: ExtraBracesContext): Expression {
-        return super.visit(ctx.number())!!
-    }
+    override fun visitExtraBraces(ctx: ExtraBracesContext): Expression = super.visit(ctx.number())!!
 
     // ------------------------------------------------------------
     // Operations
@@ -328,7 +312,7 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         @JvmStatic
         fun parse(expression: String): Expression {
             val errorListener: ANTLRErrorListener =
-                nl.basjes.modbus.schema.expression.parser.ModbusAntlrErrorListener(expression)
+                ModbusAntlrErrorListener(expression)
 
             val input = CharStreams.fromString(expression)
             val lexer = FieldExpressionsLexer(input)

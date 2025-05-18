@@ -22,7 +22,8 @@ import org.apache.maven.plugin.logging.Log
 class PluginLoggerToLog4J : Log {
 
     private val logger = LogManager.getLogger(PluginLoggerToLog4J::class.java)
-    override fun isDebugEnabled(): Boolean= logger.isDebugEnabled
+
+    override fun isDebugEnabled(): Boolean = logger.isDebugEnabled
 
     override fun debug(msg: CharSequence?) {
         logger.debug(msg.toString())
@@ -77,5 +78,4 @@ class PluginLoggerToLog4J : Log {
     override fun error(throwable: Throwable?) {
         logger.error("Throwable happened", throwable)
     }
-
 }

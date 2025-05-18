@@ -27,7 +27,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.TreeMap
 
-open class MockedModbusDevice: ModbusDevice() {
+open class MockedModbusDevice : ModbusDevice() {
     // Map AddressClass to block of registers
     private val registerBlocks: MutableMap<AddressClass, RegisterBlock> = TreeMap()
 
@@ -39,38 +39,48 @@ open class MockedModbusDevice: ModbusDevice() {
         // Nothing to do here
     }
 
-    fun addRegister(addressClass: AddressClass, registerValue: RegisterValue?) {
+    fun addRegister(
+        addressClass: AddressClass,
+        registerValue: RegisterValue,
+    ) {
         registerBlocks
             .computeIfAbsent(addressClass) { RegisterBlock(addressClass) }
-            .put(registerValue!!)
+            .put(registerValue)
     }
 
-    fun addRegisters(addressClass: AddressClass, registerBlock: RegisterBlock?) {
+    fun addRegisters(
+        addressClass: AddressClass,
+        registerBlock: RegisterBlock,
+    ) {
         registerBlocks
             .computeIfAbsent(addressClass) { RegisterBlock(addressClass) }
-            .merge(registerBlock!!)
+            .merge(registerBlock)
     }
 
-    fun addRegisters(firstRegisterAddress: Address, hexRegisterValues: String): MockedModbusDevice {
-        return addRegisters(
+    fun addRegisters(
+        firstRegisterAddress: Address,
+        hexRegisterValues: String,
+    ): MockedModbusDevice =
+        addRegisters(
             firstRegisterAddress.addressClass,
             firstRegisterAddress.physicalAddress,
-            hexRegisterValues
+            hexRegisterValues,
         )
-    }
 
     open fun addRegisters(
         addressClass: AddressClass,
         firstPhysicalAddress: Int,
-        hexRegisterValues: String
+        hexRegisterValues: String,
     ): MockedModbusDevice {
         val registerBlock = hexRegisterValues.toRegisterBlock(Address(addressClass, firstPhysicalAddress))
         addRegisters(addressClass, registerBlock)
         return this
     }
 
-
-    override fun getRegisters(firstRegister: Address, count: Int): RegisterBlock {
+    override fun getRegisters(
+        firstRegister: Address,
+        count: Int,
+    ): RegisterBlock {
 //        if (logRequests) {
 //            LOG.info("MODBUS GET: {} # {}",firstRegister, count );
 //        }
@@ -93,8 +103,12 @@ open class MockedModbusDevice: ModbusDevice() {
         }
         if (logRequests) {
             logger.info(
-                "Getting {} registers starting at \"{}\" (last = \"{}\"): {}",  // The -1 is because the count is including both the first and last registers in the list
-                count, firstRegister, firstRegister.increment(count - 1), registers
+                "Getting {} registers starting at \"{}\" (last = \"{}\"): {}",
+                count,
+                firstRegister,
+                // The -1 is because the count is including both the first and last registers in the list
+                firstRegister.increment(count - 1),
+                registers,
             )
         }
         return registers
@@ -106,13 +120,16 @@ open class MockedModbusDevice: ModbusDevice() {
         fun withRegisters(
             addressClass: AddressClass,
             firstRegisterAddress: Int,
-            hexRegisterValues: String
+            hexRegisterValues: String,
         ): MockedModbusDeviceBuilder {
             mockedModbusDevice.addRegisters(addressClass, firstRegisterAddress, hexRegisterValues)
             return this
         }
 
-        fun withRegisters(firstRegisterAddress: Address, hexRegisterValues: String): MockedModbusDeviceBuilder {
+        fun withRegisters(
+            firstRegisterAddress: Address,
+            hexRegisterValues: String,
+        ): MockedModbusDeviceBuilder {
             mockedModbusDevice.addRegisters(firstRegisterAddress, hexRegisterValues)
             return this
         }
@@ -127,9 +144,7 @@ open class MockedModbusDevice: ModbusDevice() {
             return this
         }
 
-        fun build(): MockedModbusDevice {
-            return mockedModbusDevice
-        }
+        fun build(): MockedModbusDevice = mockedModbusDevice
     }
 
     companion object {
@@ -140,9 +155,10 @@ open class MockedModbusDevice: ModbusDevice() {
          * @return The created MockedModbusDevice instance
          */
         @JvmStatic
-        fun of(firstAddress: Address, hexRegisterValues: String): MockedModbusDevice {
-            return of(firstAddress.addressClass, firstAddress.physicalAddress, hexRegisterValues)
-        }
+        fun of(
+            firstAddress: Address,
+            hexRegisterValues: String,
+        ): MockedModbusDevice = of(firstAddress.addressClass, firstAddress.physicalAddress, hexRegisterValues)
 
         /**
          * Create a new MockedModbusDevice instance
@@ -152,17 +168,17 @@ open class MockedModbusDevice: ModbusDevice() {
          * @return The created MockedModbusDevice instance
          */
         @JvmStatic
-        fun of(addressClass: AddressClass, firstPhysicalAddress: Int, hexRegisterValues: String): MockedModbusDevice {
+        fun of(
+            addressClass: AddressClass,
+            firstPhysicalAddress: Int,
+            hexRegisterValues: String,
+        ): MockedModbusDevice {
             val mockedDevice = MockedModbusDevice()
             mockedDevice.addRegisters(addressClass, firstPhysicalAddress, hexRegisterValues)
             return mockedDevice
         }
 
         @JvmStatic
-        fun builder(): MockedModbusDeviceBuilder {
-            return MockedModbusDeviceBuilder()
-        }
+        fun builder(): MockedModbusDeviceBuilder = MockedModbusDeviceBuilder()
     }
 }
-
-

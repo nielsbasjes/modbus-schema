@@ -44,4 +44,3 @@ interface NumericalExpression : Expression {
         NEGATIVE, // Value is always negative
     }
 }
-

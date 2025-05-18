@@ -18,7 +18,6 @@ package nl.basjes.modbus.schema;
 
 import org.junit.jupiter.api.Test;
 
-import static nl.basjes.modbus.device.api.AddressClass.INPUT_REGISTER;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBuilderJava {

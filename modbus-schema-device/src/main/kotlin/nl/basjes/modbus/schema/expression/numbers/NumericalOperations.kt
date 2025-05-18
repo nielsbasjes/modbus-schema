@@ -37,13 +37,12 @@ abstract class SubExpression(
 
     override fun toString() = toString(true)
 
-    override fun toString(isTop: Boolean): String {
-        return if (isTop) {
+    override fun toString(isTop: Boolean): String =
+        if (isTop) {
             left.toString(false) + operatorSymbol + right.toString(false)
         } else {
             "(" + toString(true) + ")"
         }
-    }
 
     override val subExpressions: List<Expression>
         get() = listOf(left, right)
@@ -61,7 +60,11 @@ abstract class SubExpression(
 
 // ----------------------------------------------------------------------
 
-class Add(left: NumericalExpression, right: NumericalExpression) : SubExpression("Add", left, right) {
+class Add(
+    left: NumericalExpression,
+    right: NumericalExpression,
+) : SubExpression("Add", left, right) {
+
     override val operatorSymbol: String
         get() = "+"
 
@@ -76,13 +79,13 @@ class Add(left: NumericalExpression, right: NumericalExpression) : SubExpression
     }
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        val left  = left.getValueAsLong(schemaDevice)  ?: return null
+        val left = left.getValueAsLong(schemaDevice) ?: return null
         val right = right.getValueAsLong(schemaDevice) ?: return null
         return left + right
     }
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
-        val left  = getValidatedDouble(schemaDevice, left)  ?: return null
+        val left = getValidatedDouble(schemaDevice, left) ?: return null
         val right = getValidatedDouble(schemaDevice, right) ?: return null
         return left + right
     }
@@ -94,12 +97,15 @@ class Add(left: NumericalExpression, right: NumericalExpression) : SubExpression
             } else {
                 ReturnType.DOUBLE
             }
-
 }
 
 // ----------------------------------------------------------------------
 
-class Subtract(left: NumericalExpression, right: NumericalExpression) : SubExpression("Subtract", left, right) {
+class Subtract(
+    left: NumericalExpression,
+    right: NumericalExpression,
+) : SubExpression("Subtract", left, right) {
+
     override val operatorSymbol: String
         get() = "-"
 
@@ -114,13 +120,13 @@ class Subtract(left: NumericalExpression, right: NumericalExpression) : SubExpre
     }
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        val left  = left.getValueAsLong(schemaDevice)  ?: return null
+        val left = left.getValueAsLong(schemaDevice) ?: return null
         val right = right.getValueAsLong(schemaDevice) ?: return null
         return left - right
     }
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
-        val left  = getValidatedDouble(schemaDevice, left)  ?: return null
+        val left = getValidatedDouble(schemaDevice, left) ?: return null
         val right = getValidatedDouble(schemaDevice, right) ?: return null
         return left - right
     }
@@ -136,7 +142,11 @@ class Subtract(left: NumericalExpression, right: NumericalExpression) : SubExpre
 
 // ----------------------------------------------------------------------
 
-class Multiply(left: NumericalExpression, right: NumericalExpression) : SubExpression("Multiply", left, right) {
+class Multiply(
+    left: NumericalExpression,
+    right: NumericalExpression,
+) : SubExpression("Multiply", left, right) {
+
     override val operatorSymbol: String
         get() = "*"
 
@@ -153,13 +163,13 @@ class Multiply(left: NumericalExpression, right: NumericalExpression) : SubExpre
     }
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        val left  = left.getValueAsLong(schemaDevice)  ?: return null
+        val left = left.getValueAsLong(schemaDevice) ?: return null
         val right = right.getValueAsLong(schemaDevice) ?: return null
         return left * right
     }
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
-        val left  = getValidatedDouble(schemaDevice, left)  ?: return null
+        val left = getValidatedDouble(schemaDevice, left) ?: return null
         val right = getValidatedDouble(schemaDevice, right) ?: return null
         return left * right
     }
@@ -175,7 +185,11 @@ class Multiply(left: NumericalExpression, right: NumericalExpression) : SubExpre
 
 // ----------------------------------------------------------------------
 
-class Divide(left: NumericalExpression, right: NumericalExpression) : SubExpression("Divide", left, right) {
+class Divide(
+    left: NumericalExpression,
+    right: NumericalExpression,
+) : SubExpression("Divide", left, right) {
+
     val dividend: NumericalExpression
         get() = left
 
@@ -187,7 +201,7 @@ class Divide(left: NumericalExpression, right: NumericalExpression) : SubExpress
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
         val dividend = getValidatedDouble(schemaDevice, dividend) ?: return null
-        val divisor  = getValidatedDouble(schemaDevice, divisor)  ?: return null
+        val divisor = getValidatedDouble(schemaDevice, divisor) ?: return null
         return dividend / divisor
     }
 
@@ -209,7 +223,11 @@ class Divide(left: NumericalExpression, right: NumericalExpression) : SubExpress
 
 // ----------------------------------------------------------------------
 
-class Power(left: NumericalExpression, right: NumericalExpression) : SubExpression("Power", left, right) {
+class Power(
+    left: NumericalExpression,
+    right: NumericalExpression,
+) : SubExpression("Power", left, right) {
+
     val base: NumericalExpression
         get() = left
 
@@ -220,7 +238,7 @@ class Power(left: NumericalExpression, right: NumericalExpression) : SubExpressi
         get() = "^"
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        val base     = base.getValueAsLong(schemaDevice)     ?: return null
+        val base = base.getValueAsLong(schemaDevice) ?: return null
         val exponent = exponent.getValueAsLong(schemaDevice) ?: return null
 
         // There is no library function for doing exponent on longs in Kotlin
@@ -228,7 +246,7 @@ class Power(left: NumericalExpression, right: NumericalExpression) : SubExpressi
     }
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
-        val base     = getValidatedDouble(schemaDevice, base)     ?: return null
+        val base = getValidatedDouble(schemaDevice, base) ?: return null
         val exponent = getValidatedDouble(schemaDevice, exponent) ?: return null
         return base.pow(exponent)
     }
@@ -245,7 +263,7 @@ class Power(left: NumericalExpression, right: NumericalExpression) : SubExpressi
 
     override val returnType: ReturnType
         get() =
-            if (left.returnType == ReturnType.LONG && right.returnType == ReturnType.LONG && right.getGuarantee()==POSITIVE) {
+            if (left.returnType == ReturnType.LONG && right.returnType == ReturnType.LONG && right.getGuarantee() == POSITIVE) {
                 ReturnType.LONG
             } else {
                 ReturnType.DOUBLE
@@ -254,7 +272,10 @@ class Power(left: NumericalExpression, right: NumericalExpression) : SubExpressi
 
 // ---------------------------------------------------------------------
 
-private fun getValidatedDouble(schemaDevice: SchemaDevice, expression: NumericalExpression): Double? {
+private fun getValidatedDouble(
+    schemaDevice: SchemaDevice,
+    expression: NumericalExpression,
+): Double? {
     val value = expression.getValueAsDouble(schemaDevice)
     if (value == null || value.isNaN() || value.isInfinite()) {
         return null

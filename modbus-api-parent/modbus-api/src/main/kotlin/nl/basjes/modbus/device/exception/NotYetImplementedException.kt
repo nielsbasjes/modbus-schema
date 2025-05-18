@@ -16,4 +16,9 @@
  */
 package nl.basjes.modbus.device.exception
 
-open class NotYetImplementedException @JvmOverloads constructor(message: String, cause: Throwable? = null) : ModbusException(message, cause)
+open class NotYetImplementedException
+    @JvmOverloads
+    constructor(
+        message: String,
+        cause: Throwable? = null,
+    ) : ModbusException(message, cause)

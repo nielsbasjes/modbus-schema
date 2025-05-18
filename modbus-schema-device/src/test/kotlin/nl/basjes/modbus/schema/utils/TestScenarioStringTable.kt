@@ -25,14 +25,15 @@ internal class TestScenarioStringTable {
     fun testStringTable() {
         val table = StringTable()
         LOG.error(
-            "\n{}", table
+            "\n{}",
+            table
                 .withHeaders("One", "Two", "Three")
                 .addRow("1", "2", "3", "4")
                 .addRowSeparator()
                 .addRow("11", "22")
                 .addRow("1111", "2222", "33")
                 .addRow("111111", "222222", "3333", "444444444")
-                .addRow("11111111", "22222222", "333333", "4444", "55")
+                .addRow("11111111", "22222222", "333333", "4444", "55"),
         )
     }
 

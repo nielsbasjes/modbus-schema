@@ -25,13 +25,14 @@ import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.strings.MissingField
 
-class NumericalField(val fieldName: String) : nl.basjes.modbus.schema.expression.numbers.NumericalExpression {
-    private lateinit var field: Field
-    private var fieldExpression: nl.basjes.modbus.schema.expression.numbers.NumericalExpression = MissingField(fieldName)
+class NumericalField(
+    val fieldName: String,
+) : NumericalExpression {
 
-    override fun toString(): String {
-        return fieldName
-    }
+    private lateinit var field: Field
+    private var fieldExpression: NumericalExpression = MissingField(fieldName)
+
+    override fun toString(): String = fieldName
 
     override fun initialize(containingField: Field): Boolean {
         val block = containingField.block
@@ -45,7 +46,7 @@ class NumericalField(val fieldName: String) : nl.basjes.modbus.schema.expression
         val expression = field.parsedExpression
 
         when (expression) {
-            is nl.basjes.modbus.schema.expression.numbers.NumericalExpression -> {
+            is NumericalExpression -> {
                 fieldExpression = expression
                 return true
             }
@@ -64,25 +65,23 @@ class NumericalField(val fieldName: String) : nl.basjes.modbus.schema.expression
 
     override var isImmutable: Boolean
         get() = fieldExpression.isImmutable
-        set(value) {fieldExpression.isImmutable = value}
+        set(value) {
+            fieldExpression.isImmutable = value
+        }
 
     override val returnType: ReturnType
         get() = fieldExpression.returnType
 
     override val problems: List<Problem>
-        get() = combine(
-            "NumericalField",
-            super.problems,
-        )
+        get() =
+            combine(
+                "NumericalField",
+                super.problems,
+            )
 
     @Throws(ModbusException::class)
-    override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
-        return fieldExpression.getValueAsDouble(schemaDevice)
-    }
+    override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? = fieldExpression.getValueAsDouble(schemaDevice)
 
     @Throws(ModbusException::class)
-    override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        return fieldExpression.getValueAsLong(schemaDevice)
-    }
-
+    override fun getValueAsLong(schemaDevice: SchemaDevice): Long? = fieldExpression.getValueAsLong(schemaDevice)
 }

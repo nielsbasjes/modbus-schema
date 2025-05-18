@@ -26,12 +26,16 @@ object DoubleToString {
     private val ZERO_STRIPPER_1: Pattern = Pattern.compile("(\\.([1-9]|[0-9]+[1-9]+?))0+$")
     private val ZERO_STRIPPER_2: Pattern = Pattern.compile("\\.0+$")
 
-    private fun format(value: Any, maxDigits: Long): String {
-        val doubleValue = if (value is Float) {
-            value.toDouble()
-        } else {
-            value as Double
-        }
+    private fun format(
+        value: Any,
+        maxDigits: Long,
+    ): String {
+        val doubleValue =
+            if (value is Float) {
+                value.toDouble()
+            } else {
+                value as Double
+            }
         val log10 = log10(doubleValue)
 
         var fDigits: Long = 1
@@ -57,7 +61,6 @@ object DoubleToString {
         return result
     }
 
-
     fun of(value: Float): String {
         if (!value.isFinite() || value.isNaN()) {
             return value.toString()
@@ -75,7 +78,10 @@ object DoubleToString {
         return of(value, maxDigits)
     }
 
-    fun of(value: Double, maxDigits: Long): String {
+    fun of(
+        value: Double,
+        maxDigits: Long,
+    ): String {
         if (!value.isFinite() || value.isNaN()) {
             return value.toString()
         }

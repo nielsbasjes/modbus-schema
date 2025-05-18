@@ -22,7 +22,7 @@ import java.io.File
 import java.io.StringWriter
 import kotlin.test.Test
 
-class TestGenerateExpression{
+class TestGenerateExpression {
 
     private val log = PluginLoggerToLog4J()
 
@@ -32,9 +32,12 @@ class TestGenerateExpression{
         generate(
             File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
             null,
-            "expression", "main",
-            "nl.klokko.demo", "Foo",
-            output)
-        log.info("\n${output}")
+            "expression",
+            "main",
+            "nl.klokko.demo",
+            "Foo",
+            output,
+        )
+        log.info("\n$output")
     }
 }

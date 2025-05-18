@@ -19,7 +19,6 @@ package nl.basjes.modbus.schema.fetcher
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass
 import nl.basjes.modbus.device.api.RegisterBlock
-import nl.basjes.modbus.device.api.toRegisterBlock
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.memory.MockedModbusDevice
 import nl.basjes.modbus.schema.Block
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.util.*
+import java.util.TreeSet
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 import kotlin.test.assertEquals
@@ -51,7 +50,10 @@ internal class TestScenarioRegisterBlockFetcher {
 
         var fetchErrors = false
 
-        override fun getRegisters(firstRegister: Address, count: Int): RegisterBlock {
+        override fun getRegisters(
+            firstRegister: Address,
+            count: Int,
+        ): RegisterBlock {
             val allAddressesToBeRetrieved: MutableList<Address> = ArrayList()
             for (i in 0 until count) {
                 allAddressesToBeRetrieved.add(firstRegister.increment(i))
@@ -83,7 +85,8 @@ internal class TestScenarioRegisterBlockFetcher {
         modbusDevice.maxRegistersPerModbusRequest = maxRegistersPerModbusRequest
         modbusDevice.logRequests = true
         modbusDevice.addRegisters(
-            AddressClass.HOLDING_REGISTER, 101,
+            AddressClass.HOLDING_REGISTER,
+            101,
             """
             # abcdefghijklmnopqrstuvwxyz
             6162 6364 6566 6768 696a 6b6c 6d6e 6f70 7172 7374 7576 7778 797a
@@ -101,7 +104,7 @@ internal class TestScenarioRegisterBlockFetcher {
             000A    # The number 10
 
             2B67    // The number 11111
-            """
+            """,
         )
         return modbusDevice
     }
@@ -110,34 +113,37 @@ internal class TestScenarioRegisterBlockFetcher {
         f1Group: String,
         f2Group: String,
         f3Group: String,
-        f4Group: String
+        f4Group: String,
     ): SchemaDevice {
         val schemaDevice = SchemaDevice("First test device")
 
-        val block = Block(schemaDevice,"Block1", "Block 1")
+        val block = Block(schemaDevice, "Block1", "Block 1")
 
         // Field names are chosen to have a different logical (by required registers) from a sorted by name ordering.
         // A field registers itself with the mentioned Block
-        Field(block, "Some",    expression = "utf8( hr:101 # 13)",       fetchGroup = f1Group)
-        Field(block, "Field",   expression = "utf8( hr:114 # 5)",        fetchGroup = f2Group, immutable = true)
-        Field(block, "Dead",    expression = "int32( hr:119 # 2)" )
-        Field(block, "And",     expression = "utf8( hr:121 # 13)",       fetchGroup = f3Group)
-        Field(block, "Another", expression = "utf8( hr:134 # 5)",        fetchGroup = f4Group, immutable = true)
-        Field(block, "Value1",  expression = "int16( hr:141 ) / Scale1")
-        Field(block, "Scale1",  expression = "int16( hr:142 ) ",                               immutable = true)
-        Field(block, "Value2",  expression = "int16( hr:143 ) / Scale2")
-        Field(block, "Scale2",  expression = "100")
+        Field(block, "Some", expression = "utf8( hr:101 # 13)", fetchGroup = f1Group)
+        Field(block, "Field", expression = "utf8( hr:114 # 5)", fetchGroup = f2Group, immutable = true)
+        Field(block, "Dead", expression = "int32( hr:119 # 2)")
+        Field(block, "And", expression = "utf8( hr:121 # 13)", fetchGroup = f3Group)
+        Field(block, "Another", expression = "utf8( hr:134 # 5)", fetchGroup = f4Group, immutable = true)
+        Field(block, "Value1", expression = "int16( hr:141 ) / Scale1")
+        Field(block, "Scale1", expression = "int16( hr:142 ) ", immutable = true)
+        Field(block, "Value2", expression = "int16( hr:143 ) / Scale2")
+        Field(block, "Scale2", expression = "100")
 
         schemaDevice.initialize()
         return schemaDevice
     }
 
-    private fun assertCloseEnough(value1: Double?, value2: Double?) {
+    private fun assertCloseEnough(
+        value1: Double?,
+        value2: Double?,
+    ) {
         assertNotNull(value1)
         assertNotNull(value2)
         assertTrue(
             DoubleCompare.closeEnough(value1, value2),
-            "Values $value1 and $value2  are not close enough together."
+            "Values $value1 and $value2  are not close enough together.",
         )
     }
 
@@ -149,13 +155,13 @@ internal class TestScenarioRegisterBlockFetcher {
         assertEquals(
             "abcdefghijklmnopqrstuvwxyz",
             block.getField("Some")?.stringValue,
-            "Field `Some`"
+            "Field `Some`",
         )
         assertEquals("0123456789", block.getField("Field")?.stringValue, "Field `Field`")
         assertEquals(
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             block.getField("And")!!.stringValue,
-            "Field `And`"
+            "Field `And`",
         )
         assertEquals("0123456789", block.getField("Another")?.stringValue, "Field `Another`")
 
@@ -170,9 +176,15 @@ internal class TestScenarioRegisterBlockFetcher {
     @ParameterizedTest(name = "Default Fetcher {index}: {arguments}")
     @MethodSource("deviceParameters")
     @Throws(
-        ModbusException::class
+        ModbusException::class,
     )
-    fun verifyDefaultFetcher(maxRegistersPerModbusRequest: Int, fg1: String, fg2: String, fg3: String, fg4: String) {
+    fun verifyDefaultFetcher(
+        maxRegistersPerModbusRequest: Int,
+        fg1: String,
+        fg2: String,
+        fg3: String,
+        fg4: String,
+    ) {
         val modbusDevice = createTestModbusDevice(maxRegistersPerModbusRequest)
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
         schemaDevice.needAll()
@@ -186,7 +198,8 @@ internal class TestScenarioRegisterBlockFetcher {
                 val parsedExpression = field.parsedExpression
                 assertNotNull(parsedExpression)
                 assertTrue(
-                    parsedExpression.problems.isEmpty(), "Invalid expression for $field"
+                    parsedExpression.problems.isEmpty(),
+                    "Invalid expression for $field",
                 )
             }
 
@@ -224,18 +237,30 @@ internal class TestScenarioRegisterBlockFetcher {
     @ParameterizedTest(name = "Optimized Fetcher (GAP:true) {index}: {arguments}")
     @MethodSource("deviceParameters")
     @Throws(
-        ModbusException::class
+        ModbusException::class,
     )
-    fun verifyOptimizedFetcherReadGaps(maxRegister: Int, fg1: String, fg2: String, fg3: String, fg4: String) {
+    fun verifyOptimizedFetcherReadGaps(
+        maxRegister: Int,
+        fg1: String,
+        fg2: String,
+        fg3: String,
+        fg4: String,
+    ) {
         verifyOptimizedFetcher(10, maxRegister, fg1, fg2, fg3, fg4)
     }
 
     @ParameterizedTest(name = "Optimized Fetcher (GAP:false) {index}: {arguments}")
     @MethodSource("deviceParameters")
     @Throws(
-        ModbusException::class
+        ModbusException::class,
     )
-    fun verifyOptimizedFetcherDoNOTReadGaps(maxRegistersPerModbusRequest: Int, fg1: String, fg2: String, fg3: String, fg4: String) {
+    fun verifyOptimizedFetcherDoNOTReadGaps(
+        maxRegistersPerModbusRequest: Int,
+        fg1: String,
+        fg2: String,
+        fg3: String,
+        fg4: String,
+    ) {
         verifyOptimizedFetcher(0, maxRegistersPerModbusRequest, fg1, fg2, fg3, fg4)
     }
 
@@ -246,7 +271,7 @@ internal class TestScenarioRegisterBlockFetcher {
         fg1: String,
         fg2: String,
         fg3: String,
-        fg4: String
+        fg4: String,
     ) {
         val modbusDevice = createTestModbusDevice(maxRegistersPerModbusRequest)
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
@@ -294,8 +319,8 @@ internal class TestScenarioRegisterBlockFetcher {
         private val LOG: Logger = LogManager.getLogger()
 
         @JvmStatic
-        fun deviceParameters(): Stream<Arguments> {
-            return Stream.of(
+        fun deviceParameters(): Stream<Arguments> =
+            Stream.of(
                 Arguments.of(15, "a", "b", "c", "d"),
                 Arguments.of(20, "a", "b", "c", "d"),
                 Arguments.of(25, "a", "b", "c", "d"),
@@ -326,8 +351,7 @@ internal class TestScenarioRegisterBlockFetcher {
                 Arguments.of(30, "a", "a", "c", "c"),
                 Arguments.of(35, "a", "a", "c", "c"),
                 Arguments.of(40, "a", "a", "c", "c"),
-                Arguments.of(45, "a", "a", "c", "c")
+                Arguments.of(45, "a", "a", "c", "c"),
             )
-        }
     }
 }

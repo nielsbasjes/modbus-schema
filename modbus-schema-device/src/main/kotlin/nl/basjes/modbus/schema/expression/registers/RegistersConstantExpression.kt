@@ -26,7 +26,9 @@ import nl.basjes.modbus.schema.utils.ByteConversions.bytesToTwoByteHexStringList
 /*
  * An constant byte array value (i.e. Raw Register values)
  */
-open class RegistersConstantExpression(val value: String) : RegistersExpression {
+open class RegistersConstantExpression(
+    val value: String,
+) : RegistersExpression {
 
     private val theBytes: ByteArray = ByteConversions.hexStringToBytes(value)
 

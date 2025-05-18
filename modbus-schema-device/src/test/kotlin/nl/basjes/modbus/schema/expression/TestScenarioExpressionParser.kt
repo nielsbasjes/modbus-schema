@@ -24,7 +24,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class TestScenarioExpressionParser {
-    private fun assertEqualExpression(expression: String, expected: String) {
+    private fun assertEqualExpression(
+        expression: String,
+        expected: String,
+    ) {
         val parsed = parse(expression)
         assertEquals(expected, parsed.toString(), "Mismatch in resulting expression")
         // Now parse the output and do it again.
@@ -213,11 +216,11 @@ internal class TestScenarioExpressionParser {
         // This is the kind of expression we see in SunSpec
         assertEqualExpression(
             "ieee754_32(ir:3 # 2) * 10 ^ scalingFactor",
-            "ieee754_32(ir:00003 # 2)*(10^scalingFactor)"
+            "ieee754_32(ir:00003 # 2)*(10^scalingFactor)",
         )
         assertEqualExpression(
             "ieee754_32(3x00004 # 2) * 10 ^ scalingFactor",
-            "ieee754_32(ir:00003 # 2)*(10^scalingFactor)"
+            "ieee754_32(ir:00003 # 2)*(10^scalingFactor)",
         )
     }
 }

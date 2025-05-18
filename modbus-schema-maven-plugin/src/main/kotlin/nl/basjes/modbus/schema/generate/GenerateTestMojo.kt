@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import java.io.File
 
+@Suppress("unused") // Use reflection via @Mojo annotation
 @Mojo(name = "generate-test", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES, threadSafe = true)
 class GenerateTestMojo: AbstractMojo() {
     @Parameter(defaultValue = "\${project.build.directory}/generated-test-sources/modbus-schema/", required = true)
@@ -57,7 +58,7 @@ class GenerateTestMojo: AbstractMojo() {
             packageName,
             className,
             language,
-            "test"
+            "test",
         )
         if (project != null && outputDirectory != null) {
             project!!.addTestCompileSourceRoot(outputDirectory.absolutePath + File.separator + language)

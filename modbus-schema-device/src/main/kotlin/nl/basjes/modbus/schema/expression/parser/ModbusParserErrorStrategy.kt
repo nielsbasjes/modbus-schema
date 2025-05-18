@@ -24,7 +24,11 @@ import org.antlr.v4.runtime.RecognitionException
 import org.antlr.v4.runtime.Token
 
 class ModbusParserErrorStrategy : DefaultErrorStrategy() {
-    override fun recover(recognizer: Parser, e: RecognitionException) {
+
+    override fun recover(
+        recognizer: Parser,
+        e: RecognitionException,
+    ) {
         var context = recognizer.context
         while (context != null) {
             context.exception = e
