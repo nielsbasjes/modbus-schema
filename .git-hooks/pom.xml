@@ -27,15 +27,25 @@
 
   <packaging>pom</packaging>
 
-  <artifactId>devtools</artifactId>
+  <artifactId>githooks</artifactId>
 
-  <name>Modbus Schema : Dev tools</name>
+  <name>Modbus Schema : GitHooks</name>
 
   <description>The Modbus Schema Toolkit makes retrieving data from Modbus based devices a lot easier.</description>
   <url>https://modbus.basjes.nl</url>
 
   <build>
     <plugins>
+
+      <!-- This module deliberately has no tests. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <failIfNoTests>false</failIfNoTests>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -63,7 +73,6 @@
     </plugins>
   </build>
 
-
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -90,6 +99,5 @@
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
     <tag>HEAD</tag>
   </scm>
-
 
 </project>

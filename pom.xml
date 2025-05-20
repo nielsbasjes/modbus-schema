@@ -281,7 +281,7 @@
 <!--              <waitUntil>published</waitUntil>-->
               <waitUntil>validated</waitUntil>
               <excludeArtifacts>
-                <excludeArtifact>devtools</excludeArtifact>
+                <excludeArtifact>githooks</excludeArtifact>
                 <excludeArtifact>demos-parent</excludeArtifact>
                 <excludeArtifact>generate-custom-java</excludeArtifact>
 <!--                TODO: EXCLUDE ALL DEMOS-->
@@ -361,7 +361,7 @@
           <version>${maven-artifact-plugin.version}</version>
           <configuration>
             <skipModules>
-              <skipModule>nl.basjes.modbus/devtools</skipModule>
+              <skipModule>nl.basjes.modbus/githooks</skipModule>
               <skipModule>nl.basjes.modbus.demo/demos-parent</skipModule>
               <skipModule>nl.basjes.modbus.demo/generate-custom-java</skipModule>
 <!--                TODO: EXCLUDE ALL DEMOS -->
@@ -494,7 +494,7 @@
   </build>
 
   <modules>
-    <module>devtools</module>
+    <module>.git-hooks</module>
     <module>modbus-schema-bom</module>
     <module>modbus-api-parent</module>
     <module>modbus-schema-reference</module>
