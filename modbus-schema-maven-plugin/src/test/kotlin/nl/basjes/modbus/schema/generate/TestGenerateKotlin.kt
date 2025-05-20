@@ -24,7 +24,7 @@ import java.io.StringWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class TestGenerateKotlin{
+class TestGenerateKotlin {
 
     private val log = PluginLoggerToLog4J()
 

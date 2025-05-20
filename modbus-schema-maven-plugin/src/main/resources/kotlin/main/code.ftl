@@ -34,18 +34,14 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.toSchemaDevice
+import nl.basjes.modbus.schema.utils.StringTable
 
 /**
  * ${schemaDevice.description}
  */
 open class ${asClassName(className)} {
-    companion object {
-        val schema = listOf("""
-${breakStringBlock(yamlSchema(schemaDevice, "            "), "\"\"\",\"\"\"")}
-            """).joinToString("").trimIndent()
-    }
 
-    val schemaDevice = schema.toSchemaDevice()
+    val schemaDevice = SchemaDevice()
 
     init {
         require(schemaDevice.initialize()) { "Unable to initialize schema device" }
@@ -67,7 +63,8 @@ ${breakStringBlock(yamlSchema(schemaDevice, "            "), "\"\"\",\"\"\"")}
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
      */
-    fun update(maxAge: Long) = schemaDevice.update(maxAge)
+    @JvmOverloads
+    fun update(maxAge: Long = 0) = schemaDevice.update(maxAge)
 
     /**
      * Update all registers related to the specified field
@@ -78,7 +75,6 @@ ${breakStringBlock(yamlSchema(schemaDevice, "            "), "\"\"\",\"\"\"")}
     /**
      * Make sure all registers mentioned in all known fields are retrieved.
      */
-    @Throws(ModbusException::class)
     @JvmOverloads
     fun updateAll(maxAge: Long = 0) = schemaDevice.updateAll(maxAge)
 
@@ -102,68 +98,116 @@ ${breakStringBlock(yamlSchema(schemaDevice, "            "), "\"\"\",\"\"\"")}
      */
     fun unNeedAll()  = schemaDevice.unNeedAll()
 
-    abstract class DeviceField(block: Block, fieldId: String) {
-        val field = block.getField(fieldId) ?: throw IllegalArgumentException("The generated code was unable to find the Field \"${r"${fieldId}"}\" in the Block \"${r"${block.id}"}\"")
+    abstract class DeviceField(val field: Field) {
+        /**
+         * Retrieve the value of this field using the currently available device data.
+         */
         abstract val value: Any?
+        /**
+         * We want this field to be kept up-to-date
+         */
         fun need() = field.need()
+        /**
+         * We no longer want this field to be kept up-to-date
+         */
         fun unNeed() = field.unNeed()
         override fun toString(): String = if (value == null) { "null" } else { value.toString() }
     }
 
-    class DeviceFieldLong(block: Block, fieldId: String): DeviceField(block, fieldId) {
-        override val value: Long?
-            get() = super.field.longValue
-    }
-
-    class DeviceFieldDouble(block: Block, fieldId: String): DeviceField(block, fieldId) {
-        override val value: Double?
-            get() = super.field.doubleValue
-    }
-
-    class DeviceFieldString(block: Block, fieldId: String): DeviceField(block, fieldId) {
-        override val value: String?
-            get() = super.field.stringValue
-    }
-
-    class DeviceFieldStringList(block: Block, fieldId: String): DeviceField(block, fieldId) {
-        override val value: List<String>?
-            get() = super.field.stringListValue
-    }
 
 <#list schemaDevice.blocks as block>
     // ==========================================
     /**
      * ${block.description}
      */
-    val ${asVariableName(block.id)} = ${asClassName(block.id)}(schemaDevice.getBlock("${block.id}") ?: throw IllegalArgumentException("The generated code was unable to find the Block \"${block.id}\""))
+    val ${asVariableName(block.id)} = ${asClassName(block.id)}(schemaDevice);
 
-    class ${asClassName(block.id)}(private val block: Block) {
+    class ${asClassName(block.id)}(schemaDevice: SchemaDevice) {
+        val block: Block;
+
         /**
-        * Directly update all fields in this Block
-        */
+         * Directly update all fields in this Block
+         */
         fun update() = block.fields.forEach { it.update() }
 
         /**
-        * All fields in this Block must be kept up-to-date
-        */
+         * All fields in this Block must be kept up-to-date
+         */
         fun need() = block.fields.forEach { it.need() }
 
         /**
-        * All fields in this Block no longer need to be kept up-to-date
-        */
+         * All fields in this Block no longer need to be kept up-to-date
+         */
         fun unNeed() = block.fields.forEach { it.unNeed() }
 
 <#list block.fields as field>
-<#if !field.system>
+
+        // ==========================================
         /**
          * ${field.description}
          <#if field.unit?has_content>
          * Unit: ${field.unit}
          </#if>
          */
-        val ${asVariableName(field.id)} = DeviceField${asClassName(field.returnType.enumName)}(block, "${field.id}")
-</#if>
+        <#if field.system>private<#else>public</#if> val ${asVariableName(field.id)}: ${asClassName(field.id)}
+        <#if field.system>private<#else>public</#if> class ${asClassName(field.id)}(block: Block): DeviceField (
+            Field.builder()
+                 .block(block)
+                 .id("${field.id}")
+                 .description("${field.description}")
+                 .expression("${field.parsedExpression}")
+                 .unit("${field.unit}")
+                 .immutable(${field.immutable?string('true', 'false')})
+                 .system(${field.system?string('true', 'false')})
+                 .fetchGroup("${field.fetchGroup}")
+                 .build()) {
+            override val value get() = field.${asVariableName(valueGetter(field.returnType))}
+        }
 </#list>
+
+        init {
+            this.block = Block.builder()
+              .schemaDevice(schemaDevice)
+              .id("${block.id}")
+<#if block.description??>
+              .description("${block.description}")
+</#if>
+              .build()
+
+<#list block.fields as field>
+            this.${asVariableName(field.id)?right_pad(block.maxFieldIdLength)} = ${asClassName(field.id)}(block);
+</#list>
+        }
+
+        override fun toString(): String {
+            val table = StringTable()
+            table.withHeaders("Block", "Field", "Value");
+            toStringTable(table)
+            return table.toString()
+        }
+
+        internal fun toStringTable(table: StringTable) {
+<#assign nonSystemFields=block.fields?filter(f -> !f.system)>
+<#if nonSystemFields?has_content>
+            table
+<#list nonSystemFields as field>
+<#assign fieldId="\""+field.id+"\",">
+                .addRow("${block.id}", ${fieldId?right_pad(block.maxFieldIdLength+3)} "" + ${asVariableName(field.id)}.value)
+</#list>
+<#else>
+            // This block has no fields
+</#if>
+        }
     }
 </#list>
+
+    override fun toString(): String {
+        val table = StringTable();
+        table.withHeaders("Block", "Field", "Value")
+<#list schemaDevice.blocks as block>
+        ${asVariableName(block.id)?right_pad(schemaDevice.maxBlockIdLength+1)}.toStringTable(table)
+</#list>
+        return table.toString()
+    }
+
 }

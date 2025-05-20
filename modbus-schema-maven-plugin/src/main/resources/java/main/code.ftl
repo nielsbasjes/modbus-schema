@@ -49,6 +49,10 @@ import static nl.basjes.modbus.schema.YamlLoaderKt.toSchemaDevice;
 */
 public class ${asClassName(className)} {
 
+    public ${asClassName(className)}() {
+        schemaDevice.initialize();
+    }
+
     public final SchemaDevice schemaDevice = new SchemaDevice();
 
     public ${asClassName(className)} connectBase(ModbusDevice modbusDevice) {
@@ -129,17 +133,35 @@ public class ${asClassName(className)} {
       public DeviceField(Field field) {
         this.field = field;
       }
+      /**
+       * Retrieve the value of this field using the currently available device data.
+       */
       abstract Object getValue();
+      /**
+       * We want this field to be kept up-to-date
+       */
       public void need() {
           field.need();
       }
+      /**
+       * We no longer want this field to be kept up-to-date
+       */
       public void unNeed() {
           field.unNeed();
+      }
+      /**
+       * Directly update this field
+       */
+      public void update() {
+          field.update();
       }
     }
 
 <#list schemaDevice.blocks as block>
     // ==========================================
+    /**
+     * ${block.description}
+     */
     public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(schemaDevice);
 
     public static class ${asClassName(block.id)} {
@@ -154,7 +176,7 @@ public class ${asClassName(className)} {
               .build();
 
 <#list block.fields as field>
-            this.${asVariableName(field.id)} = new ${asClassName(field.id)}(block);
+            this.${asVariableName(field.id)?right_pad(block.maxFieldIdLength)} = new ${asClassName(field.id)}(block);
 </#list>
         }
 
@@ -181,7 +203,12 @@ public class ${asClassName(className)} {
 <#list block.fields as field>
 
         // ==========================================
-
+        /**
+         * ${field.description}
+         <#if field.unit?has_content>
+         * Unit: ${field.unit}
+         </#if>
+         */
         <#if field.system>private<#else>public</#if> final ${asClassName(field.id)} ${asVariableName(field.id)};
         <#if field.system>private<#else>public</#if> static class ${asClassName(field.id)} extends DeviceField {
             public ${asClassName(field.id)}(Block block) {
@@ -217,8 +244,8 @@ public class ${asClassName(className)} {
 <#if nonSystemFields?has_content>
             table
 <#list nonSystemFields as field>
-<#assign fieldId="\""+field.id+"\"">
-                .addRow("${block.id}", ${fieldId?right_pad(30)}, "" + ${asVariableName(field.id)}.getValue())
+<#assign fieldId="\""+field.id+"\",">
+                .addRow("${block.id}", ${fieldId?right_pad(block.maxFieldIdLength+3)} "" + ${asVariableName(field.id)}.getValue())
 </#list>;
 <#else>
             // This block has no fields
@@ -232,7 +259,7 @@ public class ${asClassName(className)} {
         StringTable table = new StringTable();
         table.withHeaders("Block", "Field", "Value");
 <#list schemaDevice.blocks as block>
-        ${asVariableName(block.id)}.toStringTable(table);
+        ${asVariableName(block.id)?right_pad(schemaDevice.maxBlockIdLength+1)}.toStringTable(table);
 </#list>
         return table.toString();
     }

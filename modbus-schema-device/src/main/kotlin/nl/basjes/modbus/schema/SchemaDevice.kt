@@ -109,6 +109,11 @@ open class SchemaDevice
 
         operator fun get(blockId: String): Block? = mutableBlocksMap[blockId]
 
+        /**
+         * In some templates it is convenient to have the length of the longest block id.
+         */
+        val maxBlockIdLength get() = mutableBlocksMap.keys.maxOfOrNull { it.length } ?: 0
+
         fun sortFieldsByAddress() {
             blocks.forEach { block -> block.sortFieldsByAddress() }
         }

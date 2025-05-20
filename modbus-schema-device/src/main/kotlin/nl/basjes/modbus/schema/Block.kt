@@ -72,6 +72,11 @@ open class Block(
 
     operator fun get(fieldId: String): Field? = fieldMap[fieldId]
 
+    /**
+     * In some templates it is convenient to have the length of the longest field id.
+     */
+    val maxFieldIdLength get() = fieldMap.keys.maxOfOrNull { it.length } ?: 0
+
     fun sortFieldsByAddress() {
         initialize()
         mutableFields.sort()
