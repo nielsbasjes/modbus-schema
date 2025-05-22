@@ -34,9 +34,7 @@ import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringListExpression
 import nl.basjes.modbus.schema.utils.DoubleToString
 import nl.basjes.modbus.schema.utils.StringTable
-import java.util.TreeMap
 import kotlin.properties.Delegates
-
 
 class Field(
     /** The block in which this field is located */
