@@ -507,7 +507,7 @@
           </projectVersionPolicyConfig>
 
           <preparationProfiles>packageForRelease</preparationProfiles>
-          <preparationGoals>clean verify</preparationGoals>
+          <preparationGoals>clean install</preparationGoals> <!-- Must do install !! or the release fails -->
           <releaseProfiles>packageForRelease</releaseProfiles>
           <pushChanges>false</pushChanges>
           <remoteTagging>false</remoteTagging>
