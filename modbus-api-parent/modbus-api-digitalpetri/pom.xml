@@ -32,6 +32,10 @@
   <description>The Modbus Schema Toolkit makes retrieving data from Modbus based devices a lot easier.</description>
   <url>https://modbus.basjes.nl</url>
 
+  <properties>
+    <java.version>17</java.version>
+  </properties>
+
   <dependencies>
 
     <dependency>

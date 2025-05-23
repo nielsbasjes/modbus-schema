@@ -35,7 +35,7 @@
     <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
     <project.build.outputTimestamp>2025-05-18T15:52:26Z</project.build.outputTimestamp>
 
-    <java.version>17</java.version>
+    <java.version>11</java.version>
     <kotlin.version>2.1.21</kotlin.version>
 
     <!-- Tell IntelliJ which JDK to use -->
@@ -43,28 +43,25 @@
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <!--    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>-->
 
+    <apache-rat-plugin.version>0.16.1</apache-rat-plugin.version>
+    <maven-artifact-plugin.version>3.6.0</maven-artifact-plugin.version>
+    <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+    <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
+    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+
+    <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
+    <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+
     <kotlin.code.style>official</kotlin.code.style>
     <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
     <dokka-maven-plugin.version>2.0.0</dokka-maven-plugin.version>
-
-    <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
-    <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
-    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-    <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
-    <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
-    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-    <maven-artifact-plugin.version>3.6.0</maven-artifact-plugin.version>
-    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
-    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
-    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
-    <apache-rat-plugin.version>0.16.1</apache-rat-plugin.version>
-
-    <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
-    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
-    <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
 
     <junit5.version>5.12.2</junit5.version>
 
@@ -282,9 +279,6 @@
               <waitUntil>validated</waitUntil>
               <excludeArtifacts>
                 <excludeArtifact>githooks</excludeArtifact>
-                <excludeArtifact>demos-parent</excludeArtifact>
-                <excludeArtifact>generate-custom-java</excludeArtifact>
-<!--                TODO: EXCLUDE ALL DEMOS-->
               </excludeArtifacts>
             </configuration>
           </plugin>
@@ -294,16 +288,12 @@
     </profile>
   </profiles>
 
-
   <build>
 
     <pluginManagement>
       <plugins>
         <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-clean-plugin</artifactId>     <version>${maven-clean-plugin.version}</version></plugin>
-        <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-install-plugin</artifactId>   <version>${maven-install-plugin.version}</version></plugin>
         <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-resources-plugin</artifactId> <version>${maven-resources-plugin.version}</version></plugin>
-        <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId>  <version>${maven-compiler-plugin.version}</version></plugin>
-        <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId>       <version>${maven-jar-plugin.version}</version></plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -445,6 +435,54 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>enforce-quality</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+
+                <banDuplicateClasses>
+                  <scopes>
+                    <scope>compile</scope>
+                    <scope>runtime</scope>
+<!--                    <scope>provided</scope>-->
+                  </scopes>
+                  <findAllDuplicates>true</findAllDuplicates>
+                  <ignoreWhenIdentical>true</ignoreWhenIdentical>
+                </banDuplicateClasses>
+
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${java.version}</maxJdkVersion>
+                  <scopes>
+                    <scope>compile</scope>
+                    <scope>runtime</scope>
+                    <scope>provided</scope>
+                  </scopes>
+                </enforceBytecodeVersion>
+
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.10.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <version>3.1.1</version>
         <dependencies>
@@ -469,7 +507,7 @@
           </projectVersionPolicyConfig>
 
           <preparationProfiles>packageForRelease</preparationProfiles>
-          <preparationGoals>clean install</preparationGoals>
+          <preparationGoals>clean verify</preparationGoals>
           <releaseProfiles>packageForRelease</releaseProfiles>
           <pushChanges>false</pushChanges>
           <remoteTagging>false</remoteTagging>
