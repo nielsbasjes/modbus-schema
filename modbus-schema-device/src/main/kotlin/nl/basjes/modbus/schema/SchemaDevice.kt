@@ -107,7 +107,7 @@ constructor(
 
     fun getBlock(blockId: String): Block? = mutableBlocksMap[blockId]
 
-    operator fun get(blockId: String): Block? = mutableBlocksMap[blockId]
+//    operator fun get(blockId: String): Block? = mutableBlocksMap[blockId]
 
     /**
      * In some templates it is convenient to have the length of the longest block id.
@@ -454,3 +454,5 @@ constructor(
         fun build(): SchemaDevice = SchemaDevice(description, maxRegistersPerModbusRequest)
     }
 }
+
+operator fun SchemaDevice?.get(blockId: String): Block? = this?.getBlock(blockId)

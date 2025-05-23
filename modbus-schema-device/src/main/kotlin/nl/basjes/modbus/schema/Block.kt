@@ -68,9 +68,9 @@ open class Block(
         return this
     }
 
-    fun getField(fieldName: String): Field? = fieldMap[fieldName]
+    fun getField(fieldId: String): Field? = fieldMap[fieldId]
 
-    operator fun get(fieldId: String): Field? = fieldMap[fieldId]
+//    operator fun get(fieldId: String): Field? = fieldMap[fieldId]
 
     /**
      * In some templates it is convenient to have the length of the longest field id.
@@ -219,3 +219,5 @@ open class Block(
         }
     }
 }
+
+operator fun Block?.get(fieldId: String): Field? = this?.getField(fieldId)
