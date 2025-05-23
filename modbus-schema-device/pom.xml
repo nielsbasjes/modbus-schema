@@ -189,6 +189,8 @@
               <includes>
                 <!-- Cleaning the intermediate files from maven-shade-plugin. -->
                 <include>dependency-reduced-pom.xml</include>
+                <!-- Cleaning generated Antlr output. -->
+                <include>gen/</include>
               </includes>
             </fileset>
           </filesets>
