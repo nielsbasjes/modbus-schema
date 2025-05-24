@@ -78,7 +78,7 @@ class Field(
      * An identifier to that can be used to ensure all needed registers are retrieved together.
      * By default, filled with a random unique value or what was dictated by the block
      */
-    var fetchGroup: String = "<<${block.id} | $id>>",
+    fetchGroup: String = "",
 
 //    /** The return type that the programming language must support. */
 //    returnType: ReturnType = UNKNOWN,
@@ -88,6 +88,20 @@ class Field(
 
     /** The return type that the programming language must support. */
     var returnType: ReturnType = UNKNOWN
+        private set
+
+    /**
+     * An identifier to that can be used to ensure all needed registers are retrieved together.
+     * By default, filled with a random unique value or what was dictated by the block
+     */
+    var fetchGroup = fetchGroup
+        get() = field.ifBlank { "<<${block.id} | $id>>" }
+        set(value) {
+            field = value
+            fetchGroupIsDefault = field.isBlank()
+        }
+
+    var fetchGroupIsDefault: Boolean = fetchGroup.isBlank()
         private set
 
     private var initialized = false

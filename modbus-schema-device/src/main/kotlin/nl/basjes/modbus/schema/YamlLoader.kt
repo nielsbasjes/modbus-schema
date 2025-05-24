@@ -132,12 +132,13 @@ fun InputStream.toSchemaDevice(): SchemaDevice {
 
 fun Field.toSchema(): SchemaField =
     SchemaField(
-        id,
-        description,
-        immutable = isImmutable,
-        system = isSystem,
-        expression = parsedExpression.toString(),
-        unit = unit,
+        id          = id,
+        description = description,
+        immutable   = isImmutable,
+        system      = isSystem,
+        expression  = parsedExpression.toString(),
+        unit        = unit,
+        fetchGroup  = if (fetchGroupIsDefault) "" else fetchGroup,
     )
 
 fun Block.toSchema(): SchemaBlock {
@@ -301,8 +302,14 @@ data class SchemaField(
     @YamlSingleLineStringStyle(SingleLineStringStyle.SingleQuoted)
     @YamlMultiLineStringStyle(MultiLineStringStyle.Literal)
     val expression: String,
-    /** Human-readable unit of the field (like 'V' for Volt or '%' for percentage).     */
+    /**
+     * Human-readable unit of the field (like 'V' for Volt or '%' for percentage).
+     * */
     val unit: String = "",
+    /**
+     * Used to explicitly force the registers of multiple fields to be retrieved in a single Modbus request.
+     * */
+    val fetchGroup: String = "",
 ) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }

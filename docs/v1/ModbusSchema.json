@@ -97,6 +97,10 @@
         "unit": {
           "type": "string",
           "description": "The unit of the value produced by this Field (like Volt, Amps, Celsius, etc.)."
+        },
+        "fetchGroup": {
+          "type": "string",
+          "description": "Used to explicitly force the registers of multiple fields to be retrieved in a single Modbus request."
         }
       },
       "required": [

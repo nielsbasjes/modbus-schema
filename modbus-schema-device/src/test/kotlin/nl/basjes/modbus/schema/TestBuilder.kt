@@ -67,5 +67,17 @@ class TestBuilder {
         assertEquals(null, schemaDevice["NoSuchBlock"]["FieldOne"]?.expression)
         assertEquals(null, schemaDevice["BlockOne"]["NoSuchField"]?.expression)
         assertEquals("42", schemaDevice["BlockOne"]["FieldOne"]?.expression)
+
+        // Check the fetch group setter
+        assertEquals("<<BlockOne | FieldOne>>", field.fetchGroup)
+        assertTrue(field.fetchGroupIsDefault)
+
+        field.fetchGroup = "Something"
+        assertEquals("Something", field.fetchGroup)
+        assertFalse(field.fetchGroupIsDefault)
+
+        field.fetchGroup = "" // Making it blank resets it
+        assertEquals("<<BlockOne | FieldOne>>", field.fetchGroup)
+        assertTrue(field.fetchGroupIsDefault)
     }
 }
