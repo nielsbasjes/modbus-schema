@@ -388,6 +388,7 @@ constructor(
             "Value",
             "Unit",
             "Expression",
+            "Fetch Group",
             "Raw Bytes",
         )
         toTable(table, onlyUseFullFields)
