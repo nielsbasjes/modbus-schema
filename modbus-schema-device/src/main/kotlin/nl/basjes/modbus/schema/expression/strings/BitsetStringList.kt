@@ -34,7 +34,7 @@ class BitsetStringList(
 
     override fun toString(): String =
         "bitset(" + registers + super<NotImplemented>.toString() +
-            " ; " + mappings.entries.joinToString(" ; ") { "${it.key}->'${it.value}'" } +
+            if (mappings.entries.isEmpty()) "" else { " ; " + mappings.entries.joinToString(" ; ") { "${it.key}->'${it.value}'" }} +
             ")"
 
     override val subExpressions: List<Expression>

@@ -66,7 +66,7 @@ stringFragments
     ;
 
 stringList
-    : BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )+ BRACECLOSE #stringListBitSet
+    : BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )* BRACECLOSE #stringListBitSet
     ;
 
 notImplemented

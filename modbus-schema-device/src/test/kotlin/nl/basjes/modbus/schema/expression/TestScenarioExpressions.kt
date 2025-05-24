@@ -552,7 +552,31 @@ class TestScenarioExpressions {
     @Test
     @Throws(ModbusException::class)
     fun testStringListBitSet() {
-        // BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )+ BRACECLOSE #stringListBitSet
+        // BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )* BRACECLOSE #stringListBitSet
+        // Without a bit mapping
+        verifyToString(
+            "bitset(hr:0 ; 0xDEAD)",
+            "bitset(hr:00000 ; 0xDEAD)",
+        )
+        verify("DEAD", "bitset(hr:0 ; 0xDEAD )", null as List<String>?)
+        verify("0000", "bitset(hr:0 ; 0xDEAD )", listOf())
+        verify("0000", "bitset(hr:0          )", listOf())
+        verify("0001", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 0"))
+        verify("0001", "bitset(hr:0          )", listOf("Bit 0"))
+        verify("0002", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 1"))
+        verify("0002", "bitset(hr:0          )", listOf("Bit 1"))
+        verify("0003", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 0", "Bit 1"))
+        verify("0003", "bitset(hr:0          )", listOf("Bit 0", "Bit 1"))
+        verify("0004", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 2"))
+        verify("0004", "bitset(hr:0          )", listOf("Bit 2"))
+        verify("0005", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 0", "Bit 2"))
+        verify("0005", "bitset(hr:0          )", listOf("Bit 0", "Bit 2"))
+        verify("0006", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 1", "Bit 2"))
+        verify("0006", "bitset(hr:0          )", listOf("Bit 1", "Bit 2"))
+        verify("0007", "bitset(hr:0 ; 0xDEAD )", listOf("Bit 0", "Bit 1", "Bit 2"))
+        verify("0007", "bitset(hr:0          )", listOf("Bit 0", "Bit 1", "Bit 2"))
+
+        // With a (partial) bit mapping
         verifyToString(
             "bitset(hr:0 ; 0xDEAD ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')",
             "bitset(hr:00000 ; 0xDEAD ; 0->'Zero' ; 1->'One' ; 2->'Two')",
