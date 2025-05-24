@@ -87,6 +87,10 @@ open class RegisterBlockFetcher(
         if (field.isUsingReadErrorRegisters()) {
             return // Cannot update
         }
+        if (field.requiredRegisters.isEmpty()) {
+            // Nothing to update
+            return
+        }
         val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
 
         var requiredRegisters: List<Address>? = fetchGroupToAddresses[field.fetchGroup]
