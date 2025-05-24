@@ -17,9 +17,10 @@
 package nl.basjes.modbus.schema.utils
 
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
-import java.util.regex.Pattern
 
-fun isValidIdentifier(id: String) = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*$").matcher(id).matches()
+private const val idExpression = "^[a-zA-Z]([a-zA-Z0-9_ ]*[a-zA-Z0-9_]+)?$"
+
+fun isValidIdentifier(id: String) = id.matches(Regex(idExpression))
 
 fun requireValidIdentifier(
     id: String,
@@ -35,6 +36,6 @@ value class NameUsableAsClassName(
     val value: String,
 ) {
     init {
-        require(value.matches(Regex("^[A-Z][a-zA-Z0-9_]*$")))
+        require(value.matches(Regex(idExpression)))
     }
 }

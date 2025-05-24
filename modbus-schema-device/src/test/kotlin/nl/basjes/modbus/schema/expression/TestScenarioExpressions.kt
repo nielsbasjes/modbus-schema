@@ -216,7 +216,6 @@ class TestScenarioExpressions {
         )
     }
 
-    @Throws(ModbusException::class)
     private fun verify(
         bytes: String,
         expression: String,
@@ -230,7 +229,6 @@ class TestScenarioExpressions {
         assertEquals(expected, testField.stringValue)
     }
 
-    @Throws(ModbusException::class)
     private fun verify(
         bytes: String,
         expression: String,
@@ -305,6 +303,11 @@ class TestScenarioExpressions {
     }
 
     @Test
+    fun testTooManyRegisters() {
+        iNvalid("hexstring(hr:0#126)")
+    }
+
+    @Test
     fun testBitManipulation() {
         // Reverse 16 bits: 0xABCD ( 10101011 11001101 ) into 0xB3D5 ( 10110011 11010101 )
         verify("ABCD", "hexstring(swapendian(hr:0))", "0xB3 0xD5")
@@ -331,7 +334,6 @@ class TestScenarioExpressions {
     }
 
     @Test
-    @Throws(ModbusException::class)
     fun testStringHexString() {
         // HEXSTRING    BRACEOPEN registers=registerlist BRACECLOSE
         verifyToString("hexstring(hr:0#13)", "hexstring(hr:00000 # 13)")
@@ -941,7 +943,7 @@ class TestScenarioExpressions {
     fun testFailOnMixingAddressClasses() {
         val schemaDevice = SchemaDevice("Device")
         val block = Block(schemaDevice, "Block")
-        block.addField(Field(block, "test", expression = "int32(ir:1, hr:1)"))
+        Field(block, "test", expression = "int32(ir:1, hr:1)")
         assertFalse(schemaDevice.initialize())
         println(schemaDevice.initializationProblems())
     }
@@ -950,7 +952,7 @@ class TestScenarioExpressions {
     fun testFailOnMixingAddressClassesInSubExpressions() {
         val schemaDevice = SchemaDevice("Device")
         val block = Block(schemaDevice, "Block")
-        block.addField(Field(block, "test", expression = "int16(ir:1)/int16(hr:1)"))
+        Field(block, "test", expression = "int16(ir:1)/int16(hr:1)")
         assertThrows<ModbusSchemaParseException> {
             schemaDevice.initialize()
         }

@@ -18,6 +18,7 @@ package nl.basjes.modbus.schema
 
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.utils.StringTable
+import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import java.util.TreeMap
 import kotlin.properties.Delegates
 
@@ -59,10 +60,11 @@ open class Block(
 
     fun addField(vararg fields: Field): Block {
         for (field in fields) {
-            if (!this.fields.contains(field)) {
-                mutableFields.add(field)
-                fieldMap[field.id] = field
+            if (this.fieldMap[field.id] != null) {
+                throw ModbusSchemaParseException("Field $field already exists.")
             }
+            mutableFields.add(field)
+            fieldMap[field.id] = field
         }
         schemaDevice.aFieldWasChanged()
         return this
@@ -149,7 +151,7 @@ open class Block(
     override fun toString(): String = "Block(id='$id', description=$description, fieldMap=$fieldMap)"
 
     init {
-//        requireValidIdentifier(id, "Block id")
+        requireValidIdentifier(id, "Block id")
         schemaDevice.addBlock(this)
     }
 

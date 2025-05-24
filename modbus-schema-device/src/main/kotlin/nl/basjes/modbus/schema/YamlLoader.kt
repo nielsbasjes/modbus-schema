@@ -59,23 +59,20 @@ fun String.toSchemaDevice(): SchemaDevice {
     for (schemaBlock in parsedSchema.blocks) {
         val block =
             Block(
-                schemaDevice = schemaDevice,
-                id = schemaBlock.id,
-                description = schemaBlock.description,
+                schemaDevice    = schemaDevice,
+                id              = schemaBlock.id,
+                description     = schemaBlock.description,
             )
-        schemaDevice.addBlock(block)
         for (schemaField in schemaBlock.fields) {
-            val field =
-                Field(
-                    block = block,
-                    id = schemaField.id,
-                    description = schemaField.description,
-                    expression = schemaField.expression,
-                    unit = schemaField.unit,
-                    immutable = schemaField.immutable,
-                    system = schemaField.system,
-                )
-            block.addField(field)
+            Field(
+                block           = block,
+                id              = schemaField.id,
+                description     = schemaField.description,
+                expression      = schemaField.expression,
+                unit            = schemaField.unit,
+                immutable       = schemaField.immutable,
+                system          = schemaField.system,
+            )
         }
     }
 

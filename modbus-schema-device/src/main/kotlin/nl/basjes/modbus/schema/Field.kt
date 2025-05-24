@@ -18,6 +18,7 @@ package nl.basjes.modbus.schema
 
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass
+import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.ReturnType.BOOLEAN
 import nl.basjes.modbus.schema.ReturnType.DOUBLE
@@ -34,6 +35,7 @@ import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringListExpression
 import nl.basjes.modbus.schema.utils.DoubleToString
 import nl.basjes.modbus.schema.utils.StringTable
+import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import kotlin.properties.Delegates
 
 class Field(
@@ -107,6 +109,12 @@ class Field(
                 initialized = theExpression.initialize(this) &&
                     theExpression.problems.isEmpty()
                 if (initialized) {
+                    if(requiredRegisters.size > MODBUS_MAX_REGISTERS_PER_REQUEST) {
+                        throw ModbusSchemaParseException(
+                            "In block ${block.id} the field $id requires a block of ${requiredRegisters.size} registers which cannot be retrieved over Modbus."
+                        )
+                    }
+
                     // --------
                     // Before we can do checks on needed registers and such we must make sure all dependencies have been initialized.
                     // We allow 5 deep nesting of fields.
@@ -458,7 +466,7 @@ class Field(
         "Field(id='$id', isSystem=$isSystem, isImmutable=$isImmutable, unit=$unit, fetchGroup='$fetchGroup',  returnType=$returnType, initialized=$initialized, expression='$expression', parsedExpression=$parsedExpression, addressClass=$addressClass)"
 
     init {
-//        requireValidIdentifier(id, "Field id")
+        requireValidIdentifier(id, "Field id")
         block.addField(this)
     }
 
@@ -532,7 +540,7 @@ class Field(
          */
         fun build(): Field {
             val fetchGroup = this.fetchGroup
-            return if (fetchGroup == null) {
+            return if (fetchGroup.isNullOrBlank()) {
                 Field(
                     block = block,
                     id = id,

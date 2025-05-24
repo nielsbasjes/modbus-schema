@@ -18,6 +18,8 @@ package nl.basjes.modbus.schema.utils
 
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.test.junit5.JUnit5Asserter.assertEquals
 
 internal class TestCodeGeneration {
@@ -53,4 +55,26 @@ internal class TestCodeGeneration {
         checkConvert("Today's Minimum Battery Voltage", "todaySMinimumBatteryVoltage", "TodaySMinimumBatteryVoltage")
         checkConvert("Data Log Daily (kWh)", "dataLogDailyKWh", "DataLogDailyKWh")
     }
+
+
+    @Test
+    fun testIdentifierValidation() {
+        // Clean
+        validIdentifier("A")
+        validIdentifier("Aap")
+        validIdentifier("noot42")
+
+        // With spaces
+        validIdentifier("A a p")
+        validIdentifier("Mies 42")
+        validIdentifier("Mies 42 Wim")
+
+        // Bad
+        inValidIdentifier("42Wim")
+        inValidIdentifier("42 Wim")
+    }
+
+    private fun validIdentifier(str: String) = assertTrue(isValidIdentifier(str), "Identifier \"$str\" should be good")
+    private fun inValidIdentifier(str: String) = assertFalse(isValidIdentifier(str), "Identifier \"$str\" should be bad")
+
 }

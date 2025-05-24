@@ -81,7 +81,7 @@ HEXVALUE
     ;
 
 FIELDNAME
-    : [a-z][a-z0-9_ ]*[a-z][a-z0-9_]*
+    : [a-z]([a-z0-9_ ]*[a-z0-9_]+)?
     ;
 
 STRING_START
