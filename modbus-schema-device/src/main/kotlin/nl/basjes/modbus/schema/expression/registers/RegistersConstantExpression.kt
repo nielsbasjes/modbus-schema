@@ -39,7 +39,7 @@ open class RegistersConstantExpression(
 
     override val problems: List<Problem> = listOf()
 
-    override fun toString(): String = '"' + ByteConversions.bytesToHexString(theBytes) + '"'
+    override fun toString(): String = "\"0x" + ByteConversions.bytesToSeparatedTwoByteHexString(theBytes, " 0x") + '"'
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray = theBytes
 

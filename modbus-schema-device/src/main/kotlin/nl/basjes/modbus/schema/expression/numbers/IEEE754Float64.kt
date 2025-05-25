@@ -34,7 +34,7 @@ class IEEE754Float64(
     ),
     NumericalExpression {
 
-    override fun toString(): String = "ieee754_64($byteArray)"
+    override fun toString(): String = "ieee754_64($byteArray" + super<NotImplemented>.toString() + ")"
 
     override val subExpressions: List<Expression>
         get() = listOf(byteArray)
