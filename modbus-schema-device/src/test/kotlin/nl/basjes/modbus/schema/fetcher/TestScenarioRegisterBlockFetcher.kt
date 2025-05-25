@@ -25,6 +25,7 @@ import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
+import nl.basjes.modbus.schema.get
 import nl.basjes.modbus.schema.utils.DoubleCompare
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -147,7 +148,6 @@ internal class TestScenarioRegisterBlockFetcher {
         )
     }
 
-    @Throws(ModbusException::class)
     fun assertCorrectFieldValues(schemaDevice: SchemaDevice) {
         val block = schemaDevice.getBlock("Block1")
         assertNotNull(block)
@@ -175,9 +175,6 @@ internal class TestScenarioRegisterBlockFetcher {
 
     @ParameterizedTest(name = "Default Fetcher {index}: {arguments}")
     @MethodSource("deviceParameters")
-    @Throws(
-        ModbusException::class,
-    )
     fun verifyDefaultFetcher(
         maxRegistersPerModbusRequest: Int,
         fg1: String,
@@ -236,9 +233,6 @@ internal class TestScenarioRegisterBlockFetcher {
 
     @ParameterizedTest(name = "Optimized Fetcher (GAP:true) {index}: {arguments}")
     @MethodSource("deviceParameters")
-    @Throws(
-        ModbusException::class,
-    )
     fun verifyOptimizedFetcherReadGaps(
         maxRegister: Int,
         fg1: String,
@@ -251,9 +245,6 @@ internal class TestScenarioRegisterBlockFetcher {
 
     @ParameterizedTest(name = "Optimized Fetcher (GAP:false) {index}: {arguments}")
     @MethodSource("deviceParameters")
-    @Throws(
-        ModbusException::class,
-    )
     fun verifyOptimizedFetcherDoNOTReadGaps(
         maxRegistersPerModbusRequest: Int,
         fg1: String,
@@ -275,10 +266,27 @@ internal class TestScenarioRegisterBlockFetcher {
     ) {
         val modbusDevice = createTestModbusDevice(maxRegistersPerModbusRequest)
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
-        schemaDevice.needAll()
 
         val fetcher = OptimizingRegisterBlockFetcher(schemaDevice, modbusDevice)
         fetcher.allowedGapReadSize = readingGap
+        schemaDevice.registerBlockFetcher = fetcher
+
+        // First verify if partial fetching works
+        val value1 = schemaDevice["Block1"]["Value1"]
+        assertNotNull(value1, "Unable to find Value1")
+        value1.update()
+        val value1result = value1.doubleValue
+        assertNotNull(value1result, "Unable to find value1")
+        assertEquals(1234.5, value1result, 0.0001)
+
+        val value2 = schemaDevice["Block1"]["Value2"]
+        assertNotNull(value2, "Unable to find Value2")
+        value2.update()
+        val value2result = value2.doubleValue
+        assertNotNull(value2result, "Unable to find value1")
+        assertEquals(111.11, value2result, 0.0001)
+
+        schemaDevice.needAll()
 
         // ----------------------------------------------------
         // First fetch. Nothing loaded yet: All must be fetched
