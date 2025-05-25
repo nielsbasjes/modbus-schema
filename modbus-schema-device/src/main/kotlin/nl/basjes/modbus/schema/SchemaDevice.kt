@@ -193,7 +193,7 @@ constructor(
         /**
          * How many registers may needlessly be read to optimize fetching
          */
-        allowedGapReadSize: Int = 10,
+        allowedGapReadSize: Int = 100,
     ): SchemaDevice {
         clearRegisterBlocks()
         this.modbusDevice = modbusDevice
