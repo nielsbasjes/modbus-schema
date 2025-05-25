@@ -134,17 +134,18 @@ class OptimizingRegisterBlockFetcher(
         return fetchBatches
     }
 
-    fun List<Address>.overlaps(
-        firstAddress: Address,
-        count: Int,
-    ): Boolean {
-        if (this.isEmpty()) {
-            return false
-        }
-        require(count > 0) { "At least one address is required" }
+}
 
-        return this
-            .mapNotNull { firstAddress.distance(it) }
-            .any { it in 0..count }
+fun List<Address>.overlaps(
+    firstAddress: Address,
+    count: Int,
+): Boolean {
+    if (this.isEmpty()) {
+        return false
     }
+    require(count > 0) { "At least one address is required" }
+
+    return this
+        .mapNotNull { firstAddress.distance(it) }
+        .any { it in 0 until count }
 }

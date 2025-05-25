@@ -294,7 +294,7 @@ internal class TestScenarioRegisterBlockFetcher {
         var fetchBatches: List<FetchBatch> = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Clean ): {}", fetchBatches)
 
-        fetcher.update(0)
+        fetcher.update()
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
@@ -305,7 +305,7 @@ internal class TestScenarioRegisterBlockFetcher {
 
         fetchBatches = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Update): {}", fetchBatches)
-        fetcher.update(0)
+        fetcher.update()
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")

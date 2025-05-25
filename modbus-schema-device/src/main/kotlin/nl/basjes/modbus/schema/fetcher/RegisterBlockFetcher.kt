@@ -82,9 +82,8 @@ open class RegisterBlockFetcher(
      * No batching, buffering or any optimization is done.
      * @param field The field that must be updated
      */
-    @Throws(ModbusException::class)
     fun update(field: Field) {
-        if (field.isUsingReadErrorRegisters()) {
+        if (field.isUsingHardReadErrorRegisters()) {
             return // Cannot update
         }
 
@@ -182,11 +181,26 @@ open class RegisterBlockFetcher(
             registerBlock.merge(registers)
             if (registers.values.any { it.isReadError() }) {
                 if (fetchBatch is MergedFetchBatch) {
-//                    println("-----READ ERROR getting $fetchBatch ; Retry non optimized")
                     // If we have a merged fetch then we retry on the individuals.
                     for (fetchPart in fetchBatch.fetchBatches) {
                         fetch(fetchPart)
                     }
+
+                    // If only trying to fetch the requested parts we would skip the registers
+                    // of any intermediate Fields ... that have just been wiped.
+
+                    // We get the blocks this batch touches.
+                    val blocks = fetchBatch.fields.map { it.block }.distinct()
+
+                    // We get ALL fields that have registers in the current batch and
+                    // update them one by one
+                    blocks
+                        .map { it.fields }
+                        .flatten()
+                        .filter { !fetchBatch.fields.contains(it) }
+                        .filter { it.requiredRegisters.overlaps(fetchBatch.start, fetchBatch.count) }
+                        .forEach { it.update() }
+
                 } else {
 //                    println("-----READ ERROR getting $fetchBatch ; Fields are marked as DEAD")
                     registers.values.forEach { it.setHardReadError() }

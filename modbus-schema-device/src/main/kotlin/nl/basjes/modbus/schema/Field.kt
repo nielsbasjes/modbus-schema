@@ -317,6 +317,14 @@ class Field(
 
     fun isUsingReadErrorRegisters() = !usedReadErrorAddresses().isEmpty()
 
+    fun usedHardReadErrorAddresses(): List<Address> {
+        val addressClass = addressClass ?: return emptyList()
+        val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(requiredRegisters)
+        return registerValues.filter { it.hardReadError }.map { it.address }.toList()
+    }
+
+    fun isUsingHardReadErrorRegisters() = !usedHardReadErrorAddresses().isEmpty()
+
     /**
      * Directly update this field
      */

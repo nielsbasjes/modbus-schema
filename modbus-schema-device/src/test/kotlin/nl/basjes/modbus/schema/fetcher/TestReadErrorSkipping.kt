@@ -34,7 +34,7 @@ internal class TestReadErrorSkipping {
 
     private fun createTestModbusDevice(): AssertingMockedModbusDevice {
         val modbusDevice = AssertingMockedModbusDevice()
-        modbusDevice.logRequests = false
+        modbusDevice.logRequests = true
         modbusDevice.addRegisters(
             HOLDING_REGISTER,
             100,
@@ -112,7 +112,7 @@ internal class TestReadErrorSkipping {
         int106.need()
         int108.need()
         int110.need()
-        int115.need()
+        int114.need()
 
         println("------------------ SET OF REGISTERS 1: Update 1")
         schemaDevice.update()
@@ -124,23 +124,22 @@ internal class TestReadErrorSkipping {
             schemaDevice,
             listOf(
                 int100,
+                int101, // This is read because it is a field in a batch that had an error
                 int102,
+                int103, // This is read because it is a field in a batch that had an error
                 int104,
+                int105, // This is read because it is a field in a batch that had an error
                 int106,
                 int108,
                 int110,
-                int115,
+                int111, // This is read because it is a field in a batch that had an error
+                int112, // This is read because it is a field in a batch that had an error
+                int113, // This is read because it is a field in a batch that had an error
+                int114,
             ),
             listOf(
-                int101,
-                int103,
-                int105,
-                int107,
+                int107, // Not part of the above because of the batch size
                 int109,
-                int111,
-                int112,
-                int113,
-                int114,
             ),
             listOf(),
         )
@@ -173,19 +172,19 @@ internal class TestReadErrorSkipping {
                 int102,
                 int103,
                 int104, // No longer needed but still available.
+                int105, // This is read because it is a field in a batch that had an error
                 int106,
                 int108,
                 int110,
                 int111,
+                int112,
                 int113,
-                int115,
+                int114,
+//                int115, // Never read
             ),
             listOf(
-                int105,
                 int107,
                 int109,
-                int112,
-                int114,
             ),
             listOf(),
         )
