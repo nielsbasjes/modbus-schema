@@ -128,21 +128,6 @@ open class Block(
         return emptyList()
     }
 
-    fun toTable(
-        table: StringTable,
-        onlyUseFullFields: Boolean,
-    ) {
-        table.addRow(
-            id,
-            "",
-            "",
-            description ?: "",
-        )
-        for (field in fields) {
-            field.toTable(table, onlyUseFullFields)
-        }
-    }
-
     override fun toString(): String = "Block(id='$id', description=$description, fieldMap=$fieldMap)"
 
     init {

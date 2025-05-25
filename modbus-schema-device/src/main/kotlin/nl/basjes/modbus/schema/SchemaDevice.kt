@@ -372,36 +372,6 @@ constructor(
         return allTestResults
     }
 
-    fun toTable(onlyUseFullFields: Boolean = false): String {
-        val table = StringTable()
-        table.withHeaders(
-            "Block Id",
-            "Field Id",
-            "System",
-            "Description",
-            "Value",
-            "Unit",
-            "Expression",
-            "Fetch Group",
-            "Raw Bytes",
-        )
-        toTable(table, onlyUseFullFields)
-        return table.toString()
-    }
-
-    private fun toTable(
-        table: StringTable,
-        onlyUseFullFields: Boolean,
-    ) {
-        var first = true
-        for (block in blocks) {
-            if (!first) {
-                table.addRowSeparator()
-            }
-            first = false
-            block.toTable(table, onlyUseFullFields)
-        }
-    }
 
     override fun toString(): String = toTable(false)
 

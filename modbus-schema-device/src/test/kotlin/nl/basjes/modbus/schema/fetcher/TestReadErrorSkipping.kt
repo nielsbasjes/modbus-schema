@@ -21,6 +21,7 @@ import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.fetcher.TestScenarioRegisterBlockFetcher.AssertingMockedModbusDevice
+import nl.basjes.modbus.schema.toTable
 import org.junit.jupiter.api.TestInstance
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
