@@ -107,16 +107,10 @@ constructor(
 
     fun getBlock(blockId: String): Block? = mutableBlocksMap[blockId]
 
-//    operator fun get(blockId: String): Block? = mutableBlocksMap[blockId]
-
     /**
      * In some templates it is convenient to have the length of the longest block id.
      */
     val maxBlockIdLength get() = mutableBlocksMap.keys.maxOfOrNull { it.length } ?: 0
-
-    fun sortFieldsByAddress() {
-        blocks.forEach { block -> block.sortFieldsByAddress() }
-    }
 
     /** If a field was added or removed this should trigger updates and reinitializations in other parts */
     var lastFieldModificationTimestamp: Instant = Instant.now()

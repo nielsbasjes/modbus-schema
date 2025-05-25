@@ -79,11 +79,6 @@ open class Block(
      */
     val maxFieldIdLength get() = fieldMap.keys.maxOfOrNull { it.length } ?: 0
 
-    fun sortFieldsByAddress() {
-        initialize()
-        mutableFields.sort()
-    }
-
     /**
      * Verify the basics
      */
