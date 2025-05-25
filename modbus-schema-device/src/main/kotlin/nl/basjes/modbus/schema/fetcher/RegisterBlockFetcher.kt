@@ -87,15 +87,16 @@ open class RegisterBlockFetcher(
         if (field.isUsingReadErrorRegisters()) {
             return // Cannot update
         }
-        if (field.requiredRegisters.isEmpty()) {
-            // Nothing to update
-            return
-        }
         val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
 
         var requiredRegisters: List<Address>? = fetchGroupToAddresses[field.fetchGroup]
         if (requiredRegisters.isNullOrEmpty()) {
             requiredRegisters = field.requiredRegisters
+        }
+
+        if (requiredRegisters.isEmpty()) {
+            // Nothing to update
+            return
         }
         val deviceRegisters = modbusDevice.getRegisters(requiredRegisters[0], requiredRegisters.size)
         schemaDevice.getRegisterBlock(deviceRegisters.addressClass).merge(deviceRegisters)
