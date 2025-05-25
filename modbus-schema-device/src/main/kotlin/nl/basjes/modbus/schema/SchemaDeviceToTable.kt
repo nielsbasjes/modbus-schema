@@ -20,26 +20,40 @@ import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.utils.DoubleToString
 import nl.basjes.modbus.schema.utils.StringTable
 
-fun SchemaDevice.toTable(onlyUseFullFields: Boolean = false): String {
+fun SchemaDevice.toTable(
+    onlyUseFullFields: Boolean = false,
+    includeRawDataAndMappings: Boolean = false): String {
     val table = StringTable()
-    table.withHeaders(
-        "Block Id",
-        "Field Id",
-        "System",
-        "Description",
-        "Value",
-        "Unit",
-        "Expression",
-        "Fetch Group",
-        "Raw Bytes",
-    )
-    toTable(table, onlyUseFullFields)
+    if (includeRawDataAndMappings) {
+        table.withHeaders(
+            "Block Id",
+            "Field Id",
+            "System",
+            "Description",
+            "Value",
+            "Unit",
+            "Expression",
+            "Fetch Group",
+            "Raw Bytes",
+        )
+    } else {
+        table.withHeaders(
+            "Block Id",
+            "Field Id",
+            "System",
+            "Description",
+            "Value",
+            "Unit",
+        )
+    }
+    toTable(table, onlyUseFullFields, includeRawDataAndMappings)
     return table.toString()
 }
 
-internal fun SchemaDevice.toTable(
+private fun SchemaDevice.toTable(
     table: StringTable,
     onlyUseFullFields: Boolean,
+    includeRawDataAndMappings: Boolean,
 ) {
     var first = true
     for (block in blocks) {
@@ -47,15 +61,16 @@ internal fun SchemaDevice.toTable(
             table.addRowSeparator()
         }
         first = false
-        block.toTable(table, onlyUseFullFields)
+        block.toTable(table, onlyUseFullFields, includeRawDataAndMappings)
     }
 }
 
 // ------------------------------------------
 
-fun Block.toTable(
+private fun Block.toTable(
     table: StringTable,
     onlyUseFullFields: Boolean,
+    includeRawDataAndMappings: Boolean,
 ) {
     table.addRow(
         id,
@@ -64,15 +79,16 @@ fun Block.toTable(
         description ?: "",
     )
     for (field in fields) {
-        field.toTable(table, onlyUseFullFields)
+        field.toTable(table, onlyUseFullFields, includeRawDataAndMappings)
     }
 }
 
 // ------------------------------------------
 
-fun Field.toTable(
+private fun Field.toTable(
     table: StringTable,
     onlyUseFullFields: Boolean,
+    includeRawDataAndMappings: Boolean,
 ) {
     if (onlyUseFullFields && isSystem) {
         return
@@ -131,15 +147,26 @@ fun Field.toTable(
     if (truncatedDescription.length > 75) {
         truncatedDescription = truncatedDescription.substring(0, 70) + " ..."
     }
-    table.addRow(
-        block.id,
-        id,
-        if (isSystem) "*" else "",
-        truncatedDescription,
-        value.toString(),
-        unit,
-        expressionString,
-        fetchGroup,
-        bytes,
-    )
+    if (includeRawDataAndMappings) {
+        table.addRow(
+            block.id,
+            id,
+            if (isSystem) "*" else "",
+            truncatedDescription,
+            value.toString(),
+            unit,
+            expressionString,
+            fetchGroup,
+            bytes,
+        )
+    } else {
+        table.addRow(
+            block.id,
+            id,
+            if (isSystem) "*" else "",
+            truncatedDescription,
+            value.toString(),
+            unit,
+        )
+    }
 }

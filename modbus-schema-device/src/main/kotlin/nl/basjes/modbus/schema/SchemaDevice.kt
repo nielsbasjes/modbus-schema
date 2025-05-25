@@ -379,7 +379,7 @@ constructor(
     }
 
 
-    override fun toString(): String = toTable(false)
+    override fun toString(): String = toTable(false, true)
 
     fun resolveAllImmutableFields() {
         val immutableFields =
