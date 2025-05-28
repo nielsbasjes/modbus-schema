@@ -23,6 +23,7 @@ import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
+import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 import nl.basjes.modbus.schema.expression.strings.MissingField
 
 class NumericalField(
@@ -68,6 +69,8 @@ class NumericalField(
         set(value) {
             fieldExpression.isImmutable = value
         }
+
+    override fun getGuarantee(): ValueGuarantee = fieldExpression.getGuarantee()
 
     override val returnType: ReturnType
         get() = fieldExpression.returnType
