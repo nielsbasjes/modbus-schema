@@ -375,74 +375,74 @@ fun String.reformatModbusSchemaYaml(): String {
         .replace(Regex("(\n *tests:\n)\n"), "\n$1")
         // Convert the expected values into a list
         // Single value
-        .replace(Regex("(\n +'[^']+':)\n +- ('[^']+')\n"), "$1 [ $2 ]\n")
-        .replace(Regex("(\n +'[^']+':)\n +- ('[^']+')\n"), "$1 [ $2 ]\n")
+        .replace(Regex("(\n +'[^']+':)\n +- ('[^']*')\n"), "$1 [ $2 ]\n")
+        .replace(Regex("(\n +'[^']+':)\n +- ('[^']*')\n"), "$1 [ $2 ]\n")
         // Secondary values (can be many)
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 5
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 10
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 15
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 20
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 25
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 30
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 35
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 40
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 45
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 50
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 55
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 60
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n")
-        .replace(Regex("]\n +- ('[^']+')\n"), ", $1 ]\n") // 65 Worst case: A bitset of 64 bits that all have a value
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 5
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 10
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 15
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 20
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 25
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 30
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 35
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 40
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 45
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 50
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 55
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 60
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n")
+        .replace(Regex("]\n +- ('[^']*')\n"), ", $1 ]\n") // 65 Worst case: A bitset of 64 bits that all have a value
 
 
 

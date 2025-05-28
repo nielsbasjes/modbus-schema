@@ -18,6 +18,7 @@ package nl.basjes.modbus.schema
 
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -157,6 +158,37 @@ class TestLoader {
             error("Wrong exception was thrown: ${ex.javaClass.canonicalName} : ${ex.message}")
         }
         error("No exception was thrown")
+    }
+
+
+    @Test
+    fun reformatTest() {
+        val input =
+            """
+            - id:          'Model 130'
+              expected:
+                'ID':
+                  - '130'
+                'L':
+                  - '60'
+                'Curve0_CrvNam':
+                  - ''
+                'Curve0_ReadOnly':
+                  - 'READWRITE'
+            """.trimIndent()
+
+        val expected =
+            """
+            - id:          'Model 130'
+              expected:
+                'ID':                        [ '130' ]
+                'L':                         [ '60' ]
+                'Curve0_CrvNam':             [ '' ]
+                'Curve0_ReadOnly':           [ 'READWRITE' ]
+
+            """.trimIndent()
+
+        assertEquals(expected, input.reformatModbusSchemaYaml())
     }
 
 }
