@@ -20,11 +20,11 @@ import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.memory.MockedModbusDevice
 import nl.basjes.modbus.device.memory.MockedModbusDevice.Companion.builder
 
-object DeviceThermiaGenisysDated20250518 {
+object DeviceThermiaGenesisDated20250518 {
     @JvmStatic
     val device: MockedModbusDevice
         get() =
-            // Extracted on 2025-05-18 from my Thermia Calibra Cool 7 running Genisys 11
+            // Extracted on 2025-05-18 from my Thermia Calibra Cool 7 running Genesis 11
             builder()
                 .withLogging()
                 .withRegisters(
