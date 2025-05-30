@@ -182,34 +182,9 @@ fun TestScenario.toSchema(): SchemaTest {
 }
 
 fun RegisterBlock.toSchema(): SchemaTestRegisters {
-    val sb = StringBuilder()
-    val valuesList = noGapsValuesList()
-    // The number of elements on THIS line
-    var lineCount = 0
-    for (registerValue in valuesList) {
-        var comment = registerValue.comment
-        if (!comment.isNullOrEmpty()) {
-            comment = comment.replace("{address}", registerValue.address.toCleanFormat())
-            if (lineCount > 0) {
-                sb.append("\n")
-            }
-            sb.append("\n# " + comment.replace("\n", "\n# ") + "\n")
-            lineCount = 0
-        }
-        if (lineCount > 0) {
-            sb.append(" ")
-        }
-        sb.append(registerValue.hexValue)
-        lineCount++
-        if (lineCount >= 10) {
-            sb.append("\n")
-            lineCount = 0
-        }
-    }
-
     return SchemaTestRegisters(
         firstAddress?.toCleanFormat() ?: "Empty",
-        sb.toString(),
+        this.toMultiLineString(),
     )
 }
 

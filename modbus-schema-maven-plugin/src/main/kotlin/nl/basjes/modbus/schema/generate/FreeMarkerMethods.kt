@@ -59,6 +59,7 @@ import nl.basjes.modbus.schema.expression.strings.UTF8String
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 
+
 val expressionMappings =
     mapOf(
         // Registers
@@ -102,17 +103,19 @@ val expressionMappings =
 
 fun Configuration.registerAdditionalMethods() =
     run {
-        this.setSharedVariable("packageAsPath",                        PackageAsPath())
-        this.setSharedVariable("asClassName",                          MakeCodeCompliantName(true))
-        this.setSharedVariable("asVariableName",                       MakeCodeCompliantName(false))
-        this.setSharedVariable("yamlSchema",                           SchemaDeviceAsYamlSchema())
-        this.setSharedVariable("breakStringBlock",                     BreakStringBlock())
-        this.setSharedVariable("jvmReturnType",                        ReturnTypeToJVMType())
-        this.setSharedVariable("valueGetter",                          ReturnTypeValueGetter())
-        this.setSharedVariable("hexString",                            RegisterBlockAsHexString())
+        this.setSharedVariable("packageAsPath",         PackageAsPath())
+        this.setSharedVariable("asClassName",           MakeCodeCompliantName(true))
+        this.setSharedVariable("asVariableName",        MakeCodeCompliantName(false))
+        this.setSharedVariable("yamlSchema",            SchemaDeviceAsYamlSchema())
+        this.setSharedVariable("breakStringBlock",      BreakStringBlock())
+        this.setSharedVariable("jvmReturnType",         ReturnTypeToJVMType())
+        this.setSharedVariable("valueGetter",           ReturnTypeValueGetter())
+        this.setSharedVariable("hexString",             RegisterBlockAsHexString(false))
+        this.setSharedVariable("hexStringMultiLine",    RegisterBlockAsHexString(true))
+        this.setSharedVariable("indent",                Indent())
         // Determine if an expression is of a specific expression type
         // Usage:  <#if isExpressionType(expr, "ExpressionRegistersConstant")>...</#if>
-        this.setSharedVariable("isExpressionType",                     IsExpressionType())
+        this.setSharedVariable("isExpressionType",      IsExpressionType())
     }
 
 abstract class BaseSingleStringMethod : TemplateMethodModelEx {
@@ -249,7 +252,9 @@ class ReturnTypeValueGetter : BaseSingleReturnTypeMethod() {
         }
 }
 
-class RegisterBlockAsHexString : TemplateMethodModelEx {
+class RegisterBlockAsHexString(
+    val multiLine: Boolean
+) : TemplateMethodModelEx {
     override fun exec(arguments: MutableList<Any?>): Any {
         if (arguments.size != 1) {
             throw TemplateModelException("Need exactly 1 argument")
@@ -262,7 +267,12 @@ class RegisterBlockAsHexString : TemplateMethodModelEx {
         if (input !is RegisterBlock) {
             throw TemplateModelException("Only works on RegisterBlock")
         }
-        return SimpleScalar(input.toHexString())
+
+        if (multiLine) {
+            return SimpleScalar(input.toMultiLineString())
+        } else {
+            return SimpleScalar(input.toHexString())
+        }
     }
 }
 
@@ -292,5 +302,23 @@ class IsExpressionType : TemplateMethodModelEx {
 
         // -----
         return theClass.java.isAssignableFrom(theExpression.javaClass)
+    }
+}
+
+class Indent: TemplateMethodModelEx {
+    override fun exec(arguments: MutableList<Any?>): Any {
+        if (arguments.size != 2) {
+            throw TemplateModelException("Need exactly 2 arguments")
+        }
+        val input = arguments[0]
+        if (input !is SimpleScalar) {
+            throw TemplateModelException("Bad input: First argument must be a String")
+        }
+
+        val prefix = arguments[1]
+        if (prefix !is SimpleScalar) {
+            throw TemplateModelException("Bad input: Second argument must be a String")
+        }
+        return SimpleScalar(input.toString().replaceIndent(prefix.toString()))
     }
 }

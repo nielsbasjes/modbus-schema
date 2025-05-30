@@ -54,7 +54,9 @@ internal class Test${asClassName(className)} {
         val modbusDevice = MockedModbusDevice.builder().build()
         val ${asVariableName(className)} = ${asClassName(className)}().connect(modbusDevice)
 <#list testScenario.registerBlocks as registerBlock>
-        modbusDevice.addRegisters(Address.of("${registerBlock.firstAddress}"), "${hexString(registerBlock)}")
+        modbusDevice.addRegisters(Address.of("${registerBlock.firstAddress}"), """
+${indent(hexStringMultiLine(registerBlock),"            ")}
+            """.trimIndent());
 </#list>
         ${asVariableName(className)}.updateAll()
 <#list testScenario.expectedBlocks as expectedBlock>
