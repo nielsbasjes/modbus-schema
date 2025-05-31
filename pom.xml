@@ -45,7 +45,7 @@
 
     <apache-rat-plugin.version>0.16.1</apache-rat-plugin.version>
     <maven-artifact-plugin.version>3.6.0</maven-artifact-plugin.version>
-    <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
+    <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
     <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
     <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
