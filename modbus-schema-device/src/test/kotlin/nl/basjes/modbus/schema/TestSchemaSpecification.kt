@@ -71,6 +71,7 @@ class TestSchemaSpecification {
             return result
                 .filter { name -> name.contains("SchemaReferenceTest/") }
                 .filter { name -> name.endsWith(".yaml") }
+                .sorted()
         }
     }
 

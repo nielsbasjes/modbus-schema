@@ -16,36 +16,41 @@
  */
 package nl.basjes.modbus.schema
 
+import nl.basjes.modbus.schema.utils.VerifyYamlCycle
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import java.io.File
 import java.io.FileInputStream
-import kotlin.test.assertEquals
+import kotlin.test.Test
 
 private val LOG: Logger = LogManager.getLogger()
 
-class TestSchemaYamlCycle {
+class TestSchemaYamlCycle: VerifyYamlCycle() {
     @ParameterizedTest(name = "Using schema rules {0}")
     @MethodSource("nl.basjes.modbus.schema.TestSchemaSpecification#allReferenceTestYamlFiles")
     fun `Verify all schema test cases`(schemaFile: String) {
         // Load the provided Yaml into a SchemaDevice
         val schemaStream = javaClass.classLoader.getResourceAsStream(schemaFile) ?: FileInputStream(schemaFile)
         LOG.warn("Running tests from $schemaFile")
-        LOG.info("- Original Yaml")
         val schemaDevice = schemaStream.toSchemaDevice()
-        require(schemaDevice.initializeAndVerify()) { "Unable to initialize and verify all tests (original)" }
-
-        LOG.info("- Generated Yaml 1")
-        val yaml1 = schemaDevice.toYaml()
-        val schemaDevice1 = yaml1.toSchemaDevice()
-        require(schemaDevice1.initializeAndVerify()) { "Unable to initialize and verify all tests (generated Yaml 1)" }
-
-        LOG.info("- Generated Yaml 2")
-        val yaml2 = schemaDevice1.toYaml()
-        val schemaDevice2 = yaml2.toSchemaDevice()
-        require(schemaDevice2.initializeAndVerify()) { "Unable to initialize and verify all tests (generated Yaml 2)" }
-
-        assertEquals(yaml1, yaml2, "The generated yaml files must be identical")
+        verifySchemaCycle(schemaDevice)
     }
+
+    @Test
+    fun `Verify Yaml cycle with SunSpec 2023 schema`() {
+        verifySchemaCycle(File("src/test/resources/TestSchemas/SunSpec2023.yaml").readText().toSchemaDevice())
+    }
+
+    @Test
+    fun `Verify Yaml cycle with SunSpec 2025 schema`() {
+        verifySchemaCycle(File("src/test/resources/TestSchemas/SunSpec2025.yaml").readText().toSchemaDevice())
+    }
+
+    @Test
+    fun `Verify Yaml cycle with SunSpec Emulated Der schema`() {
+        verifySchemaCycle(File("src/test/resources/TestSchemas/SunSpecEmulatedDer.yaml").readText().toSchemaDevice())
+    }
+
 }
