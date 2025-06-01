@@ -58,7 +58,6 @@ class TestScenarioExpressions {
         }
         schemaDevice.initialize()
         schemaDevice.connectBase(modbusDevice)
-        schemaDevice.updateAll()
         return schemaDevice
     }
 
@@ -84,6 +83,7 @@ class TestScenarioExpressions {
                 TestField("test1", expression),
                 TestField("test2", "test1"),
             )
+        schemaDevice.updateAll()
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -114,6 +114,7 @@ class TestScenarioExpressions {
                 TestField("test1", expression),
                 TestField("test2", "test1"),
             )
+        schemaDevice.updateAll()
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -149,6 +150,7 @@ class TestScenarioExpressions {
                 TestField("test1", expression),
                 TestField("test2", "test1"),
             )
+        schemaDevice.updateAll()
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -192,6 +194,7 @@ class TestScenarioExpressions {
                 TestField("test1", expression),
                 TestField("test2", "test1"),
             )
+        schemaDevice.updateAll()
         val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
         val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
 
@@ -222,6 +225,7 @@ class TestScenarioExpressions {
         expected: String?,
     ) {
         val schemaDevice = buildVerifier(bytes, TestField("test", expression))
+        schemaDevice.updateAll()
         val testField = getField(schemaDevice, "test")
         requireNotNull(testField)
         require(schemaDevice.initialize()) { "Init failed :\n${schemaDevice.initializationProblems()}" }
@@ -235,6 +239,7 @@ class TestScenarioExpressions {
         expected: List<String>?,
     ) {
         val schemaDevice = buildVerifier(bytes, TestField("test", expression))
+        schemaDevice.updateAll()
         val testField = getField(schemaDevice, "test")
         requireNotNull(testField)
         assertTrue(testField.initialize())

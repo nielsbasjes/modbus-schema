@@ -104,7 +104,8 @@ class Field(
     var fetchGroupIsDefault: Boolean = fetchGroup.isBlank()
         private set
 
-    private var initialized = false
+    var initialized = false
+        private set
 
     fun initialize(): Boolean {
         if (!initialized) {

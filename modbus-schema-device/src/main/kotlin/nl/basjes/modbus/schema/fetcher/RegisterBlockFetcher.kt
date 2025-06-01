@@ -83,6 +83,8 @@ open class RegisterBlockFetcher(
      * @param field The field that must be updated
      */
     fun update(field: Field) {
+        require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
+
         if (field.isUsingHardReadErrorRegisters()) {
             return // Cannot update
         }
@@ -224,6 +226,8 @@ open class RegisterBlockFetcher(
 
         // First we determine which of the fields need to be updated
         for (field in schemaDevice.neededFields()) {
+            require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
+
             val requiredRegisters = field.requiredRegisters
 
             if (requiredRegisters.isEmpty()) {
