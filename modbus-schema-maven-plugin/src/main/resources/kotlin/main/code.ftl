@@ -111,9 +111,16 @@ open class ${asClassName(className)} {
          * We no longer want this field to be kept up-to-date
          */
         fun unNeed() = field.unNeed()
+        /**
+         * The unit of the returns value
+         */
+        val unit =  field.unit
+        /**
+         * The description of the Field
+         */
+        val description = field.description
         override fun toString(): String = if (value == null) { "null" } else { value.toString() }
     }
-
 
 <#list schemaDevice.blocks as block>
     // ==========================================

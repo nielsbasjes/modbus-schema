@@ -155,6 +155,18 @@ public class ${asClassName(className)} {
       public void update() {
           field.update();
       }
+      /**
+       * The unit of the returns value
+       */
+      public String getUnit() {
+          return field.getUnit();
+      }
+      /**
+       * The description of the Field
+       */
+      public String getDescription() {
+          return field.getDescription();
+      }
     }
 
 <#list schemaDevice.blocks as block>
