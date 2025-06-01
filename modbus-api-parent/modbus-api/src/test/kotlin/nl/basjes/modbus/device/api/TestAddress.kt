@@ -30,7 +30,6 @@ import nl.basjes.modbus.device.api.FunctionCode.WRITE_SINGLE_HOLDING_REGISTER
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.junit.jupiter.api.assertThrows
-import kotlin.collections.mapNotNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

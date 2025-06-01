@@ -17,7 +17,6 @@
 package nl.basjes.modbus.schema
 
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
-import nl.basjes.modbus.schema.utils.StringTable
 import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import java.util.TreeMap
 import kotlin.properties.Delegates

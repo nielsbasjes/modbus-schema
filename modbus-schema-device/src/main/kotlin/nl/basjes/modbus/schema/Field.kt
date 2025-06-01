@@ -19,7 +19,6 @@ package nl.basjes.modbus.schema
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass
 import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
-import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.ReturnType.BOOLEAN
 import nl.basjes.modbus.schema.ReturnType.DOUBLE
 import nl.basjes.modbus.schema.ReturnType.LONG
@@ -33,8 +32,6 @@ import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 import nl.basjes.modbus.schema.expression.parser.ExpressionParser.Companion.parse
 import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringListExpression
-import nl.basjes.modbus.schema.utils.DoubleToString
-import nl.basjes.modbus.schema.utils.StringTable
 import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import kotlin.properties.Delegates
 
