@@ -43,10 +43,6 @@ open class ${asClassName(className)} {
 
     val schemaDevice = SchemaDevice()
 
-    init {
-        require(schemaDevice.initialize()) { "Unable to initialize schema device" }
-    }
-
     val tests = schemaDevice.tests
 
     fun connectBase(modbusDevice: ModbusDevice): ${asClassName(className)} {
@@ -215,6 +211,10 @@ open class ${asClassName(className)} {
         ${asVariableName(block.id)?right_pad(schemaDevice.maxBlockIdLength+1)}.toStringTable(table)
 </#list>
         return table.toString()
+    }
+
+    init {
+        require(schemaDevice.initialize()) { "Unable to initialize schema device" }
     }
 
 }
