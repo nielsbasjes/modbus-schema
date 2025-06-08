@@ -36,6 +36,11 @@ open class Block(
      * The human-readable description of the block.
      */
     val description: String? = null,
+    /**
+     * A shorter variant of the Human-readable description of the field.
+     * If no shorter version is available then it will be the same as the 'long' description.
+     */
+    val shortDescription: String? = description,
 ) {
     // ------------------------------------------
 
@@ -186,16 +191,24 @@ open class Block(
         private var description: String? = null
 
         /**
+         * A shorter variant of the Human-readable description of the field.
+         * If no shorter version is available then it will be the same as the 'long' description.
+         */
+        fun shortDescription(shortDescription: String) = apply { this.shortDescription = shortDescription }
+
+        private var shortDescription: String? = null
+
+        /**
          * Build the SchemaDevice, throws IllegalArgumentException if something is wrong
          */
         fun build(): Block {
-            val finalDescription = description
             val block =
-                if (finalDescription == null) {
-                    Block(schemaDevice, id)
-                } else {
-                    Block(schemaDevice, id, description = finalDescription)
-                }
+                Block(
+                    schemaDevice,
+                    id,
+                    description         = description,
+                    shortDescription    = shortDescription ?: description,
+                )
             return block
         }
     }

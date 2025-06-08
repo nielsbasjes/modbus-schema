@@ -52,6 +52,12 @@ class Field(
     val description: String = "",
 
     /**
+     * A shorter variant of the Human-readable description of the field.
+     * If no shorter version is available then it will be the same as the 'long' description.
+     */
+    val shortDescription: String = description,
+
+    /**
      * If a field NEVER changes then this can be se to true.
      * This allows a library to only read this value the first time
      * and on subsequent updates skip reading this value.
@@ -411,7 +417,17 @@ class Field(
     }
 
     override fun toString(): String =
-        "Field(id='$id', isSystem=$isSystem, isImmutable=$isImmutable, unit=$unit, fetchGroup='$fetchGroup',  returnType=$returnType, initialized=$initialized, expression='$expression', parsedExpression=$parsedExpression, addressClass=$addressClass)"
+        "Field(id='$id', " +
+            "isSystem=$isSystem, " +
+            "isImmutable=$isImmutable, " +
+            "unit=$unit, " +
+            "fetchGroup='$fetchGroup', " +
+            "returnType=$returnType, " +
+            "initialized=$initialized, " +
+            "expression='$expression', " +
+            "parsedExpression=$parsedExpression, " +
+            "addressClass=$addressClass, " +
+            "neededCount=$neededCount)"
 
     init {
         requireValidIdentifier(id, "Field id")
@@ -446,6 +462,14 @@ class Field(
         fun description(description: String) = apply { this.description = description }
 
         private var description: String = ""
+
+        /**
+         * A shorter variant of the Human-readable description of the field.
+         * If no shorter version is available then it will be the same as the 'long' description.
+         */
+        fun shortDescription(shortDescription: String) = apply { this.shortDescription = shortDescription }
+
+        private var shortDescription: String = ""
 
         /**
          * If a field NEVER changes then this can be se to true.
@@ -493,6 +517,7 @@ class Field(
                     block = block,
                     id = id,
                     description = description,
+                    shortDescription = shortDescription,
                     immutable = immutable,
                     system = system,
                     expression = expression,
@@ -503,6 +528,7 @@ class Field(
                     block = block,
                     id = id,
                     description = description,
+                    shortDescription = shortDescription,
                     immutable = immutable,
                     system = system,
                     expression = expression,
