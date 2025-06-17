@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Expressions for Bitset'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'BitsetBlock'
     description: 'Fields that are a Bitset'
@@ -51,8 +51,8 @@ tests:
   - id: 'Bitset: Single register value check Not Implemented'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: DEAD
+      - firstAddress: 'hr:0'
+        rawValues: DEAD
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -62,8 +62,8 @@ tests:
   - id: 'Bitset: Single register value check 0000'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0000
+      - firstAddress: 'hr:0'
+        rawValues: 0000
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -73,8 +73,8 @@ tests:
   - id: 'Bitset: Single register value check 0001'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0001
+      - firstAddress: 'hr:0'
+        rawValues: 0001
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -84,8 +84,8 @@ tests:
   - id: 'Bitset: Single register value check 0002'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0002
+      - firstAddress: 'hr:0'
+        rawValues: 0002
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -95,8 +95,8 @@ tests:
   - id: 'Bitset: Single register value check 0003'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0003
+      - firstAddress: 'hr:0'
+        rawValues: 0003
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -106,8 +106,8 @@ tests:
   - id: 'Bitset: Single register value check 0004'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0004
+      - firstAddress: 'hr:0'
+        rawValues: 0004
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -117,8 +117,8 @@ tests:
   - id: 'Bitset: Single register value check 0005'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0005
+      - firstAddress: 'hr:0'
+        rawValues: 0005
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -128,8 +128,8 @@ tests:
   - id: 'Bitset: Single register value check 0006'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0006
+      - firstAddress: 'hr:0'
+        rawValues: 0006
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -139,8 +139,8 @@ tests:
   - id: 'Bitset: Single register value check 0007'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0007
+      - firstAddress: 'hr:0'
+        rawValues: 0007
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -150,8 +150,8 @@ tests:
   - id: 'Bitset: Single register value check 000F'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 000F
+      - firstAddress: 'hr:0'
+        rawValues: 000F
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -161,8 +161,8 @@ tests:
   - id: 'Bitset: Single register value check 100F'
     description: 'Checking output of single register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 100F
+      - firstAddress: 'hr:0'
+        rawValues: 100F
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -174,8 +174,8 @@ tests:
   - id: 'Bitset: Multiple registers'
     description: 'Checking output of multiple register bits'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 100F 100F 100F 100F
+      - firstAddress: 'hr:0'
+        rawValues: 100F 100F 100F 100F
     blocks:
       - id: 'BitsetBlock'
         expected:
@@ -189,8 +189,8 @@ tests:
   - id: 'Bitset: Multiple registers Not Implemented'
     description: 'Checking output of 2 register bits Not Implemented'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: DEAD DEAD DEAD DEAD
+      - firstAddress: 'hr:0'
+        rawValues: DEAD DEAD DEAD DEAD
     blocks:
       - id: 'BitsetBlock'
         expected:

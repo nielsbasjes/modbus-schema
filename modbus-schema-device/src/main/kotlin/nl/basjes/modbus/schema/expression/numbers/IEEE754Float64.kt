@@ -19,9 +19,11 @@ package nl.basjes.modbus.schema.expression.numbers
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
+import nl.basjes.modbus.schema.expression.DOUBLE_BYTES
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.NotImplemented
+import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
@@ -29,7 +31,7 @@ class IEEE754Float64(
     private val byteArray: RegistersExpression,
     notImplemented: List<String>,
 ) : NotImplemented(
-        nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
+        DOUBLE_BYTES / BYTES_PER_REGISTER,
         notImplemented,
     ),
     NumericalExpression {
@@ -51,13 +53,13 @@ class IEEE754Float64(
                 super<NumericalExpression>.problems,
                 super<NotImplemented>.problems,
                 checkFatal(
-                    byteArray.returnedRegisters ==
-                        nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
-                    "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${nl.basjes.modbus.schema.expression.DOUBLE_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}",
+                    byteArray.returnedAddresses ==
+                        DOUBLE_BYTES / BYTES_PER_REGISTER,
+                    "Wrong number of registers: Got ${byteArray.returnedAddresses}, need ${DOUBLE_BYTES / BYTES_PER_REGISTER}",
                 ),
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = byteArray.getRegisterValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = byteArray.getModbusValues(schemaDevice)
 
     override fun getValueAsDouble(schemaDevice: SchemaDevice): Double? {
         val bytes = byteArray.getByteArray(schemaDevice) ?: return null

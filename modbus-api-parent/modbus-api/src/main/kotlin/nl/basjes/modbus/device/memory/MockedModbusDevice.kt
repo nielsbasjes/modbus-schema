@@ -18,17 +18,25 @@ package nl.basjes.modbus.device.memory
 
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass
+import nl.basjes.modbus.device.api.AddressClass.Type.DISCRETE
+import nl.basjes.modbus.device.api.AddressClass.Type.REGISTER
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
+import nl.basjes.modbus.device.api.toDiscreteBlock
 import nl.basjes.modbus.device.api.toRegisterBlock
-import nl.basjes.modbus.device.exception.createReadErrorResponse
+import nl.basjes.modbus.device.exception.ModbusException
+import nl.basjes.modbus.device.exception.createReadErrorDiscreteBlock
+import nl.basjes.modbus.device.exception.createReadErrorRegisterBlock
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.TreeMap
 
 open class MockedModbusDevice : ModbusDevice() {
     // Map AddressClass to block of registers
+    private val discreteBlocks: MutableMap<AddressClass, DiscreteBlock> = TreeMap()
     private val registerBlocks: MutableMap<AddressClass, RegisterBlock> = TreeMap()
 
     private val logger: Logger = LogManager.getLogger()
@@ -37,6 +45,103 @@ open class MockedModbusDevice : ModbusDevice() {
 
     override fun close() {
         // Nothing to do here
+    }
+
+    fun addModbusValues(
+        firstAddress: Address,
+        values: String,
+    ): MockedModbusDevice =
+        when(firstAddress.addressClass.type) {
+            DISCRETE ->
+                addDiscretes(
+                firstAddress.addressClass,
+                firstAddress.physicalAddress,
+                values,
+            )
+
+            REGISTER ->
+                addRegisters(
+                firstAddress.addressClass,
+                firstAddress.physicalAddress,
+                values,
+            )
+
+        }
+
+    fun addDiscretes(
+        discreteValue: DiscreteValue,
+    ) {
+        val addressClass = discreteValue.address.addressClass
+        discreteBlocks
+            .computeIfAbsent(addressClass) { DiscreteBlock(addressClass) }
+            .put(discreteValue)
+    }
+
+    fun addDiscretes(
+        discreteBlock: DiscreteBlock,
+    ) {
+        val addressClass = discreteBlock.addressClass
+        discreteBlocks
+            .computeIfAbsent(addressClass) { DiscreteBlock(addressClass) }
+            .merge(discreteBlock)
+    }
+
+    fun addDiscretes(
+        firstAddress: Address,
+        hexRegisterValues: String,
+    ): MockedModbusDevice =
+        addDiscretes(
+            firstAddress.addressClass,
+            firstAddress.physicalAddress,
+            hexRegisterValues,
+        )
+
+    fun addDiscretes(
+        addressClass: AddressClass,
+        firstPhysicalAddress: Int,
+        binaryDiscretesValues: String,
+    ): MockedModbusDevice {
+        val discreteBlock: DiscreteBlock = binaryDiscretesValues.toDiscreteBlock(Address(addressClass, firstPhysicalAddress))
+        addDiscretes(discreteBlock)
+        return this
+    }
+
+    /**
+     * Retrieve a block of 1 bit values (Coils and Discrete Inputs).
+     *
+     * @param firstDiscrete The first modbus discrete value that is desired in the output.
+     * @param count The maximum number of values to retrieve ( >= 1 ).
+     * @return A DiscreteBlock with of all the retrieved values
+     */
+    @Throws(ModbusException::class)
+    override fun getDiscretes(
+        firstDiscrete: Address,
+        count: Int,
+    ): DiscreteBlock {
+//        if (logRequests) {
+//            logger.info("MODBUS GET: {} # {}",firstRegister, count );
+//        }
+        val addressClass = firstDiscrete.addressClass
+        val discreteBlock = discreteBlocks[addressClass] ?: return DiscreteBlock(addressClass)
+        val discretes = DiscreteBlock(addressClass)
+
+        val firstPhysicalAddress = firstDiscrete.physicalAddress
+        for (registerNumber in firstPhysicalAddress until (firstPhysicalAddress + count)) {
+            val address = Address.of(addressClass, registerNumber)
+            val discreteValue = discreteBlock[address]
+            if (discreteValue.isReadError()) {
+                // If ANY of the requested registers is invalid then the entire block of values is returned as readerror
+                // This is to match the behaviour of real devices
+                logRequestResult(firstDiscrete, count, "READ ERROR ON ${address.toCleanFormat()}")
+                return createReadErrorDiscreteBlock(firstDiscrete, count)
+            }
+            if (discreteValue.hasValue()) {
+                discreteValue.fetchTimestamp = System.currentTimeMillis()
+                discretes[address] = discreteValue
+            }
+        }
+        logRequestResult(firstDiscrete, count, discretes)
+        return discretes
     }
 
     fun addRegister(
@@ -58,12 +163,12 @@ open class MockedModbusDevice : ModbusDevice() {
     }
 
     fun addRegisters(
-        firstRegisterAddress: Address,
+        firstAddress: Address,
         hexRegisterValues: String,
     ): MockedModbusDevice =
         addRegisters(
-            firstRegisterAddress.addressClass,
-            firstRegisterAddress.physicalAddress,
+            firstAddress.addressClass,
+            firstAddress.physicalAddress,
             hexRegisterValues,
         )
 
@@ -72,7 +177,7 @@ open class MockedModbusDevice : ModbusDevice() {
         firstPhysicalAddress: Int,
         hexRegisterValues: String,
     ): MockedModbusDevice {
-        val registerBlock = hexRegisterValues.toRegisterBlock(Address(addressClass, firstPhysicalAddress))
+        val registerBlock: RegisterBlock = hexRegisterValues.toRegisterBlock(Address(addressClass, firstPhysicalAddress))
         addRegisters(registerBlock)
         return this
     }
@@ -96,7 +201,7 @@ open class MockedModbusDevice : ModbusDevice() {
                 // If ANY of the requested registers is invalid then the entire block of values is returned as readerror
                 // This is to match the behaviour of real devices
                 logRequestResult(firstRegister, count, "READ ERROR ON ${address.toCleanFormat()}")
-                return createReadErrorResponse(firstRegister, count)
+                return createReadErrorRegisterBlock(firstRegister, count)
             }
             if (registerValue.hasValue()) {
                 registerValue.fetchTimestamp = System.currentTimeMillis()
@@ -108,17 +213,17 @@ open class MockedModbusDevice : ModbusDevice() {
     }
 
     private fun logRequestResult(
-        firstRegister: Address,
+        first: Address,
         count: Int,
         result: Any,
     ) {
         if (logRequests) {
             logger.info(
-                "Getting {} registers starting at \"{}\" (last = \"{}\"): {}",
+                "Getting {} ${if(first.addressClass.bitsPerValue==1) "registers" else "discretes"} starting at \"{}\" (last = \"{}\"): {}",
                 count,
-                firstRegister,
+                first,
                 // The -1 is because the count is including both the first and last registers in the list
-                firstRegister.increment(count - 1),
+                first.increment(count - 1),
                 result,
             )
         }
@@ -127,20 +232,45 @@ open class MockedModbusDevice : ModbusDevice() {
     class MockedModbusDeviceBuilder {
         private val mockedModbusDevice = MockedModbusDevice()
 
-        fun withRegisters(
+        fun withDiscretes(
             addressClass: AddressClass,
-            firstRegisterAddress: Int,
-            hexRegisterValues: String,
+            firstAddress: Int,
+            discretesString: String,
         ): MockedModbusDeviceBuilder {
-            mockedModbusDevice.addRegisters(addressClass, firstRegisterAddress, hexRegisterValues)
+            mockedModbusDevice.addDiscretes(addressClass, firstAddress, discretesString)
+            return this
+        }
+
+        fun withDiscretes(
+            firstAddress: Address,
+            discretesString: String,
+        ): MockedModbusDeviceBuilder {
+            mockedModbusDevice.addDiscretes(firstAddress, discretesString)
+            return this
+        }
+
+        fun withDiscretes(discreteBlock: DiscreteBlock): MockedModbusDeviceBuilder {
+            val firstAddress = discreteBlock.firstAddress
+            if (firstAddress != null) {
+                mockedModbusDevice.addDiscretes(firstAddress, discreteBlock.toBitString())
+            }
             return this
         }
 
         fun withRegisters(
-            firstRegisterAddress: Address,
+            addressClass: AddressClass,
+            firstAddress: Int,
             hexRegisterValues: String,
         ): MockedModbusDeviceBuilder {
-            mockedModbusDevice.addRegisters(firstRegisterAddress, hexRegisterValues)
+            mockedModbusDevice.addRegisters(addressClass, firstAddress, hexRegisterValues)
+            return this
+        }
+
+        fun withRegisters(
+            firstAddress: Address,
+            hexRegisterValues: String,
+        ): MockedModbusDeviceBuilder {
+            mockedModbusDevice.addRegisters(firstAddress, hexRegisterValues)
             return this
         }
 
@@ -151,6 +281,7 @@ open class MockedModbusDevice : ModbusDevice() {
             }
             return this
         }
+
 
         fun withLogging(): MockedModbusDeviceBuilder {
             mockedModbusDevice.logRequests = true

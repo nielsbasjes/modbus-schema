@@ -29,7 +29,7 @@ class TestLoader {
         val schema =
             """
             description: 'A device'
-            schemaFeatureLevel: 1
+            schemaFeatureLevel: 2
             blocks:
             - id: 'Main'
               description:  'The only block of registers'
@@ -48,8 +48,8 @@ class TestLoader {
             - id: 'Normal values'
               description: 'Normal values'
               input:
-              - firstRegisterAddress: 'hr:0'
-                registers: >-
+              - firstAddress: 'hr:0'
+                rawValues: >-
                   449A 5225
                   4093 4A45 84FC D47C
               blocks:
@@ -69,7 +69,7 @@ class TestLoader {
         val schema =
             """
             description: 'A device'
-            schemaFeatureLevel: 1
+            schemaFeatureLevel: 2
             blocks:
             - id: 'Main'
               description:  'The only block of registers'
@@ -95,7 +95,7 @@ class TestLoader {
         val schema =
             """
             description: 'A device'
-            schemaFeatureLevel: 1
+            schemaFeatureLevel: 2
             blocks:
             - id: 'Main'
               description:  'The only block of registers'
@@ -114,8 +114,8 @@ class TestLoader {
             - id: 'Normal values'
               description: 'Normal values'
               input:
-              - firstRegisterAddress: 'hr:0'
-                registers: >-
+              - firstAddress: 'hr:0'
+                rawValues: >-
                   449A 5225
                   4093 4A45 84FC D47C
               blocks:
@@ -143,7 +143,7 @@ class TestLoader {
         val schema =
             """
             description: 'A device'
-            schemaFeatureLevel: 1
+            schemaFeatureLevel: 2
             blocks:
             - id: 'Main'
               description:  'The only block of registers'
@@ -162,8 +162,8 @@ class TestLoader {
             - id: 'Normal values'
               description: 'Normal values'
               input:
-              - firstRegisterAddress: 'hr:0'
-                registers: >-
+              - firstAddress: 'hr:0'
+                rawValues: >-
                   449A 5225
                   4093 4A45 84FC D47C
               blocks:

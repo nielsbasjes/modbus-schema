@@ -28,5 +28,5 @@ interface StringListExpression : Expression {
     /**
      * @return The (possibly empty) list with all set String values or null if it was not implemented
      */
-    fun getValue(schemaDevice: SchemaDevice): List<String>?
+    fun getValueAsStringList(schemaDevice: SchemaDevice): List<String>?
 }

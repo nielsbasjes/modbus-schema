@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.schema.expression.strings
+package nl.basjes.modbus.schema.expression.booleans
 
+import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.Expression.Warning
-import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
+import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 
-class MissingField(
-    private val fieldName: String,
-) : StringExpression,
-    NumericalExpression {
+open class BooleanConstant(
+    val value: Boolean,
+) : BooleanExpression {
 
-    override fun toString(): String = "<<MISSING FIELD: $fieldName>>"
+    override fun toString(): String = value.toString()
 
     override var isImmutable: Boolean = true
+        set(unused) {
+            field = true // Refusing to change the value
+        }
 
-    override val problems: List<Problem>
-        get() = listOf(Warning("Field $fieldName is missing"))
+    override val returnType: ReturnType
+        get() = ReturnType.BOOLEAN
 
-    override fun getValue(schemaDevice: SchemaDevice) = null
+    override fun getBoolean(schemaDevice: SchemaDevice): Boolean? = value
 }

@@ -31,9 +31,9 @@
 NULL EXPRESSION
 <#else>
 <#if isExpressionType(expr, "ExpressionRegistersConstant")>   RegistersConstant( |PER REGISTER| <@hexValues hexStrings=expr.asRegisterHexStrings/> |OR PER BYTE| <@hexValues hexStrings=expr.asByteHexStrings/>                                     )</#if>
-<#if isExpressionType(expr, "ExpressionGetModbus")>           GetModbus(         <#list expr.requiredRegisters as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
-<#if isExpressionType(expr, "ExpressionSwapBytes")>           SwapBytes(         <#list expr.requiredRegisters as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
-<#if isExpressionType(expr, "ExpressionSwapEndian")>          SwapEndian(        <#list expr.requiredRegisters as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
+<#if isExpressionType(expr, "ExpressionGetModbus")>           GetModbus(         <#list expr.requiredAddresses as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
+<#if isExpressionType(expr, "ExpressionSwapBytes")>           SwapBytes(         <#list expr.requiredAddresses as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
+<#if isExpressionType(expr, "ExpressionSwapEndian")>          SwapEndian(        <#list expr.requiredAddresses as address>${address.toModiconX()}<#sep>, </#sep></#list>  )</#if>
 <#if isExpressionType(expr, "ExpressionLongConstant")>        LongConstant(      ${expr.value?c}                                                                          )</#if>
 <#if isExpressionType(expr, "ExpressionDoubleConstant")>      DoubleConstant(    ${expr.value?c}                                                                          )</#if>
 <#if isExpressionType(expr, "ExpressionNumericalField")>      NumericalField(    ${expr.fieldName}                                                                        )</#if>

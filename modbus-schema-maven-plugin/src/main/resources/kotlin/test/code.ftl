@@ -53,9 +53,9 @@ internal class Test${asClassName(className)} {
     fun verifyProvidedTest_${asClassName(testScenario.name)}() {
         val modbusDevice = MockedModbusDevice.builder().build()
         val ${asVariableName(className)} = ${asClassName(className)}().connect(modbusDevice)
-<#list testScenario.registerBlocks as registerBlock>
-        modbusDevice.addRegisters(Address.of("${registerBlock.firstAddress}"), """
-${indent(hexStringMultiLine(registerBlock),"            ")}
+<#list testScenario.modbusBlocks as modbusBlock>
+        modbusDevice.addModbusValues(Address.of("${modbusBlock.firstAddress}"), """
+${indent(asStringMultiLine(modbusBlock),"            ")}
             """.trimIndent());
 </#list>
         ${asVariableName(className)}.updateAll()
@@ -72,7 +72,8 @@ ${indent(hexStringMultiLine(registerBlock),"            ")}
         assertEquals(${expectedBlock.expected[fieldName][0]}<#if field.unit?has_content> /* ${field.unit} */</#if>, ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.value ?: Double.NaN, 0.001)
 <#elseif fieldReturnType == "stringListValue">
         assertEquals(listOf(<#list expectedBlock.expected[fieldName] as exp>"${exp}"<#sep >, </#list>), ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.value)
-<#--        assertEquals(listOf(<#list expectedBlock.expected[fieldName] as expectedStringListValue>"${expectedStringListValue}"<#sep>, </#list>), schemaDevice.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.value)-->
+<#elseif fieldReturnType == "booleanValue">
+        assertEquals(${expectedBlock.expected[fieldName][0]}, ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.value)
 <#else>
         assertEquals("${expectedBlock.expected[fieldName][0]}", ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.value)
 </#if>

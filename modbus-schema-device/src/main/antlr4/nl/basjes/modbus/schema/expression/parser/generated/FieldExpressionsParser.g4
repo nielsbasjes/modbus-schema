@@ -26,19 +26,20 @@ expression
     : number     EOF
     | string     EOF
     | stringList EOF
+    | boolean    EOF
     ;
 
-singleRegister
-    : REGISTER
+singleAddress
+    : ADDRESS
     | HEXLIKEREGISTER
     | NUMBER56
     | LONG
     ;
 
 registerlist
-    : singleRegister ( COMMA singleRegister ) *                             #registers          // "1x0001, 1x0002,1x0003,1x0004"
-    | startRegister=singleRegister HASH count=LONG                          #registerCount      // "1x0001 # 4" Starting at 1x0001 do 4 registers
-    | startRegister=singleRegister DOTDOT lastRegister=singleRegister       #registerRange      // "1x0001.. 1x0004" range both start and end inclusive!
+    : singleAddress ( COMMA singleAddress ) *                               #registers          // "1x0001, 1x0002,1x0003,1x0004"
+    | startRegister=singleAddress HASH count=LONG                           #registerCount      // "1x0001 # 4" Starting at 1x0001 do 4 registers
+    | startRegister=singleAddress DOTDOT lastRegister=singleAddress         #registerRange      // "1x0001.. 1x0004" range both start and end inclusive!
     | SWAPENDIAN    BRACEOPEN registers=registerlist BRACECLOSE             #registerSwapEndian // Reverse the ordering of the retrieved bits
     | SWAPBYTES     BRACEOPEN registers=registerlist BRACECLOSE             #registerSwapBytes  // Reverse the ordering of the retrieved bytes
     | DOUBLEQUOTE constantHexString DOUBLEQUOTE                             #registerValues     // A hardcoded list of register values (between " to separate them from the singleRegister coils)
@@ -56,6 +57,8 @@ string
     | IPv6ADDR        BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*                         BRACECLOSE #stringIPv6Addr
     | ENUM            BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )+ BRACECLOSE #stringEnum
     | CONCAT          BRACEOPEN stringFragments        ( COMMA stringFragments    )*                         BRACECLOSE #stringConcat
+    | BOOLEAN         BRACEOPEN value=boolean         SEMICOLON zeroString=STRING SEMICOLON oneString=STRING BRACECLOSE #stringFromBoolean
+    | BOOLEAN         BRACEOPEN address=singleAddress SEMICOLON zeroString=STRING SEMICOLON oneString=STRING BRACECLOSE #stringDiscrete
     | STRING                                                                                                            #stringConstant
     ;
 
@@ -63,10 +66,19 @@ stringFragments
     : string                                                                                                            #stringString
     | FIELDNAME                                                                                                         #stringField
     | number                                                                                                            #stringNumber
+    | boolean                                                                                                           #stringBoolean
     ;
 
 stringList
-    : BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )* BRACECLOSE #stringListBitSet
+    : BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )*  BRACECLOSE #stringListBitSet
+    ;
+
+boolean
+    : BOOLEAN         BRACEOPEN address=singleAddress BRACECLOSE                                                         #booleanBit
+    // Extract a single bit from a set of registers
+    | BITSETBIT       BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  SEMICOLON bitNr=LONG    BRACECLOSE #booleanBitSetBit
+    | FIELDNAME                                                                                                          #booleanField
+    | value=(TRUE|FALSE)                                                                                                 #booleanConstant
     ;
 
 notImplemented

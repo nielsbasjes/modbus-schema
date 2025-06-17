@@ -20,7 +20,7 @@ import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.NotImplemented
+import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
@@ -44,15 +44,15 @@ class IPv6AddrString(
             combine(
                 "ipv6addr",
                 checkFatal(
-                    registers.returnedRegisters == IPV6ADDR_REGISTERS,
-                    "Must have $IPV6ADDR_REGISTERS registers (got ${registers.returnedRegisters})",
+                    registers.returnedAddresses == IPV6ADDR_REGISTERS,
+                    "Must have $IPV6ADDR_REGISTERS registers (got ${registers.returnedAddresses})",
                 ),
                 registers.problems,
                 super<StringExpression>.problems,
                 super<NotImplemented>.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = registers.getModbusValues(schemaDevice)
 
     override fun getValue(schemaDevice: SchemaDevice): String? {
         val bytes = registers.getByteArray(schemaDevice) ?: return null

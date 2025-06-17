@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.FileInputStream
 import kotlin.test.Test
-import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class TestDeviceSchema {
 
@@ -34,16 +34,7 @@ class TestDeviceSchema {
         val schemaDevice = schemaStream.toSchemaDevice()
         require(schemaDevice.initialize()) { "Unable to initialize schema device" }
         val results = schemaDevice.verifyProvidedTests()
-        var failed = false
-        for (result in results) {
-            if (result.allPassed) {
-                log.info("[PASS] Schema test \"${result.testName}\"")
-            } else {
-                log.error("[FAIL] Schema test \"${result.testName}\":")
-                log.error("Failed fields:\n${result.toTable(true)}")
-                failed = true
-            }
-        }
-        assertFalse(failed, "Unable to verify all tests defined in the schema definition")
+        results.logResults()
+        assertTrue(results.allPassed, "Unable to verify all tests defined in the schema definition")
     }
 }

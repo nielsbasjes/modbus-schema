@@ -17,13 +17,17 @@
 package nl.basjes.modbus.schema
 
 import nl.basjes.modbus.device.api.AddressClass
+import nl.basjes.modbus.device.api.AddressClass.Type.DISCRETE
+import nl.basjes.modbus.device.api.AddressClass.Type.REGISTER
+import nl.basjes.modbus.device.api.DiscreteBlock
 import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
+import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.ModbusValue
 import nl.basjes.modbus.device.api.RegisterBlock
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.schema.fetcher.OptimizingRegisterBlockFetcher
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher
+import nl.basjes.modbus.schema.fetcher.OptimizingModbusBlockFetcher
+import nl.basjes.modbus.schema.fetcher.ModbusBlockFetcher
 import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import nl.basjes.modbus.schema.test.ExpectedBlock
 import nl.basjes.modbus.schema.test.TestScenario
@@ -50,8 +54,8 @@ constructor(
      */
     maxRegistersPerModbusRequest: Int = MODBUS_MAX_REGISTERS_PER_REQUEST,
 ) {
-    // The registerBlock from which the values must be retrieved.
-    private val registerBlocks: MutableMap<AddressClass, RegisterBlock> = TreeMap()
+    // The modbusBlocks  from which the values must be retrieved.
+    private val modbusBlocks: MutableMap<AddressClass, ModbusBlock<*,*,*>> = TreeMap()
 
     /**
      * The maximum number of modbus registers that can be requested PER call.
@@ -68,13 +72,16 @@ constructor(
             field = value
         }
 
-    private fun clearRegisterBlocks() {
-        registerBlocks.values.forEach { it.clear() }
+    private fun clearModbusBlocks() {
+        modbusBlocks.values.forEach { it.clear() }
     }
 
-    fun getRegisterBlock(addressClass: AddressClass): RegisterBlock =
-        registerBlocks.computeIfAbsent(addressClass) { addrCls ->
-            RegisterBlock(addrCls)
+    fun getModbusBlock(addressClass: AddressClass): ModbusBlock<*,*,*> =
+        modbusBlocks.computeIfAbsent(addressClass) {
+            when (addressClass.type) {
+                DISCRETE -> DiscreteBlock(addressClass)
+                REGISTER -> RegisterBlock(addressClass)
+            }
         }
 
     // ------------------------------------------
@@ -178,13 +185,13 @@ constructor(
     // ------------------------------------------
 
     var modbusDevice: ModbusDevice? = null
-    var registerBlockFetcher: RegisterBlockFetcher? = null
+    var modbusBlockFetcher: ModbusBlockFetcher? = null
 
     fun connectBase(modbusDevice: ModbusDevice): SchemaDevice {
-        clearRegisterBlocks()
+        clearModbusBlocks()
         this.modbusDevice = modbusDevice
         modbusDevice.maxRegistersPerModbusRequest = maxRegistersPerModbusRequest
-        this.registerBlockFetcher = RegisterBlockFetcher(this, modbusDevice)
+        this.modbusBlockFetcher = ModbusBlockFetcher(this, modbusDevice)
         return this
     }
 
@@ -196,11 +203,11 @@ constructor(
          */
         allowedGapReadSize: Int = 100,
     ): SchemaDevice {
-        clearRegisterBlocks()
+        clearModbusBlocks()
         this.modbusDevice = modbusDevice
         modbusDevice.maxRegistersPerModbusRequest = maxRegistersPerModbusRequest
-        this.registerBlockFetcher = OptimizingRegisterBlockFetcher(this, modbusDevice)
-        (this.registerBlockFetcher as OptimizingRegisterBlockFetcher).allowedGapReadSize = allowedGapReadSize
+        this.modbusBlockFetcher = OptimizingModbusBlockFetcher(this, modbusDevice)
+        (this.modbusBlockFetcher as OptimizingModbusBlockFetcher).allowedGapReadSize = allowedGapReadSize
         return this
     }
 
@@ -217,7 +224,7 @@ constructor(
      */
     @JvmOverloads
     fun update(maxAge: Long = 0): List<ModbusQuery>  {
-        return registerBlockFetcher?.update(maxAge) ?: listOf()
+        return modbusBlockFetcher?.update(maxAge) ?: listOf()
     }
 
     /**
@@ -226,7 +233,7 @@ constructor(
      * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
     fun update(field: Field): List<ModbusQuery> {
-        return registerBlockFetcher?.update(field) ?: listOf()
+        return modbusBlockFetcher?.update(field) ?: listOf()
     }
 
     /**
@@ -290,13 +297,12 @@ constructor(
 
     fun createTestsUsingCurrentRealData() {
         var oldestTimestampOfData = 0L
-        for (registerBlock in registerBlocks.values) {
+        for (modbusBlock in modbusBlocks.values) {
             oldestTimestampOfData =
                 oldestTimestampOfData
                     .coerceAtLeast(
-                        registerBlock.values
-                            .map(RegisterValue::fetchTimestamp)
-                            .filter { it > 0 }
+                        modbusBlock.values
+                            .mapNotNull(ModbusValue<*,*>::timestamp)
                             .minOrNull() ?: 0L,
                     )
         }
@@ -319,10 +325,9 @@ constructor(
         val test = TestScenario(name, description)
         mutableTests.add(test)
 
-        for (registerBlock in registerBlocks.values) {
-            test.addRegisterBlock(registerBlock.clone())
+        for (modbusBlock in modbusBlocks.values) {
+            test.addModbusBlock(modbusBlock.clone())
         }
-
         for (block in blocks) {
             val expectedBlock = ExpectedBlock(block.id)
             test.addExpectedBlock(expectedBlock)
@@ -350,10 +355,16 @@ constructor(
             allTestResults.add(TestScenarioResults(test.name, this, testResults))
 
             // First we set all the TEST registers in the schema device
-            clearRegisterBlocks() // Wipe anything old
-            // Then we load all provided register values for this test
-            for (testRegisterBlock in test.registerBlocks) {
-                this.getRegisterBlock(testRegisterBlock.addressClass).merge(testRegisterBlock)
+            clearModbusBlocks() // Wipe anything old
+            // Then we load all provided values for this test
+            for (testRegisterBlock in test.modbusBlocks) {
+                val block = this.getModbusBlock(testRegisterBlock.addressClass)
+                if (block is DiscreteBlock && testRegisterBlock is DiscreteBlock) {
+                    block.merge(testRegisterBlock)
+                }
+                if (block is RegisterBlock && testRegisterBlock is RegisterBlock) {
+                    block.merge(testRegisterBlock)
+                }
             }
 
             // Then for each block as defined in the test scenario
@@ -378,7 +389,7 @@ constructor(
             }
         }
         // Finally ensure no test registers remain in the schema device
-        clearRegisterBlocks()
+        clearModbusBlocks()
 
         return allTestResults
     }
@@ -401,7 +412,10 @@ constructor(
         @JvmStatic
         fun builder(): SchemaDeviceBuilder = SchemaDeviceBuilder()
 
-        const val CURRENT_SCHEMA_FEATURE_LEVEL = 1
+        // Levels so far:
+        // 1: Getting Register based values (Holding and Input Registers)
+        // 2: Getting Boolean  based values (Coils, Discrete Inputs and functions to extra booleans from other fields)
+        const val CURRENT_SCHEMA_FEATURE_LEVEL = 2
 
         private val LOG: Logger = LogManager.getLogger()
     }

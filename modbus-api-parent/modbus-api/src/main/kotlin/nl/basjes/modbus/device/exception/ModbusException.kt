@@ -16,9 +16,33 @@
  */
 package nl.basjes.modbus.device.exception
 
+/**
+ * The generic top level exception
+ */
 open class ModbusException
     @JvmOverloads
     constructor(
         message: String,
         cause: Throwable? = null,
     ) : Exception(message, cause)
+
+/**
+ * Thrown if the API is used in an invalid way (i.e. developer error)
+ */
+open class ModbusApiException
+    @JvmOverloads
+    constructor(
+        message: String,
+        cause: Throwable? = null,
+    ) : ModbusException(message, cause)
+
+/**
+ * Thrown if an invalid AddressClass was used (i.e. developer error)
+ */
+open class ModbusIllegalAddressClassException
+@JvmOverloads
+constructor(
+    message: String,
+    cause: Throwable? = null,
+) : ModbusApiException(message, cause)
+

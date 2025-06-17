@@ -18,10 +18,12 @@
 package nl.basjes.modbus.device.exception
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 
-fun createReadErrorResponse(
+fun createReadErrorRegisterBlock(
     firstRegister: Address,
     count: Int,
 ): RegisterBlock {
@@ -34,4 +36,19 @@ fun createReadErrorResponse(
         address = firstRegister.increment(i)
     }
     return registerBlock
+}
+
+fun createReadErrorDiscreteBlock(
+    firstDiscrete: Address,
+    count: Int,
+): DiscreteBlock {
+    val discreteBlock = DiscreteBlock(firstDiscrete.addressClass)
+    var address = firstDiscrete
+    for (i in 0..count) {
+        val readErrorValue = DiscreteValue(address)
+        readErrorValue.setSoftReadError()
+        discreteBlock[address] = readErrorValue
+        address = firstDiscrete.increment(i)
+    }
+    return discreteBlock
 }

@@ -18,25 +18,26 @@ package nl.basjes.modbus.schema.expression.numbers
 
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.NotImplemented
+import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 
 abstract class IntegerSigned(
     private val name: String,
     private val bytesPerValue: Int,
-    private val byteArray: RegistersExpression,
+    private val addressExpression: RegistersExpression,
     notImplemented: List<String>,
-) : NotImplemented(bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER, notImplemented),
+) : NotImplemented(bytesPerValue / BYTES_PER_REGISTER, notImplemented),
     NumericalExpression {
 
-    override fun toString(): String = "$name(" + byteArray + super<NotImplemented>.toString() + ")"
+    override fun toString(): String = "$name(" + addressExpression + super<NotImplemented>.toString() + ")"
 
     override val subExpressions: List<Expression>
-        get() = listOf(byteArray)
+        get() = listOf(addressExpression)
 
-    override var isImmutable: Boolean = byteArray.isImmutable
+    override var isImmutable: Boolean = addressExpression.isImmutable
 
     override val returnType: ReturnType
         get() = ReturnType.LONG
@@ -48,12 +49,12 @@ abstract class IntegerSigned(
                 super<NumericalExpression>.problems,
                 super<NotImplemented>.problems,
                 checkFatal(
-                    byteArray.returnedRegisters == bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
-                    "Wrong number of registers: Got ${byteArray.returnedRegisters}, need ${bytesPerValue / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER}",
+                    addressExpression.returnedAddresses == bytesPerValue / BYTES_PER_REGISTER,
+                    "Wrong number of registers: Got ${addressExpression.returnedAddresses}, need ${bytesPerValue / BYTES_PER_REGISTER}",
                 ),
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice) = byteArray.getRegisterValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = addressExpression.getModbusValues(schemaDevice)
 
     abstract override fun getValueAsLong(schemaDevice: SchemaDevice): Long?
 }

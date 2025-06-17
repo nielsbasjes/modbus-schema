@@ -24,7 +24,7 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
-import nl.basjes.modbus.schema.expression.strings.MissingField
+import nl.basjes.modbus.schema.expression.generic.MissingField
 
 class NumericalField(
     val fieldName: String,
@@ -58,7 +58,7 @@ class NumericalField(
     override val subExpressions: List<Expression>
         get() = listOf(fieldExpression)
 
-    override val requiredRegisters: List<Address>
+    override val requiredAddresses: List<Address>
         get() = listOf() // Fields are fetched separately !!
 
     override val requiredFields: List<String>

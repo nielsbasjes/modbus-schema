@@ -17,16 +17,17 @@
 package nl.basjes.modbus.schema.expression.numbers
 
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.expression.SHORT_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IntegerUnsigned16(
-    private val byteArray: RegistersExpression,
+    private val addressExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerUnsigned("uint16", nl.basjes.modbus.schema.expression.SHORT_BYTES, byteArray, notImplemented) {
+) : IntegerUnsigned("uint16", SHORT_BYTES, addressExpression, notImplemented) {
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        val bytes = byteArray.getByteArray(schemaDevice) ?: return null
+        val bytes = addressExpression.getByteArray(schemaDevice) ?: return null
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }

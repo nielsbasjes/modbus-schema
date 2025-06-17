@@ -17,9 +17,13 @@
 package nl.basjes.modbus.schema.fetcher
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.AddressClass.Type.DISCRETE
+import nl.basjes.modbus.device.api.AddressClass.Type.REGISTER
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.api.RegisterBlock
-import nl.basjes.modbus.device.api.RegisterValue
+import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
@@ -32,7 +36,7 @@ import kotlin.time.TimeSource
 /**
  * A RegisterBlockFetcher needs to have a Schema, a target RegisterBlock and a ModbusDevice
  */
-open class RegisterBlockFetcher(
+open class ModbusBlockFetcher(
     protected val schemaDevice: SchemaDevice,
     protected val modbusDevice: ModbusDevice,
 ) {
@@ -43,22 +47,21 @@ open class RegisterBlockFetcher(
         // We register all fields in the schemaDevice with the right fetch group as dictated in the Field.
         for (block in schemaDevice.blocks) {
             for (field in block.fields) {
-                val fieldFetchGroup = field.fetchGroup
-                val fieldImmutable = field.isImmutable
-                val requiredRegisters = field.requiredRegisters
-                for (requiredRegister in requiredRegisters) {
-                    val registerValue =
-                        schemaDevice
-                            .getRegisterBlock(requiredRegister.addressClass)
-                            .computeIfAbsent(requiredRegister) { RegisterValue(it) }
+                val fieldFetchGroup   = field.fetchGroup
+                val fieldImmutable    = field.isImmutable
+                val requiredAddresses = field.requiredAddresses
+                for (requiredAddress in requiredAddresses) {
+                    val modbusValue = schemaDevice
+                        .getModbusBlock(requiredAddress.addressClass)
+                        .getOrCreateIfAbsent(requiredAddress)
 
-                    registerValue.immutable = fieldImmutable
-                    registerValue.fetchGroup = fieldFetchGroup
+                    modbusValue.immutable = fieldImmutable
+                    modbusValue.fetchGroup = fieldFetchGroup
                 }
 
                 fetchGroupToAddresses
                     .computeIfAbsent(fieldFetchGroup) { ArrayList() }
-                    .addAll(requiredRegisters)
+                    .addAll(requiredAddresses)
             }
         }
 
@@ -101,7 +104,7 @@ open class RegisterBlockFetcher(
 
         var requiredRegisters: List<Address>? = fetchGroupToAddresses[field.fetchGroup]
         if (requiredRegisters.isNullOrEmpty()) {
-            requiredRegisters = field.requiredRegisters
+            requiredRegisters = field.requiredAddresses
         }
 
         if (requiredRegisters.isEmpty()) {
@@ -110,16 +113,52 @@ open class RegisterBlockFetcher(
         }
         val modbusQuery = ModbusQuery(requiredRegisters[0], requiredRegisters.size)
         modbusQuery.fields.add(field)
-        val deviceRegisters = modbusDevice.getRegisters(modbusQuery)
-        if (deviceRegisters.values.any { it.isReadError() }) {
-            // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
-            modbusQuery.status = ModbusQueryStatus.ERROR
-            deviceRegisters.values.forEach { it.setHardReadError() }
+
+        when(modbusQuery.type) {
+            DISCRETE -> {
+                val deviceDiscretes = modbusDevice.getDiscretes(modbusQuery)
+                if (deviceDiscretes.values.any { it.isReadError() }) {
+                    // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
+                    modbusQuery.status = ModbusQueryStatus.ERROR
+                    deviceDiscretes.values.forEach { it.setHardReadError() }
+                }
+                val modbusBlock = schemaDevice.getModbusBlock(deviceDiscretes.addressClass)
+                require(modbusBlock is DiscreteBlock) { "This should never fail" }
+                modbusBlock.merge(deviceDiscretes)
+            }
+
+            REGISTER -> {
+                val deviceRegisters = modbusDevice.getRegisters(modbusQuery)
+                if (deviceRegisters.values.any { it.isReadError() }) {
+                    // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
+                    modbusQuery.status = ModbusQueryStatus.ERROR
+                    deviceRegisters.values.forEach { it.setHardReadError() }
+                }
+                val modbusBlock = schemaDevice.getModbusBlock(deviceRegisters.addressClass)
+                require(modbusBlock is RegisterBlock) { "This should never fail" }
+                modbusBlock.merge(deviceRegisters)
+            }
         }
 
-        schemaDevice.getRegisterBlock(deviceRegisters.addressClass).merge(deviceRegisters)
+
         fetched.add(modbusQuery)
         return fetched
+    }
+
+    fun ModbusDevice.getDiscretes(modbusQuery: ModbusQuery): DiscreteBlock {
+        val start = TimeSource.Monotonic.markNow()
+        try {
+            val discreteBlock = this.getDiscretes(modbusQuery.start, modbusQuery.count)
+            modbusQuery.status = ModbusQueryStatus.SUCCESS
+            return discreteBlock
+        } catch (modbusException: ModbusException) {
+            modbusQuery.status = ModbusQueryStatus.ERROR
+            throw modbusException
+        }
+        finally {
+            val stop = TimeSource.Monotonic.markNow()
+            modbusQuery.duration = stop - start
+        }
     }
 
     fun ModbusDevice.getRegisters(modbusQuery: ModbusQuery): RegisterBlock {
@@ -154,14 +193,26 @@ open class RegisterBlockFetcher(
         }
     }
 
+    private fun ModbusBlock<*,*,*>.mergeFetched(fetchedModbusBlock: ModbusBlock<*,*,*> ) {
+        when (this) {
+            is DiscreteBlock if fetchedModbusBlock is DiscreteBlock -> merge(fetchedModbusBlock)
+            is RegisterBlock if fetchedModbusBlock is RegisterBlock -> merge(fetchedModbusBlock)
+            else -> throw ModbusApiException("Type mismatch existingModbusBlock (${javaClass.name}) and fetchedModbusBlock (${fetchedModbusBlock.javaClass.name})")
+        }
+    }
+
     private fun fetch(modbusQuery: ModbusQuery): List<ModbusQuery> {
         val fetched = mutableListOf<ModbusQuery>()
         try {
-            val registers = modbusDevice.getRegisters(modbusQuery)
+            val fetchedModbusBlock =
+                when(modbusQuery.type) {
+                    DISCRETE -> modbusDevice.getDiscretes(modbusQuery)
+                    REGISTER -> modbusDevice.getRegisters(modbusQuery)
+                }
             fetched.add(modbusQuery)
-            val registerBlock = schemaDevice.getRegisterBlock(registers.addressClass)
-            registerBlock.merge(registers)
-            if (registers.values.any { it.isReadError() }) {
+            val existingModbusBlock = schemaDevice.getModbusBlock(fetchedModbusBlock.addressClass)
+            existingModbusBlock.mergeFetched(fetchedModbusBlock)
+            if (fetchedModbusBlock.values.any { it.isReadError() }) {
                 modbusQuery.status = ModbusQueryStatus.ERROR
                 if (modbusQuery is MergedModbusQuery) {
                     // If we have a merged fetch then we retry on the individuals.
@@ -182,13 +233,13 @@ open class RegisterBlockFetcher(
                         .map { it.fields }
                         .flatten()
                         .filter { !modbusQuery.fields.contains(it) }
-                        .filter { it.requiredRegisters.overlaps(modbusQuery.start, modbusQuery.count) }
+                        .filter { it.requiredAddresses.overlaps(modbusQuery.start, modbusQuery.count) }
                         .forEach { fetched.addAll(it.update()) }
                     return fetched
                 } else {
 //                    println("-----READ ERROR getting $fetchBatch ; Fields are marked as DEAD")
-                    registers.values.forEach { it.setHardReadError() }
-                    registerBlock.merge(registers)
+                    fetchedModbusBlock.values.forEach { it.setHardReadError() }
+                    existingModbusBlock.mergeFetched(fetchedModbusBlock)
                 }
             }
         } catch (me: ModbusException) {
@@ -211,12 +262,12 @@ open class RegisterBlockFetcher(
         for (field in schemaDevice.neededFields()) {
             require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
 
-            val requiredRegisters = field.requiredRegisters
+            val requiredRegisters = field.requiredAddresses
 
             if (requiredRegisters.isEmpty()) {
                 continue
             }
-            val registerBlock = schemaDevice.getRegisterBlock(requiredRegisters[0].addressClass)
+            val registerBlock = schemaDevice.getModbusBlock(requiredRegisters[0].addressClass)
             // If at least one of the needed addresses links to a 'too old' value
             // the entire set for the field needs to be retrieved again.
             if (requiredRegisters

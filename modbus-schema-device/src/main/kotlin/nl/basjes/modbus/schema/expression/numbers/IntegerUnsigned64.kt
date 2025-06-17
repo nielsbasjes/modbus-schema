@@ -17,17 +17,18 @@
 package nl.basjes.modbus.schema.expression.numbers
 
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.expression.LONG_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IntegerUnsigned64(
-    private val registers: RegistersExpression,
+    private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerUnsigned("uint64", nl.basjes.modbus.schema.expression.LONG_BYTES, registers, notImplemented) {
+) : IntegerUnsigned("uint64", LONG_BYTES, registersExpression, notImplemented) {
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
         // TODO: Java does not have UNsigned 64 bit long ...
-        val bytes = registers.getByteArray(schemaDevice) ?: return null
+        val bytes = registersExpression.getByteArray(schemaDevice) ?: return null
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }

@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Fake Device with a syntax error'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'Main'
     description:  'The only block of registers'
@@ -37,8 +37,8 @@ tests:
   - id: 'Normal values'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: >-
+      - firstAddress: 'hr:0'
+        rawValues: >-
           449A 5225
           4093 4A45 84FC D47C
     blocks:

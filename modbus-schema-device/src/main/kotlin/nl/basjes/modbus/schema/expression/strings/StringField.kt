@@ -21,6 +21,8 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
+import nl.basjes.modbus.schema.expression.booleans.BooleanExpression
+import nl.basjes.modbus.schema.expression.generic.MissingField
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 
 class StringField(
@@ -55,6 +57,11 @@ class StringField(
                 fieldExpression = StringFromNumber(expression)
                 return true
             }
+
+            is BooleanExpression -> {
+                fieldExpression = StringFromBoolean(expression, "false", "true")
+                return true
+            }
         }
         return false
     }
@@ -65,7 +72,7 @@ class StringField(
     override val requiredFields: List<String>
         get() = listOf(fieldName)
 
-    override val requiredRegisters: List<Address>
+    override val requiredAddresses: List<Address>
         get() = listOf() // Fields are fetched separately !!
 
     override var isImmutable: Boolean

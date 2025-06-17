@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Expressions for Float'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'Float32Block'
     description: 'Fields that are a Float 32'
@@ -54,8 +54,8 @@ tests:
   - id: 'Float: Not Implemented'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: DEAD DEAD DEAD DEAD DEAD DEAD
+      - firstAddress: 'hr:0'
+        rawValues: DEAD DEAD DEAD DEAD DEAD DEAD
     blocks:
       - id: 'Float32Block'
         expected:
@@ -73,8 +73,8 @@ tests:
   - id: 'Float: Not A Number (NaN)'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 7Fc0 0000 7FF8 0000 0000 0000
+      - firstAddress: 'hr:0'
+        rawValues: 7Fc0 0000 7FF8 0000 0000 0000
     blocks:
       - id: 'Float32Block'
         expected:
@@ -93,8 +93,8 @@ tests:
   - id: 'Float: +Infinite'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 7F80 0000 7FF0 0000 0000 0000
+      - firstAddress: 'hr:0'
+        rawValues: 7F80 0000 7FF0 0000 0000 0000
     blocks:
       - id: 'Float32Block'
         expected:
@@ -112,8 +112,8 @@ tests:
   - id: 'Float: -Infinite'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: FF80 0000 FFF0 0000 0000 0000
+      - firstAddress: 'hr:0'
+        rawValues: FF80 0000 FFF0 0000 0000 0000
     blocks:
       - id: 'Float32Block'
         expected:
@@ -131,8 +131,8 @@ tests:
   - id: 'Float: Normal values'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 449A 5225 4093 4A45 84FC D47C
+      - firstAddress: 'hr:0'
+        rawValues: 449A 5225 4093 4A45 84FC D47C
     blocks:
       - id: 'Float32Block'
         expected:

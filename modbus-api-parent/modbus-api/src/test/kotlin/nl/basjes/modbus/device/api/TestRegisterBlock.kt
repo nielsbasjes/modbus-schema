@@ -16,6 +16,7 @@
  */
 package nl.basjes.modbus.device.api
 
+import nl.basjes.modbus.device.exception.ModbusIllegalAddressClassException
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -52,33 +53,75 @@ internal class TestRegisterBlock {
     }
 
     @Test
-    fun testInvalidCombinations() {
+    fun testInvalidCombinationsIntoRegisterBlock() {
         for (blockAddressClass in AddressClass.entries) {
+            if (blockAddressClass.bitsPerValue != 16) {
+                assertThrows<ModbusIllegalAddressClassException> {
+                    RegisterBlock(blockAddressClass)
+                }
+                continue
+            }
             val registerBlock = RegisterBlock(blockAddressClass)
             for (valueAddressClass in AddressClass.entries) {
-                if (blockAddressClass == valueAddressClass) {
-                    assertDoesNotThrow {
-                        registerBlock.setValue(
-                            Address.of(valueAddressClass, 1),
-                            1.toShort(),
-                            1L,
-                        )
+                if (valueAddressClass.bitsPerValue == 1) {
+                    assertThrows<ModbusIllegalAddressClassException> {
+                        registerBlock.setValue(Address.of(valueAddressClass, 1), 2.toShort(), 2L)
                     }
                 } else {
-                    assertThrows<IllegalArgumentException> {
-                        registerBlock.setValue(Address.of(valueAddressClass, 1), 2.toShort(), 2L)
+                    if (blockAddressClass == valueAddressClass) {
+                        assertDoesNotThrow {
+                            registerBlock.setValue(
+                                Address.of(valueAddressClass, 1),
+                                1.toShort(),
+                                1L,
+                            )
+                        }
+                    } else {
+                        assertThrows<ModbusIllegalAddressClassException> {
+                            registerBlock.setValue(Address.of(valueAddressClass, 1), 2.toShort(), 2L)
+                        }
                     }
                 }
             }
             assertEquals(1, registerBlock.size)
             assertEquals(1.toShort(), registerBlock[Address.of(blockAddressClass, 1)].value)
         }
-
-//        for (valueAddressClass in AddressClass.entries) {
-//            assertThrows<IllegalArgumentException>(
-//                IllegalArgumentException::class.java
-//            ) { EMPTY.setValue(Address(valueAddressClass, 1), 2.toShort(), 2L) }
-//        }
-//        assertTrue(EMPTY.isEmpty())
     }
+
+    @Test
+    fun testInvalidCombinationsIntoDiscreteBlock() {
+        for (blockAddressClass in AddressClass.entries) {
+            if (blockAddressClass.bitsPerValue != 1) {
+                assertThrows<ModbusIllegalAddressClassException> {
+                    DiscreteBlock(blockAddressClass)
+                }
+                continue
+            }
+            val discreteBlock = DiscreteBlock(blockAddressClass)
+            for (valueAddressClass in AddressClass.entries) {
+                if (valueAddressClass.bitsPerValue == 16) {
+                    assertThrows<ModbusIllegalAddressClassException> {
+                        discreteBlock.setValue(Address.of(valueAddressClass, 1), true, 2L)
+                    }
+                } else {
+                    if (blockAddressClass == valueAddressClass) {
+                        assertDoesNotThrow {
+                            discreteBlock.setValue(
+                                Address.of(valueAddressClass, 1),
+                                true,
+                                1L,
+                            )
+                        }
+                    } else {
+                        assertThrows<ModbusIllegalAddressClassException> {
+                            discreteBlock.setValue(Address.of(valueAddressClass, 1), true, 2L)
+                        }
+                    }
+                }
+            }
+            assertEquals(1, discreteBlock.size)
+            assertEquals(true, discreteBlock[Address.of(blockAddressClass, 1)].value)
+        }
+    }
+
 }

@@ -165,7 +165,7 @@ class SunSpecBasicsPrinter(
             "SunSpecModel{" + modelAddress +
                 ", Id=" + modelId +
                 ", Size=" + modelSize +
-                ", registers= [" + registers.values.joinToString(", ") { "0x" + it.hexValue } + "]" +
+                ", registers= [" + registers.values.joinToString(", ") { "0x" + it.asString } + "]" +
                 '}'
     }
 

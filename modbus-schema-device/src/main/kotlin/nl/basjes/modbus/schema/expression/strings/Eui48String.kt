@@ -21,7 +21,7 @@ import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.NotImplemented
+import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 import java.util.Arrays
@@ -29,7 +29,7 @@ import java.util.Arrays
 class Eui48String(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
-) : NotImplemented(registers.returnedRegisters, notImplemented),
+) : NotImplemented(registers.returnedAddresses, notImplemented),
     StringExpression {
 
     override fun toString(): String = "eui48(" + registers + super<NotImplemented>.toString() + ")"
@@ -45,14 +45,14 @@ class Eui48String(
                 "enum",
                 // Only sizes 3 and 4 are allowed
                 checkFatal(
-                    listOf(3, 4).contains(registers.returnedRegisters),
-                    "Must have 3 or 4 registers (got ${registers.returnedRegisters})",
+                    listOf(3, 4).contains(registers.returnedAddresses),
+                    "Must have 3 or 4 registers (got ${registers.returnedAddresses})",
                 ),
                 super<StringExpression>.problems,
                 super<NotImplemented>.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = registers.getModbusValues(schemaDevice)
 
     override fun getValue(schemaDevice: SchemaDevice): String? {
         var bytes = registers.getByteArray(schemaDevice) ?: return null

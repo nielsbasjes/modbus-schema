@@ -28,7 +28,7 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
-import nl.basjes.modbus.device.exception.createReadErrorResponse
+import nl.basjes.modbus.device.exception.createReadErrorRegisterBlock
 import org.apache.plc4x.java.api.PlcConnection
 import org.apache.plc4x.java.api.PlcDriverManager
 import org.apache.plc4x.java.api.exceptions.PlcConnectionException
@@ -141,7 +141,7 @@ class ModbusDevicePlc4j(
                     PlcResponseCode.UNSUPPORTED,
                     PlcResponseCode.RESPONSE_PENDING,
                     -> {
-                        return createReadErrorResponse(firstRegister, count)
+                        return createReadErrorRegisterBlock(firstRegister, count)
                     }
                 }
 

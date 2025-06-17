@@ -21,12 +21,12 @@ import nl.basjes.modbus.schema.expression.Expression
 
 interface RegistersExpression : Expression {
     /**
-     * @return The list of bytes value or null in case of problems
+     * @return The list of bytes value or null in case of problems (like this is not a register address)
      */
     fun getByteArray(schemaDevice: SchemaDevice): ByteArray?
 
     /**
-     * How many bytes will this return
+     * How many addresses will this return (needed for byte array size checks and such)
      */
-    val returnedRegisters: Int
+    val returnedAddresses: Int
 }

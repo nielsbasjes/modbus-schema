@@ -61,8 +61,8 @@ class Test${asClassName(className)} {
     void verifyProvidedTest_${asClassName(testScenario.name)}() throws ModbusException  {
         MockedModbusDevice modbusDevice = MockedModbusDevice.builder().build();
         ${asClassName(className)} ${asVariableName(className)} = new ${asClassName(className)}().connect(modbusDevice);
-<#list testScenario.registerBlocks as registerBlock>
-        modbusDevice.addRegisters(Address.of("${registerBlock.firstAddress}"), "${hexString(registerBlock)}");
+<#list testScenario.modbusBlocks as modbusBlock>
+        modbusDevice.addModbusValues(Address.of("${modbusBlock.firstAddress}"), "${asString(modbusBlock)}");
 </#list>
         ${asVariableName(className)}.updateAll();
 <#list testScenario.expectedBlocks as expectedBlock>
@@ -80,6 +80,8 @@ class Test${asClassName(className)} {
         assertEquals(${expectedBlock.expected[fieldName][0]}<#if field.unit?has_content> /* ${field.unit} */</#if>, ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.getValue(), 0.001);
 <#elseif fieldReturnType == "stringListValue">
         assertEquals(List.of(<#list expectedBlock.expected[fieldName] as exp>"${exp}"<#sep >, </#list>), ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.getValue());
+<#elseif fieldReturnType == "booleanValue">
+        assertEquals(${expectedBlock.expected[fieldName][0]}, ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.getValue());
 <#else>
         assertEquals("${expectedBlock.expected[fieldName][0]}", ${asVariableName(className)}.${asVariableName(expectedBlock.blockId)}.${asVariableName(fieldName)}.getValue());
 </#if>

@@ -16,9 +16,11 @@
  */
 package nl.basjes.modbus.device.api
 
+import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.device.exception.ModbusException
 
 const val MODBUS_MAX_REGISTERS_PER_REQUEST: Int = 125
+const val MODBUS_MAX_DISCRETES_PER_REQUEST: Int = MODBUS_MAX_REGISTERS_PER_REQUEST * 16
 const val MODBUS_STANDARD_TCP_PORT: Int = 502
 
 abstract class ModbusDevice : AutoCloseable {
@@ -38,17 +40,32 @@ abstract class ModbusDevice : AutoCloseable {
         }
 
     /**
-     * Retrieve a block of registers.
+     * Retrieve a block of 16 bit registers (Input Registers and Holding Registers).
      *
      * @param firstRegister The first modbus register that is desired in the output.
      * @param count The maximum number of registers to retrieve ( >= 1 ).
-     * @return A RegisterBlock with of all the retrieved registers
+     * @return A RegisterBlock with of all the retrieved values
      */
     @Throws(ModbusException::class)
     abstract fun getRegisters(
         firstRegister: Address,
         count: Int,
     ): RegisterBlock
+
+    /**
+     * Retrieve a block of 1 bit values (Coils and Discrete Inputs).
+     *
+     * @param firstDiscrete The first modbus discrete value that is desired in the output.
+     * @param count The maximum number of values to retrieve ( >= 1 ).
+     * @return A DiscreteBlock with of all the retrieved values
+     */
+    @Throws(ModbusException::class)
+    open fun getDiscretes(
+        firstDiscrete: Address,
+        count: Int,
+    ): DiscreteBlock {
+        throw ModbusApiException("Not yet implemented")
+    }
 
     // Explicitly override with a more restricted kind of exception because of
     // https://bugs.openjdk.org/browse/JDK-8155591

@@ -21,7 +21,7 @@ import freemarker.template.Configuration
 import freemarker.template.SimpleScalar
 import freemarker.template.TemplateMethodModelEx
 import freemarker.template.TemplateModelException
-import nl.basjes.modbus.device.api.RegisterBlock
+import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
@@ -42,7 +42,7 @@ import nl.basjes.modbus.schema.expression.numbers.NumericalField
 import nl.basjes.modbus.schema.expression.numbers.Power
 import nl.basjes.modbus.schema.expression.numbers.Subtract
 import nl.basjes.modbus.schema.expression.registers.RegistersConstantExpression
-import nl.basjes.modbus.schema.expression.registers.RegistersModbusExpression
+import nl.basjes.modbus.schema.expression.modbus.DiscreteModbusExpression
 import nl.basjes.modbus.schema.expression.registers.SwapBytes
 import nl.basjes.modbus.schema.expression.registers.SwapEndian
 import nl.basjes.modbus.schema.expression.strings.BitsetStringList
@@ -64,7 +64,7 @@ val expressionMappings =
     mapOf(
         // Registers
         "ExpressionRegistersConstant"          to RegistersConstantExpression::class,
-        "ExpressionGetModbus"                  to RegistersModbusExpression::class,
+        "ExpressionGetModbus"                  to DiscreteModbusExpression::class,
         "ExpressionSwapBytes"                  to SwapBytes::class,
         "ExpressionSwapEndian"                 to SwapEndian::class,
         // Numerical Values
@@ -110,8 +110,8 @@ fun Configuration.registerAdditionalMethods() =
         this.setSharedVariable("breakStringBlock",      BreakStringBlock())
         this.setSharedVariable("jvmReturnType",         ReturnTypeToJVMType())
         this.setSharedVariable("valueGetter",           ReturnTypeValueGetter())
-        this.setSharedVariable("hexString",             RegisterBlockAsHexString(false))
-        this.setSharedVariable("hexStringMultiLine",    RegisterBlockAsHexString(true))
+        this.setSharedVariable("asString",              ModbusBlockAsString(false))
+        this.setSharedVariable("asStringMultiLine",     ModbusBlockAsString(true))
         this.setSharedVariable("indent",                Indent())
         // Determine if an expression is of a specific expression type
         // Usage:  <#if isExpressionType(expr, "ExpressionRegistersConstant")>...</#if>
@@ -231,7 +231,7 @@ abstract class BaseSingleReturnTypeMethod : TemplateMethodModelEx {
 class ReturnTypeToJVMType : BaseSingleReturnTypeMethod() {
     override fun transform(input: ReturnType) =
         when (input) {
-            ReturnType.BOOLEAN -> TODO()
+            ReturnType.BOOLEAN -> "Boolean"
             ReturnType.LONG -> "Long"
             ReturnType.DOUBLE -> "Double"
             ReturnType.STRING -> "String"
@@ -243,7 +243,7 @@ class ReturnTypeToJVMType : BaseSingleReturnTypeMethod() {
 class ReturnTypeValueGetter : BaseSingleReturnTypeMethod() {
     override fun transform(input: ReturnType) =
         when (input) {
-            ReturnType.BOOLEAN -> TODO()
+            ReturnType.BOOLEAN -> "booleanValue"
             ReturnType.LONG -> "longValue"
             ReturnType.DOUBLE -> "doubleValue"
             ReturnType.STRING -> "stringValue"
@@ -252,7 +252,7 @@ class ReturnTypeValueGetter : BaseSingleReturnTypeMethod() {
         }
 }
 
-class RegisterBlockAsHexString(
+class ModbusBlockAsString(
     val multiLine: Boolean
 ) : TemplateMethodModelEx {
     override fun exec(arguments: MutableList<Any?>): Any {
@@ -264,15 +264,11 @@ class RegisterBlockAsHexString(
             throw TemplateModelException("Bad input")
         }
         val input = arg0.wrappedObject
-        if (input !is RegisterBlock) {
-            throw TemplateModelException("Only works on RegisterBlock")
+        require (input is ModbusBlock<*,*,*>) {
+            throw TemplateModelException("Only works on DiscreteBlock/RegisterBlock")
         }
 
-        if (multiLine) {
-            return SimpleScalar(input.toMultiLineString())
-        } else {
-            return SimpleScalar(input.toHexString())
-        }
+        return SimpleScalar(input.asString(multiLine))
     }
 }
 

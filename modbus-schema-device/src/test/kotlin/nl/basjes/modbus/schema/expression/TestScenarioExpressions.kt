@@ -16,9 +16,9 @@
  */
 package nl.basjes.modbus.schema.expression
 
+import nl.basjes.modbus.device.api.AddressClass.DISCRETE_INPUT
 import nl.basjes.modbus.device.api.AddressClass.HOLDING_REGISTER
 import nl.basjes.modbus.device.api.ModbusDevice
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.memory.MockedModbusDevice
 import nl.basjes.modbus.device.memory.MockedModbusDevice.Companion.of
@@ -27,6 +27,7 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
+import nl.basjes.modbus.schema.toTable
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -44,11 +45,13 @@ class TestScenarioExpressions {
 
     @Throws(ModbusException::class)
     private fun buildVerifier(
+        bits: String,
         bytes: String,
         vararg fields: TestField,
     ): SchemaDevice {
         val modbusDevice = MockedModbusDevice()
         //        modbusDevice.setLogRequests(true);
+        modbusDevice.addDiscretes(DISCRETE_INPUT,   0, bits)
         modbusDevice.addRegisters(HOLDING_REGISTER, 0, bytes)
 
         val schemaDevice = SchemaDevice("Device")
@@ -80,6 +83,7 @@ class TestScenarioExpressions {
         val schemaDevice =
             buildVerifier(
                 "",
+                "",
                 TestField("test1", expression),
                 TestField("test2", "test1"),
             )
@@ -97,7 +101,7 @@ class TestScenarioExpressions {
         assertEquals(parseOutput, parsedExpression.toString(), "Unexpected parse tree")
         val registers =
             parsedExpression
-                .getRegisterValues(schemaDevice)
+                .getModbusValues(schemaDevice)
                 .joinToString(separator = ",") { it.toString() }
         assertTrue(registers.isEmpty(), "Registers was not empty $registers")
     }
@@ -110,6 +114,7 @@ class TestScenarioExpressions {
     ) {
         val schemaDevice =
             buildVerifier(
+                "",
                 "",
                 TestField("test1", expression),
                 TestField("test2", "test1"),
@@ -133,9 +138,60 @@ class TestScenarioExpressions {
         assertEquals(parseOutput, parsedExpression1.toString(), "Unexpected parse tree")
         val registers =
             parsedExpression1
-                .getRegisterValues(schemaDevice)
+                .getModbusValues(schemaDevice)
                 .joinToString(separator = ",") { it.toString() }
         assertTrue(registers.isEmpty(), "Registers was not empty $registers")
+    }
+
+
+    private fun verify(
+        bytes: String,
+        expression: String,
+        expected: Boolean?,
+    ) {
+        verify("", bytes, expression, expected)
+    }
+
+    private fun verify(
+        bits: String,
+        bytes: String,
+        expression: String,
+        expected: Boolean?,
+    ) {
+        val schemaDevice =
+            buildVerifier(
+                bits,
+                bytes,
+                TestField("test1", expression),
+                TestField("test2", "boolean(test1 ; 'Zero' ; 'One')"),
+            )
+        val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
+        val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
+        assertTrue("Unable to initialize the expression: $expression: ${test1.parsedExpression?.problems ?: "No parsed expression available"}" ) { test1.initialized }
+        assertTrue("Unable to initialize the field reference: $expression: ${test2.parsedExpression?.problems ?: "No parsed expression available"}" ) { test2.initialized }
+        assertEquals(ReturnType.BOOLEAN, test1.returnType)
+        assertEquals(ReturnType.STRING, test2.returnType)
+
+        schemaDevice.updateAll()
+
+        if (expected == null) {
+            assertNull(test1.booleanValue)
+        } else {
+            assertEquals(expected, test1.booleanValue, "Expected $expected from $expression")
+        }
+
+        val parsedExpression1 = test1.parsedExpression
+        assertNotNull(parsedExpression1)
+
+        if (bits.isEmpty()) {
+            assertEquals(
+                bytes,
+                parsedExpression1
+                    .getModbusValues(schemaDevice)
+                    .joinToString(separator = " ") { it.asString }
+                    .replace("0x".toRegex(), ""),
+            )
+        }
     }
 
     @Throws(ModbusException::class)
@@ -146,6 +202,7 @@ class TestScenarioExpressions {
     ) {
         val schemaDevice =
             buildVerifier(
+                "",
                 bytes,
                 TestField("test1", expression),
                 TestField("test2", "test1"),
@@ -176,8 +233,8 @@ class TestScenarioExpressions {
         assertEquals(
             bytes,
             parsedExpression1
-                .getRegisterValues(schemaDevice)
-                .joinToString(separator = " ") { it.hexValue }
+                .getModbusValues(schemaDevice)
+                .joinToString(separator = " ") { it.asString }
                 .replace("0x".toRegex(), ""),
         )
     }
@@ -190,6 +247,7 @@ class TestScenarioExpressions {
     ) {
         val schemaDevice =
             buildVerifier(
+                "",
                 bytes,
                 TestField("test1", expression),
                 TestField("test2", "test1"),
@@ -213,8 +271,8 @@ class TestScenarioExpressions {
         assertEquals(
             bytes,
             parsedExpression1
-                .getRegisterValues(schemaDevice)
-                .joinToString(separator = " ", transform = RegisterValue::hexValue)
+                .getModbusValues(schemaDevice)
+                .joinToString(separator = " ") { it.asString }
                 .replace("0x".toRegex(), ""),
         )
     }
@@ -224,7 +282,7 @@ class TestScenarioExpressions {
         expression: String,
         expected: String?,
     ) {
-        val schemaDevice = buildVerifier(bytes, TestField("test", expression))
+        val schemaDevice = buildVerifier("", bytes, TestField("test", expression))
         schemaDevice.updateAll()
         val testField = getField(schemaDevice, "test")
         requireNotNull(testField)
@@ -238,7 +296,7 @@ class TestScenarioExpressions {
         expression: String,
         expected: List<String>?,
     ) {
-        val schemaDevice = buildVerifier(bytes, TestField("test", expression))
+        val schemaDevice = buildVerifier("", bytes, TestField("test", expression))
         schemaDevice.updateAll()
         val testField = getField(schemaDevice, "test")
         requireNotNull(testField)
@@ -260,9 +318,11 @@ class TestScenarioExpressions {
         expectedExpression: String?,
     ) {
         try {
+            val bits =
+                "0101 0101 "
             val bytes =
                 "0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF "
-            val schemaDevice = buildVerifier(bytes, TestField("test", expression))
+            val schemaDevice = buildVerifier(bits, bytes, TestField("test", expression))
             assertTrue(schemaDevice.initialize(), "Expression $expression failed to initialize")
             if (expectedExpression != null) {
                 val field = schemaDevice.getBlock("Block")?.getField("test")
@@ -281,9 +341,11 @@ class TestScenarioExpressions {
 
     private fun iNvalid(expression: String) {
         try {
+            val bits =
+                "0101 0101 "
             val bytes =
                 "0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF 0123 4567 89AB CDEF "
-            val schemaDevice = buildVerifier(bytes, TestField("test", expression))
+            val schemaDevice = buildVerifier(bits, bytes, TestField("test", expression))
             val field = schemaDevice.getBlock("Block")?.getField("test")
             assertFalse(
                 schemaDevice.initialize(),
@@ -299,11 +361,11 @@ class TestScenarioExpressions {
         expression: String,
         expected: String,
     ) {
-        val schemaDevice1 = buildVerifier("DEAD", TestField("test", expression))
+        val schemaDevice1 = buildVerifier("", "DEAD", TestField("test", expression))
         val fieldToString = getField(schemaDevice1, "test")!!.parsedExpression.toString()
         assertEquals(expected, fieldToString)
         // Now we parse the result of toString, create a new Field and then check if they are equal
-        val schemaDevice2 = buildVerifier("DEAD", TestField("test", fieldToString))
+        val schemaDevice2 = buildVerifier("", "DEAD", TestField("test", fieldToString))
         assertEquals(expected, getField(schemaDevice2, "test")!!.parsedExpression.toString())
     }
 
@@ -448,7 +510,7 @@ class TestScenarioExpressions {
     fun testStringIPv4Addr() {
         // IPv4ADDR        BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )* BRACECLOSE
         verifyToString(
-            "ipv4addr(hr:0#2 ; 0xDEAD 0xDEAD)",
+            " ipv4addr(hr:0#2 ; 0xDEAD 0xDEAD)",
             "ipv4addr(hr:00000 # 2 ; 0xDEAD 0xDEAD)",
         )
         verifyToString("ipv4addr(hr:0#2                )", "ipv4addr(hr:00000 # 2)")
@@ -704,6 +766,134 @@ class TestScenarioExpressions {
 
     @Test
     @Throws(ModbusException::class)
+    fun testBooleanConstant() {
+        verifyToString( " tRuE ", "true")
+        verifyToString( " FaLsE ", "false")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testStringBoolean() {
+        verifyToString( "  boolean  ( tRuE ;    'Zero';'One'    )", "boolean( true ; 'Zero' ; 'One' )")
+        verifyToString( "boolean  (FaLsE;'Zero';'One')   ",         "boolean( false ; 'Zero' ; 'One' )")
+        verify("0000", "boolean( tRuE ; 'Zero'; 'One' )", "One")
+        verify("0000", "boolean( FaLsE ; 'Zero'; 'One' )", "Zero")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testBooleanBitSet() {
+        // BITSETBIT       BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  SEMICOLON bitNr=LONG   BRACECLOSE #booleanBitSetBit
+        verifyToString(
+            "bitsetbit(hr:0 ; 0xDEAD ; 3)",
+            "bitsetbit(hr:00000 ; 0xDEAD ; 3)",
+        )
+        verify("DEAD", "bitsetbit(hr:0 ; 0xDEAD ; 0)", null as Boolean?)
+        verify("DEAD", "bitsetbit(hr:0 ; 0xDEAD ; 1)", null as Boolean?)
+        verify("DEAD", "bitsetbit(hr:0 ; 0xDEAD ; 2)", null as Boolean?)
+
+        verify("0000", "bitsetbit(hr:0          ; 0)", false)
+        verify("0000", "bitsetbit(hr:0          ; 1)", false)
+        verify("0000", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0001", "bitsetbit(hr:0          ; 0)", true)
+        verify("0001", "bitsetbit(hr:0          ; 1)", false)
+        verify("0001", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0002", "bitsetbit(hr:0          ; 0)", false)
+        verify("0002", "bitsetbit(hr:0          ; 1)", true)
+        verify("0002", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0003", "bitsetbit(hr:0          ; 0)", true)
+        verify("0003", "bitsetbit(hr:0          ; 1)", true)
+        verify("0003", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0004", "bitsetbit(hr:0          ; 0)", false)
+        verify("0004", "bitsetbit(hr:0          ; 1)", false)
+        verify("0004", "bitsetbit(hr:0          ; 2)", true)
+
+        verify("0005", "bitsetbit(hr:0          ; 0)", true)
+        verify("0005", "bitsetbit(hr:0          ; 1)", false)
+        verify("0005", "bitsetbit(hr:0          ; 2)", true)
+
+        verify("0006", "bitsetbit(hr:0          ; 0)", false)
+        verify("0006", "bitsetbit(hr:0          ; 1)", true)
+        verify("0006", "bitsetbit(hr:0          ; 2)", true)
+
+        verify("0007", "bitsetbit(hr:0          ; 0)", true)
+        verify("0007", "bitsetbit(hr:0          ; 1)", true)
+        verify("0007", "bitsetbit(hr:0          ; 2)", true)
+
+        // 1 register (16 bits)
+        verify("100F", "bitsetbit(hr:0 ;  0)", true)
+        verify("100F", "bitsetbit(hr:0 ;  1)", true)
+        verify("100F", "bitsetbit(hr:0 ;  2)", true)
+        verify("100F", "bitsetbit(hr:0 ;  3)", true)
+        verify("100F", "bitsetbit(hr:0 ;  4)", false)
+        verify("100F", "bitsetbit(hr:0 ;  5)", false)
+        verify("100F", "bitsetbit(hr:0 ;  6)", false)
+        verify("100F", "bitsetbit(hr:0 ;  7)", false)
+        verify("100F", "bitsetbit(hr:0 ;  8)", false)
+        verify("100F", "bitsetbit(hr:0 ;  9)", false)
+        verify("100F", "bitsetbit(hr:0 ; 10)", false)
+        verify("100F", "bitsetbit(hr:0 ; 11)", false)
+        verify("100F", "bitsetbit(hr:0 ; 12)", true)
+        verify("100F", "bitsetbit(hr:0 ; 13)", false)
+        verify("100F", "bitsetbit(hr:0 ; 14)", false)
+        verify("100F", "bitsetbit(hr:0 ; 15)", false)
+
+        // 2 registers (32 bits)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  0)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  1)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  2)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  3)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  4)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  5)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  6)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  7)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  8)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  9)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 10)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 11)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 12)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 13)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 14)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 15)", false)
+
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 16)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 17)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 18)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 19)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 20)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 21)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 22)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 23)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 24)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 25)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 26)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 27)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 28)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 29)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 30)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 31)", false)
+
+        // Invalid bit number
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 16)")
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 32)")
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 48)")
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 64)")
+
+        // NotImplemented size mismatch
+        iNvalid("bitsetbit(hr:0 ; 0xDEAD 0xDEAD ; 0)")
+        iNvalid("bitsetbit(hr:0#4 ; 0xDEAD 0xDEAD ; 0)")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
     fun testDoubleConstantExpressions() {
         verify("  1234.11 ", 1234.11, "1234.11") // MINUS? DOUBLE
         verify(" -1234.11 ", -1234.11, "-1234.11")
@@ -937,6 +1127,78 @@ class TestScenarioExpressions {
         iNvalid("uint64(hr:0#3; 0xDEAD 0xDEAD 0xDEAD )")
         isVALID("uint64(hr:0#4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD )", ReturnType.LONG)
     }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testBooleans() {
+        // BOOLEAN         BRACEOPEN address=singleAddress BRACECLOSE
+        verify("0101", "", "boolean(di:0)", false)
+        verify("0101", "", "boolean(di:1)", true)
+        verify("0101", "", "boolean(di:2)", false)
+        verify("0101", "", "boolean(di:3)", true)
+
+        isVALID("boolean(c:0  )", ReturnType.BOOLEAN)
+        iNvalid("boolean(c:0#1 )")
+        iNvalid("boolean(c:0#2 )")
+        iNvalid("boolean(c:0#3 )")
+        iNvalid("boolean(c:0#4 )")
+
+        isVALID("boolean(di:0   )", ReturnType.BOOLEAN)
+        iNvalid("boolean(di:0#1 )")
+        iNvalid("boolean(di:0#2 )")
+        iNvalid("boolean(di:0#3 )")
+        iNvalid("boolean(di:0#4 )")
+
+        iNvalid("boolean(hr:0#1 )")
+        iNvalid("boolean(hr:0#2 )")
+        iNvalid("boolean(hr:0#3 )")
+        iNvalid("boolean(hr:0#4 )")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testBooleansAndRegistersCombined() {
+        val schemaDevice =
+            buildVerifier(
+                "01010101",
+                "6162 6364 6566 6768 696a 6b6c 6d6e 6f70 7172 7374 7576 7778 797a",
+                TestField("bool0",          "boolean(di:0)"),
+                TestField("bool0string",    "boolean(di:0; 'No'; 'Yes')"),
+                TestField("bool1",          "boolean(di:1)"),
+                TestField("bool1string",    "boolean(di:1; 'No'; 'Yes')"),
+                TestField("stringCombi",    "concat('Aap', '|', boolean(di:0), '|', boolean(di:0; 'No'; 'Yes'),'|', bool1, '|', bool1string)"),
+            )
+
+        println(schemaDevice.toTable(onlyUseFullFields = false, includeRawDataAndMappings = true))
+
+        val bool0        = getField(schemaDevice, "bool0"       ) ?: throw AssertionError("Unable to load Field bool0 back")
+        val bool0string  = getField(schemaDevice, "bool0string" ) ?: throw AssertionError("Unable to load Field bool0string back")
+        val bool1        = getField(schemaDevice, "bool1"       ) ?: throw AssertionError("Unable to load Field bool1 back")
+        val bool1string  = getField(schemaDevice, "bool1string" ) ?: throw AssertionError("Unable to load Field bool1string back")
+        val stringCombi  = getField(schemaDevice, "stringCombi" ) ?: throw AssertionError("Unable to load Field stringCombi back")
+
+        assertEquals(true, bool0       .initialized, "The field bool0        was not initialized: ${bool0.parsedExpression?.problems}.")
+        assertEquals(true, bool0string .initialized, "The field bool0string  was not initialized: ${bool0string.parsedExpression?.problems}.")
+        assertEquals(true, bool1       .initialized, "The field bool1        was not initialized: ${bool1.parsedExpression?.problems}.")
+        assertEquals(true, bool1string .initialized, "The field bool1string  was not initialized: ${bool1string.parsedExpression?.problems}.")
+        assertEquals(true, stringCombi .initialized, "The field stringCombi  was not initialized: ${stringCombi.parsedExpression?.problems}.")
+
+        assertEquals(ReturnType.BOOLEAN, bool0       .returnType)
+        assertEquals(ReturnType.STRING,  bool0string .returnType)
+        assertEquals(ReturnType.BOOLEAN, bool1       .returnType)
+        assertEquals(ReturnType.STRING,  bool1string .returnType)
+        assertEquals(ReturnType.STRING,  stringCombi .returnType)
+
+        schemaDevice.updateAll()
+
+        assertEquals(false, bool0.value)
+        assertEquals("No", bool0string.value)
+        assertEquals(true, bool1.value)
+        assertEquals("Yes", bool1string.value)
+        assertEquals("Aap|false|No|true|Yes", stringCombi.value)
+
+    }
+
 
     @Test
     @Throws(ModbusException::class)

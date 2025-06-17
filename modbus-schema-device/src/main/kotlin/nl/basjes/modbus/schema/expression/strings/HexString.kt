@@ -42,7 +42,7 @@ class HexString(
                 registers.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = registers.getModbusValues(schemaDevice)
 
     @Throws(ModbusException::class)
     override fun getValue(schemaDevice: SchemaDevice): String? =

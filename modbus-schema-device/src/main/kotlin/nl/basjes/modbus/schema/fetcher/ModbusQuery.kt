@@ -42,6 +42,8 @@ open class ModbusQuery(
     /** The affected list of fields */
     val fields: MutableList<Field> = mutableListOf()
 
+    val type = start.addressClass.type
+
     override fun compareTo(other: ModbusQuery): Int {
         val addressCompare = start.compareTo(other.start)
         if (addressCompare != 0) {

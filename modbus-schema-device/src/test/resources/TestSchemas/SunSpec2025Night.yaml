@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Testing Testing'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 
 blocks:
   - id:          'SunSpec Header'
@@ -3079,8 +3079,8 @@ tests:
   - id:          'TestAt_2025_06_08_21_14_15'
     description: 'Test generated from device data at 2025-06-08T21:14:15.059Z'
     input:
-      - firstRegisterAddress: 'hr:40000'
-        registers: |2-
+      - firstAddress: 'hr:40000'
+        rawValues: |2-
 
           # --------------------------------------
           # SunS header

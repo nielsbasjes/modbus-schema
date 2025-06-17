@@ -57,7 +57,7 @@ internal class TestScenarioRegisterBlockFetcher {
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
         schemaDevice.needAll()
 
-        val fetcher = RegisterBlockFetcher(schemaDevice, modbusDevice)
+        val fetcher = ModbusBlockFetcher(schemaDevice, modbusDevice)
 
         schemaDevice.blocks
             .map(Block::fields)
@@ -97,7 +97,7 @@ internal class TestScenarioRegisterBlockFetcher {
         val deadInput = modbusDevice.getRegisters(deadAddress, deadSize)
         assertEquals(666, deadInput[deadAddress].value)
 
-        val fetchedRegisters = schemaDevice.getRegisterBlock(deadAddress.addressClass)
+        val fetchedRegisters = schemaDevice.getModbusBlock(deadAddress.addressClass)
         assertNull(fetchedRegisters[deadAddress].value)
         assertNull(fetchedRegisters[deadAddress.increment()].value)
     }
@@ -138,9 +138,9 @@ internal class TestScenarioRegisterBlockFetcher {
         val modbusDevice = createTestModbusDevice(maxRegistersPerModbusRequest)
         val schemaDevice = createTestSchemaDevice(fg1, fg2, fg3, fg4)
 
-        val fetcher = OptimizingRegisterBlockFetcher(schemaDevice, modbusDevice)
+        val fetcher = OptimizingModbusBlockFetcher(schemaDevice, modbusDevice)
         fetcher.allowedGapReadSize = readingGap
-        schemaDevice.registerBlockFetcher = fetcher
+        schemaDevice.modbusBlockFetcher = fetcher
 
         // First verify if partial fetching works
         val value1 = schemaDevice["Block1"]["Value1"]
@@ -188,7 +188,7 @@ internal class TestScenarioRegisterBlockFetcher {
             val deadInput = modbusDevice.getRegisters(deadAddress, deadSize)
             assertEquals(666, deadInput[deadAddress].value)
 
-            val fetchedRegisters = schemaDevice.getRegisterBlock(deadAddress.addressClass)
+            val fetchedRegisters = schemaDevice.getModbusBlock(deadAddress.addressClass)
             assertNull(fetchedRegisters[deadAddress].value)
             assertNull(fetchedRegisters[deadAddress.increment()].value)
         }

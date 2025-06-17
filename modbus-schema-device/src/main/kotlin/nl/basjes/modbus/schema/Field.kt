@@ -28,6 +28,7 @@ import nl.basjes.modbus.schema.ReturnType.UNKNOWN
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaMissingFieldException
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.expression.Expression
+import nl.basjes.modbus.schema.expression.booleans.BooleanExpression
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 import nl.basjes.modbus.schema.expression.parser.ExpressionParser.Companion.parse
 import nl.basjes.modbus.schema.expression.strings.StringExpression
@@ -105,7 +106,7 @@ class Field(
             fetchGroupIsDefault = field.isBlank()
         }
 
-    var fetchGroupIsDefault: Boolean = fetchGroup.isBlank()
+    var fetchGroupIsDefault: Boolean = fetchGroup.isBlank() || fetchGroup == "<<${block.id} | $id>>"
         private set
 
     var initialized = false
@@ -121,6 +122,11 @@ class Field(
                         "Field \"$id\": Unable to parse the expression >>$expression<< --> ${e.message}",
                         e,
                     )
+                } catch (npe: NullPointerException) {
+                    throw ModbusSchemaParseException(
+                        "Field \"$id\": Unable to parse the expression >>$expression<< --> ${npe.message}",
+                        npe,
+                    )
                 }
             }
             val theExpression = parsedExpression
@@ -128,9 +134,9 @@ class Field(
                 initialized = theExpression.initialize(this) &&
                     theExpression.problems.isEmpty()
                 if (initialized) {
-                    if(requiredRegisters.size > MODBUS_MAX_REGISTERS_PER_REQUEST) {
+                    if(requiredAddresses.size > MODBUS_MAX_REGISTERS_PER_REQUEST) {
                         throw ModbusSchemaParseException(
-                            "In block ${block.id} the field $id requires a block of ${requiredRegisters.size} registers which cannot be retrieved over Modbus."
+                            "In block ${block.id} the field $id requires a block of ${requiredAddresses.size} registers which cannot be retrieved over Modbus."
                         )
                     }
 
@@ -170,7 +176,7 @@ class Field(
                         }
                     }
                     // --------
-                    val requiredRegisters = theExpression.requiredRegisters
+                    val requiredRegisters = theExpression.requiredAddresses
                     if (requiredRegisters.isEmpty()) {
                         addressClass = null // This expression does not need ANY registers.
                     } else {
@@ -238,8 +244,8 @@ class Field(
     val value: Any?
         get() =
             when (returnType) {
-                UNKNOWN    -> TODO("Unknown returnType (Field $id) means we do not know yet")
-                BOOLEAN    -> TODO("Coils are not supported yet")
+                UNKNOWN    -> null //TODO("Unknown returnType (Field $id) means we do not know yet")
+                BOOLEAN    -> booleanValue
                 LONG       -> longValue
                 DOUBLE     -> doubleValue
                 STRING     -> stringValue
@@ -257,7 +263,7 @@ class Field(
     val stringListValue: List<String>?
         get() {
             if (parsedExpression is StringListExpression) {
-                return (parsedExpression as StringListExpression).getValue(block.schemaDevice)
+                return (parsedExpression as StringListExpression).getValueAsStringList(block.schemaDevice)
             }
             return null
         }
@@ -278,6 +284,14 @@ class Field(
             return null
         }
 
+    val booleanValue: Boolean?
+        get() {
+            if (parsedExpression is BooleanExpression) {
+                return (parsedExpression as BooleanExpression).getBoolean(block.schemaDevice)
+            }
+            return null
+        }
+
     /**
      * The epoch (in milliseconds since 1970-01-01) timestamp of the oldest mutable register used to build this value
      * Returns null on fully immutable values
@@ -293,7 +307,7 @@ class Field(
                 return null
             }
             val registerValues =
-                block.schemaDevice.getRegisterBlock(addressClass).get(parsedExpression.requiredMutableRegisters)
+                block.schemaDevice.getModbusBlock(addressClass).get(parsedExpression.requiredMutableAddresses)
             val timestamps = registerValues.mapNotNull { it.timestamp }
             if (timestamps.isEmpty()) {
                 return null
@@ -311,12 +325,12 @@ class Field(
                 ?.mapNotNull { block.getField(it) }
                 ?.toList() ?: listOf()
 
-    val requiredRegisters: List<Address>
-        get() = parsedExpression?.requiredRegisters ?: emptyList()
+    val requiredAddresses: List<Address>
+        get() = parsedExpression?.requiredAddresses ?: emptyList()
 
     fun usedReadErrorAddresses(): List<Address> {
         val addressClass = addressClass ?: return emptyList()
-        val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(requiredRegisters)
+        val registerValues = block.schemaDevice.getModbusBlock(addressClass).get(requiredAddresses)
         return registerValues.filter { it.isReadError() }.map { it.address }.toList()
     }
 
@@ -324,7 +338,7 @@ class Field(
 
     fun usedHardReadErrorAddresses(): List<Address> {
         val addressClass = addressClass ?: return emptyList()
-        val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(requiredRegisters)
+        val registerValues = block.schemaDevice.getModbusBlock(addressClass).get(requiredAddresses)
         return registerValues.filter { it.hardReadError }.map { it.address }.toList()
     }
 
@@ -352,7 +366,7 @@ class Field(
         // Because (perhaps) this read error was NOT related to this field: we reset any read error status of the cached
         // register values if we are not 100% certain that it was caused by this specific field.
         val addressClass = addressClass ?: return
-        val registerValues = block.schemaDevice.getRegisterBlock(addressClass).get(requiredRegisters)
+        val registerValues = block.schemaDevice.getModbusBlock(addressClass).get(requiredAddresses)
         registerValues.forEach { it.clearSoftReadError() }
     }
 
@@ -374,7 +388,8 @@ class Field(
                 }
 
                 BOOLEAN -> {
-                    TODO("Coils are not supported yet")
+                    val value = booleanValue
+                    if (value != null) listOf(if(value) "true" else "false") else listOf()
                 }
 
                 LONG -> {
@@ -402,8 +417,8 @@ class Field(
 
 
     override fun compareTo(other: Field): Int {
-        val thisRequiredRegisters = this.requiredRegisters
-        val otherRequiredRegisters = other.requiredRegisters
+        val thisRequiredRegisters = this.requiredAddresses
+        val otherRequiredRegisters = other.requiredAddresses
         if (thisRequiredRegisters.isEmpty() && otherRequiredRegisters.isEmpty()) {
             return 0
         }
@@ -413,8 +428,8 @@ class Field(
         if (otherRequiredRegisters.isEmpty()) {
             return -1
         }
-        val thisAddress = requiredRegisters[0]
-        val otherAddress = other.requiredRegisters[0]
+        val thisAddress = requiredAddresses[0]
+        val otherAddress = other.requiredAddresses[0]
         return thisAddress.compareTo(otherAddress)
     }
 

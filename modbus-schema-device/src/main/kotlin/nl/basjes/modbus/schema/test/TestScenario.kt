@@ -16,6 +16,8 @@
  */
 package nl.basjes.modbus.schema.test
 
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.memory.MockedModbusDevice
 import nl.basjes.modbus.schema.SchemaDevice
@@ -38,17 +40,23 @@ class TestScenario(
     val description: String? = null,
 ) {
 
-    val registerBlocks: MutableList<RegisterBlock> = mutableListOf()
+    val modbusBlocks  : MutableList<ModbusBlock<*,*,*>> = mutableListOf()
     val expectedBlocks: MutableList<ExpectedBlock> = mutableListOf()
 
     fun modbusDevice(): MockedModbusDevice {
         val deviceBuilder = MockedModbusDevice.builder()
-        registerBlocks.forEach { deviceBuilder.withRegisters(it) }
+        modbusBlocks.forEach {
+            when (it) {
+                is RegisterBlock -> deviceBuilder.withRegisters(it)
+                is DiscreteBlock -> deviceBuilder.withDiscretes(it)
+            }
+
+        }
         return deviceBuilder.build()
     }
 
-    fun addRegisterBlock(registerBlock: RegisterBlock) {
-        registerBlocks.add(registerBlock)
+    fun addModbusBlock(modbusBlock: ModbusBlock<*,*,*>) {
+        modbusBlocks.add(modbusBlock)
     }
 
     fun addExpectedBlock(block: ExpectedBlock) {

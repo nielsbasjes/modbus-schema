@@ -31,11 +31,11 @@ class SwapEndian(
     override val subExpressions: List<Expression>
         get() = listOf(registers)
 
-    override val requiredRegisters: List<Address>
-        get() = registers.requiredRegisters
+    override val requiredAddresses: List<Address>
+        get() = registers.requiredAddresses
 
-    override val returnedRegisters: Int
-        get() = registers.returnedRegisters
+    override val returnedAddresses: Int
+        get() = registers.returnedAddresses
 
     override var isImmutable: Boolean
         get() = registers.isImmutable
@@ -47,7 +47,7 @@ class SwapEndian(
         get() =
             combine(
                 "swapendian",
-                checkFatal(registers.returnedRegisters == 1, "Need exactly 1 register"),
+                checkFatal(registers.returnedAddresses == 1, "Need exactly 1 register"),
             )
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray? {

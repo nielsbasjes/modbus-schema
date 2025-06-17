@@ -16,6 +16,8 @@
 package nl.basjes.modbus.schema.expression
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.DiscreteValue
+import nl.basjes.modbus.device.api.ModbusValue
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.ReturnType
@@ -40,15 +42,15 @@ interface Expression {
     val subExpressions: List<Expression>
         get() = emptyList()
 
-    val requiredRegisters: List<Address>
-        get() = subExpressions.flatMap { it.requiredRegisters }.toList()
+    val requiredAddresses: List<Address>
+        get() = subExpressions.flatMap { it.requiredAddresses }.toList()
 
-    val requiredMutableRegisters: List<Address>
+    val requiredMutableAddresses: List<Address>
         get() =
             if (isImmutable) {
                 emptyList()
             } else {
-                subExpressions.flatMap { it.requiredMutableRegisters }.toList()
+                subExpressions.flatMap { it.requiredMutableAddresses }.toList()
             }
 
     val requiredFields: List<String>
@@ -67,9 +69,9 @@ interface Expression {
         get() = subExpressions.flatMap { it.problems }
 
     /**
-     * @return The list of Register values that are used to calculate this value.
+     * @return The list of the underlying Modbus values (RegisterValue or DiscreteValue) that are used to calculate this value.
      */
-    fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = emptyList()
+    fun getModbusValues(schemaDevice: SchemaDevice): List<ModbusValue<*,*>> = emptyList()
 
     open class Problem(
         val explain: String,

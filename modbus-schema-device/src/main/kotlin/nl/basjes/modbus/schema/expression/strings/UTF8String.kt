@@ -41,7 +41,7 @@ class UTF8String(
                 super.problems,
             )
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = registers.getModbusValues(schemaDevice)
 
     override fun getValue(schemaDevice: SchemaDevice): String? =
         registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToString(it) }

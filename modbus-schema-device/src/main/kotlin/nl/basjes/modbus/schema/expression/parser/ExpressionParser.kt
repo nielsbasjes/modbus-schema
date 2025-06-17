@@ -18,6 +18,13 @@ package nl.basjes.modbus.schema.expression.parser
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.expression.Expression
+import nl.basjes.modbus.schema.expression.booleans.BooleanBit
+import nl.basjes.modbus.schema.expression.booleans.BooleanBitset
+import nl.basjes.modbus.schema.expression.booleans.BooleanConstant
+import nl.basjes.modbus.schema.expression.booleans.BooleanExpression
+import nl.basjes.modbus.schema.expression.booleans.BooleanField
+import nl.basjes.modbus.schema.expression.modbus.DiscreteModbusExpression
+import nl.basjes.modbus.schema.expression.modbus.RegistersModbusExpression
 import nl.basjes.modbus.schema.expression.numbers.Add
 import nl.basjes.modbus.schema.expression.numbers.Divide
 import nl.basjes.modbus.schema.expression.numbers.DoubleConstant
@@ -38,6 +45,10 @@ import nl.basjes.modbus.schema.expression.numbers.Subtract
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsLexer
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.AddSubtractContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanBitContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanBitSetBitContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanConstantContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanFieldContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.DoubleConstantContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.ExtraBracesContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.ImplicitMultiplyContext
@@ -60,11 +71,14 @@ import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParse
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegisterSwapEndianContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegisterValuesContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.RegistersContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringBooleanContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringConcatContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringConstantContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringDiscreteContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringEnumContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringEui48Context
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringFieldContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringFromBooleanContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringHexContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringIPv4AddrContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.StringIPv6AddrContext
@@ -74,7 +88,6 @@ import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParse
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParserBaseVisitor
 import nl.basjes.modbus.schema.expression.registers.RegistersConstantExpression
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.expression.registers.RegistersModbusExpression
 import nl.basjes.modbus.schema.expression.registers.SwapBytes
 import nl.basjes.modbus.schema.expression.registers.SwapEndian
 import nl.basjes.modbus.schema.expression.strings.BitsetStringList
@@ -87,6 +100,7 @@ import nl.basjes.modbus.schema.expression.strings.StringConcat
 import nl.basjes.modbus.schema.expression.strings.StringConstant
 import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringField
+import nl.basjes.modbus.schema.expression.strings.StringFromBoolean
 import nl.basjes.modbus.schema.expression.strings.StringFromNumber
 import nl.basjes.modbus.schema.expression.strings.UTF8String
 import org.antlr.v4.runtime.ANTLRErrorListener
@@ -109,32 +123,42 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
     }
 
     private fun visitRegistersExpression(context: ParserRuleContext): RegistersExpression {
-        val expression = super.visit(context)!!
+        val expression = super.visit(context)
         if (expression is RegistersExpression) {
             return expression
         }
         throw IllegalStateException(
-            "The provided Expression MUST be an instance of ByteArrayExpression but was a " + expression.javaClass,
+            "The provided Expression MUST be an instance of ByteArrayExpression but was a " + expression?.javaClass,
         )
     }
 
     private fun visitNumericalExpression(context: ParserRuleContext): NumericalExpression {
-        val expression = super.visit(context)!!
+        val expression = super.visit(context)
         if (expression is NumericalExpression) {
             return expression
         }
         throw IllegalStateException(
-            "The provided Expression MUST be an instance of NumericalExpression but was a " + expression.javaClass,
+            "The provided Expression MUST be an instance of NumericalExpression but was a " + expression?.javaClass,
+        )
+    }
+
+    private fun visitBooleanExpression(context: ParserRuleContext): BooleanExpression {
+        val expression = super.visit(context)
+        if (expression is BooleanExpression) {
+            return expression
+        }
+        throw IllegalStateException(
+            "The provided Expression MUST be an instance of BooleanExpression but was a " + expression?.javaClass,
         )
     }
 
     private fun visitStringExpression(context: ParserRuleContext): StringExpression {
-        val expression = super.visit(context)!!
+        val expression = super.visit(context)
         if (expression is StringExpression) {
             return expression
         }
         throw IllegalStateException(
-            "The provided Expression MUST be an instance of StringExpression but was a " + expression.javaClass,
+            "The provided Expression MUST be an instance of StringExpression but was a " + expression?.javaClass,
         )
     }
 
@@ -153,12 +177,19 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         return DoubleConstant(-1 * ctx.DOUBLE().text.toDouble())
     }
 
+    override fun visitBooleanConstant(ctx: BooleanConstantContext): Expression {
+        return BooleanConstant(ctx.value.text.toBoolean())
+    }
+
+    override fun visitBooleanField(ctx: BooleanFieldContext): Expression =
+        BooleanField(ctx.FIELDNAME().text)
+
     override fun visitRegisterValues(ctx: RegisterValuesContext): Expression =
         RegistersConstantExpression(ctx.constantHexString().text)
 
     // Getting the raw register Addresses needed. !!MAINTAINING THE PROVIDED ORDER!!
     override fun visitRegisters(ctx: RegistersContext): Expression =
-        RegistersModbusExpression(ctx.singleRegister().map { Address.of(it.text) }.toList())
+        RegistersModbusExpression(ctx.singleAddress().map { Address.of(it.text) }.toList())
 
     override fun visitRegisterCount(ctx: RegisterCountContext): Expression {
         val startRegister = Address.of(ctx.startRegister.text)
@@ -205,6 +236,9 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
     override fun visitStringNumber(ctx: StringNumberContext): Expression =
         StringFromNumber(visitNumericalExpression(ctx.number()))
 
+    override fun visitStringBoolean(ctx: StringBooleanContext): Expression =
+        StringFromBoolean(visitBooleanExpression(ctx.boolean_()), "false", "true")
+
     override fun visitStringConcat(ctx: StringConcatContext): Expression {
         val expressions = mutableListOf<StringExpression>()
         for (string in ctx.stringFragments()) {
@@ -247,6 +281,31 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
         }
         return BitsetStringList(registers, notImplementedToStringList(ctx.notImplemented()), bitsetMappings)
     }
+
+    override fun visitStringDiscrete(ctx: StringDiscreteContext): Expression  =
+        StringFromBoolean(
+            DiscreteModbusExpression(Address.of(ctx.address.text)),
+            ctx.zeroString.text.toString(),
+            ctx.oneString.text.toString()
+        )
+
+
+    override fun visitStringFromBoolean(ctx: StringFromBooleanContext): Expression =
+        StringFromBoolean(
+            visitBooleanExpression(ctx.value),
+            ctx.zeroString.text.toString(),
+            ctx.oneString.text.toString()
+        )
+
+    override fun visitBooleanBit(ctx: BooleanBitContext): Expression =
+        BooleanBit(DiscreteModbusExpression(Address.of(ctx.singleAddress().text)))
+
+    override fun visitBooleanBitSetBit(ctx: BooleanBitSetBitContext): Expression =
+        BooleanBitset(
+            visitRegistersExpression(ctx.registers),
+            notImplementedToStringList(ctx.notImplemented()),
+            ctx.bitNr.text.toInt(),
+        )
 
     override fun visitLoadInt16(ctx: LoadInt16Context): Expression =
         IntegerSigned16(visitRegistersExpression(ctx.registers), notImplementedToStringList(ctx.notImplemented()))
@@ -328,7 +387,11 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
             parser.errorHandler = ModbusParserErrorStrategy()
 
             val expressionContext: ParserRuleContext = parser.expression()
-            return ExpressionParser().visit(expressionContext)!!
+            val result = ExpressionParser().visit(expressionContext)
+            requireNotNull(result) {
+                "An unexpected problem occurred while parsing the expression: $expression"
+            }
+            return result
         }
     }
 }

@@ -23,9 +23,11 @@ import com.charleskorn.kaml.YamlConfiguration
 import com.charleskorn.kaml.YamlMultiLineStringStyle
 import com.charleskorn.kaml.YamlSingleLineStringStyle
 import kotlinx.serialization.Serializable
+import nl.basjes.modbus.device.api.AddressClass
 import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
-import nl.basjes.modbus.device.api.RegisterBlock
+import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.asAddress
+import nl.basjes.modbus.device.api.toDiscreteBlock
 import nl.basjes.modbus.device.api.toRegisterBlock
 import nl.basjes.modbus.schema.Schema.Companion.serializer
 import nl.basjes.modbus.schema.SchemaDevice.Companion.CURRENT_SCHEMA_FEATURE_LEVEL
@@ -80,10 +82,18 @@ fun String.toSchemaDevice(): SchemaDevice {
         val testScenario = TestScenario(schemaTest.id, schemaTest.description)
         schemaDevice.addTestScenario(testScenario)
 
-        for (registers in schemaTest.input) {
-            val address = registers.firstRegisterAddress.asAddress()
-            val registerBlock = registers.registers.toRegisterBlock(address)
-            testScenario.addRegisterBlock(registerBlock)
+        for (input in schemaTest.input) {
+            val address = input.firstAddress.asAddress()
+            when(address.addressClass.type) {
+                AddressClass.Type.DISCRETE -> {
+                    val discreteBlock = input.rawValues.toDiscreteBlock(address)
+                    testScenario.addModbusBlock(discreteBlock)
+                }
+                AddressClass.Type.REGISTER -> {
+                    val registerBlock = input.rawValues.toRegisterBlock(address)
+                    testScenario.addModbusBlock(registerBlock)
+                }
+            }
         }
 
         for (testBlock in schemaTest.blocks) {
@@ -162,11 +172,11 @@ fun Block.toSchema(): SchemaBlock {
 }
 
 fun TestScenario.toSchema(): SchemaTest {
-    val testRegisters: MutableList<SchemaTestRegisters> = mutableListOf()
+    val testRawValues: MutableList<SchemaTestRawValues> = mutableListOf()
     val testBlocks: MutableList<SchemaTestBlock> = mutableListOf()
 
-    for (registerBlock in registerBlocks) {
-        testRegisters.add(registerBlock.toSchema())
+    for (modbusBlock in modbusBlocks) {
+        testRawValues.add(modbusBlock.toSchema())
     }
 
     for (expectedBlock in expectedBlocks) {
@@ -176,13 +186,13 @@ fun TestScenario.toSchema(): SchemaTest {
     return SchemaTest(
         name,
         if (description.isNullOrEmpty()) null else description,
-        testRegisters,
+        testRawValues,
         testBlocks,
     )
 }
 
-fun RegisterBlock.toSchema(): SchemaTestRegisters {
-    return SchemaTestRegisters(
+fun ModbusBlock<*,*,*>.toSchema(): SchemaTestRawValues {
+    return SchemaTestRawValues(
         firstAddress?.toCleanFormat() ?: "Empty",
         this.toMultiLineString(),
     )
@@ -300,7 +310,7 @@ data class SchemaTest(
     /** Human-readable description of the test scenario. */
     val description: String? = null,
     /** A list of 1 or more register blocks used for the test. */
-    val input: List<SchemaTestRegisters>,
+    val input: List<SchemaTestRawValues>,
     /** Per block which field values are expected. */
     val blocks: List<SchemaTestBlock>,
 ) {
@@ -308,13 +318,13 @@ data class SchemaTest(
 }
 
 @Serializable
-data class SchemaTestRegisters(
+data class SchemaTestRawValues(
     /** The Address of the first provided registers. */
-    val firstRegisterAddress: String,
+    val firstAddress: String,
     /** The register values used for this test. */
     @YamlSingleLineStringStyle(SingleLineStringStyle.Plain)
     @YamlMultiLineStringStyle(MultiLineStringStyle.Literal)
-    val registers: String,
+    val rawValues: String,
 ) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }

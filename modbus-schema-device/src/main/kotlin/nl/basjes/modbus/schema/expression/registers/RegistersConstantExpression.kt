@@ -32,7 +32,7 @@ open class RegistersConstantExpression(
 
     private val theBytes: ByteArray = ByteConversions.hexStringToBytes(value)
 
-    override val returnedRegisters: Int
+    override val returnedAddresses: Int
         get() = theBytes.size / BYTES_PER_REGISTER
 
     override var isImmutable: Boolean = true

@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Expressions for BitSwapping'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'BitSwappingBlock'
     description: 'Fields that are a BitSwapping'
@@ -35,8 +35,8 @@ tests:
   - id: 'BitSwapping: Single register value check'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: ABCD
+      - firstAddress: 'hr:0'
+        rawValues: ABCD
     blocks:
       - id: 'BitSwappingBlock'
         expected:

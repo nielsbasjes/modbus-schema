@@ -27,7 +27,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-internal class TestMockedModbusDevice {
+internal class TestMockedModbusDeviceRegisters {
     @Test
     fun checkMockDeviceValuesNormal() {
         checkMockDeviceValues("F001 E002 D003 C004 B005 A006 9007 8008 7009 600A 500B 400C 300D 200E 100F 0000 FFFF")
@@ -51,7 +51,7 @@ internal class TestMockedModbusDevice {
             )
         } else {
             val registerValue: RegisterValue = registerBlock[Address.of(addressClass, registerNumber)]
-            val actualValue = registerValue.hexValue
+            val actualValue = registerValue.asString
             assertEquals(expectedHexValue, actualValue, "Invalid value for register $registerNumber")
         }
     }

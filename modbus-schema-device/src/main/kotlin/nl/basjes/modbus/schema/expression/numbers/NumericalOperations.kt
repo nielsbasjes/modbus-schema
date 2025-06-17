@@ -16,6 +16,7 @@
  */
 package nl.basjes.modbus.schema.expression.numbers
 
+import nl.basjes.modbus.device.api.ModbusValue
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
@@ -50,10 +51,10 @@ abstract class SubExpression(
     override val problems: List<Problem>
         get() = combine(name, left.problems, right.problems)
 
-    override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> {
-        val registerValues = ArrayList<RegisterValue>()
-        registerValues.addAll(left.getRegisterValues(schemaDevice))
-        registerValues.addAll(right.getRegisterValues(schemaDevice))
+    override fun getModbusValues(schemaDevice: SchemaDevice): List<ModbusValue<*,*>> {
+        val registerValues = ArrayList<ModbusValue<*,*>>()
+        registerValues.addAll(left.getModbusValues(schemaDevice))
+        registerValues.addAll(right.getModbusValues(schemaDevice))
         return registerValues
     }
 }

@@ -52,11 +52,11 @@ internal class TestReadErrorSkipping {
         hardReadError: List<Field>,
     ) {
         valid.forEach { field -> assertEquals(42L, field.longValue, "Field `${field.id}` should be 42") }
-        val registerBlock = schemaDevice.getRegisterBlock(HOLDING_REGISTER)
+        val registerBlock = schemaDevice.getModbusBlock(HOLDING_REGISTER)
         softReadError
             .forEach { field ->
                 registerBlock
-                    .get(field.requiredRegisters)
+                    .get(field.requiredAddresses)
                     .forEach {
                         assertTrue("Field `${field.id}` should be a READ ERROR") { it.isReadError() }
 //                        assertFalse("Field `${field.id}` should be SOFT READ ERROR") { it.hardReadError }
@@ -65,7 +65,7 @@ internal class TestReadErrorSkipping {
         hardReadError
             .forEach { field ->
                 registerBlock
-                    .get(field.requiredRegisters)
+                    .get(field.requiredAddresses)
                     .forEach {
                         assertTrue("Field `${field.id}` should be a READ ERROR") { it.isReadError() }
                         assertTrue("Field `${field.id}` should be HARD READ ERROR") { it.hardReadError }
@@ -99,7 +99,7 @@ internal class TestReadErrorSkipping {
         val int115 = Field(block, "int 115", expression = "int16( hr:115 ) ")
 
         schemaDevice.initialize()
-        val registerBlock = schemaDevice.getRegisterBlock(HOLDING_REGISTER)
+        val registerBlock = schemaDevice.getModbusBlock(HOLDING_REGISTER)
 
         schemaDevice.connect(modbusDevice, 100)
 

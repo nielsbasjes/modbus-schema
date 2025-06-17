@@ -21,9 +21,10 @@ import kotlin.time.DurationUnit
 
 fun List<ModbusQuery>.toTable(): String {
     val table = StringTable()
-    table.withHeaders("Start Address", "Registers", "Status", "Duration (ms)", "Block", "Fields")
+    table.withHeaders("Type", "Start Address", "Count", "Status", "Duration (ms)", "Block", "Fields")
     this.forEach { fetch ->
         table.addRow(
+            fetch.type.name,
             fetch.start.toCleanFormat(),
             fetch.count.toString(),
             fetch.status.toString(),

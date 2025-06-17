@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Addressing registers in all allowed formats'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'RegisterBlockSingle'
     description: 'Fields that simply retrieve a single register as-is'
@@ -118,8 +118,8 @@ blocks:
 tests:
   - id: 'RegisterAddressing: Get single register'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'RegisterBlockSingle'
         expected:
@@ -132,8 +132,8 @@ tests:
 
   - id: 'RegisterAddressing: Get 3 registers using count'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'RegisterBlockThreeCount'
         expected:
@@ -146,8 +146,8 @@ tests:
 
   - id: 'RegisterAddressing: Get 3 registers using range'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'RegisterBlockThreeRange'
         expected:
@@ -160,8 +160,8 @@ tests:
 
   - id: 'RegisterAddressing: Get 3 registers using multiple explicit registers'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'RegisterBlockThree'
         expected:
@@ -174,8 +174,8 @@ tests:
 
   - id: 'RegisterAddressing: Get 3 registers using multiple explicit registers in mixed formats'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'RegisterBlockThreeMixed'
         expected:
@@ -186,8 +186,8 @@ tests:
 
   - id: 'RegisterAddressing: Get 3 registers using ranges of registers in mixed formats'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'RegisterBlockThreeRangeMixed'
         expected:

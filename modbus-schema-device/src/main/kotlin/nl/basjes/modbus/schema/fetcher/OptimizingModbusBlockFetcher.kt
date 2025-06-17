@@ -20,10 +20,10 @@ import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.schema.SchemaDevice
 
-class OptimizingRegisterBlockFetcher(
+class OptimizingModbusBlockFetcher(
     schemaDevice: SchemaDevice,
     modbusDevice: ModbusDevice,
-) : RegisterBlockFetcher(schemaDevice, modbusDevice) {
+) : ModbusBlockFetcher(schemaDevice, modbusDevice) {
 
     /**
      * How many registers may needlessly be read to optimize fetching
@@ -56,14 +56,14 @@ class OptimizingRegisterBlockFetcher(
         val usedAddressClasses =
             baseFetchBatchList
                 .flatMap { it.fields }
-                .flatMap { it.requiredRegisters }
+                .flatMap { it.requiredAddresses }
                 .map { it.addressClass }
                 .sorted()
                 .distinct()
 
         val readErrorAddresses =
             usedAddressClasses
-                .flatMap { schemaDevice.getRegisterBlock(it).values }
+                .flatMap { schemaDevice.getModbusBlock(it).values }
                 .filter { it.isReadError() }
                 .map { it.address }
                 .toList()

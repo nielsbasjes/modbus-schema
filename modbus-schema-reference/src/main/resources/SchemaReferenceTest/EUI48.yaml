@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Expressions for EUI48'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'EUI48Block'
     description: 'Fields that are a EUI48'
@@ -39,8 +39,8 @@ tests:
   - id: 'EUI48: Normal values'
     description: 'Test with normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0102 0304 0506 0708
+      - firstAddress: 'hr:0'
+        rawValues: 0102 0304 0506 0708
     blocks:
       - id: 'EUI48Block'
         expected:
@@ -51,8 +51,8 @@ tests:
   - id: 'EUI48: Not Implemented'
     description: 'Test with Not Implemented values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: DEAD DEAD DEAD DEAD
+      - firstAddress: 'hr:0'
+        rawValues: DEAD DEAD DEAD DEAD
     blocks:
       - id: 'EUI48Block'
         expected:

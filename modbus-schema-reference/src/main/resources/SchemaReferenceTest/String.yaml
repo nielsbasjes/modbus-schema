@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Expressions for Strings'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'StringsBlock'
     description: 'Fields that are a string'
@@ -36,8 +36,8 @@ tests:
   - id: 'String: Empty'
     description: 'Test with NO letters only 0x000 bytes'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+      - firstAddress: 'hr:0'
+        rawValues: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
     blocks:
       - id: 'StringsBlock'
         expected:
@@ -48,8 +48,8 @@ tests:
   - id: 'String: Plain ASCII'
     description: 'Test with only plain ASCII'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 4e69 656c 7320 4261 736a 6573 0000 0000 0000 0000 0000 0000
+      - firstAddress: 'hr:0'
+        rawValues: 4e69 656c 7320 4261 736a 6573 0000 0000 0000 0000 0000 0000
     blocks:
       - id: 'StringsBlock'
         expected:
@@ -60,8 +60,8 @@ tests:
   - id: 'String: Emoji'
     description: 'Test with emojis in the String'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 4e69 656c 7320 4261 736a 6573 20f0 9f98 98f0 9f96 9600 0000
+      - firstAddress: 'hr:0'
+        rawValues: 4e69 656c 7320 4261 736a 6573 20f0 9f98 98f0 9f96 9600 0000
     blocks:
       - id: 'StringsBlock'
         expected:
@@ -72,8 +72,8 @@ tests:
   - id: 'String: Invalid'
     description: 'Test with a null byte which should terminate the String earlier'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 4e69 656c 7320 4261 736a 6573 00f0 9f98 98f0 9f96 9600 0000
+      - firstAddress: 'hr:0'
+        rawValues: 4e69 656c 7320 4261 736a 6573 00f0 9f98 98f0 9f96 9600 0000
         #                                        ^^ null byte.
     blocks:
       - id: 'StringsBlock'

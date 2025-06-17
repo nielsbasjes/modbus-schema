@@ -30,7 +30,7 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
-import nl.basjes.modbus.device.exception.createReadErrorResponse
+import nl.basjes.modbus.device.exception.createReadErrorRegisterBlock
 import com.digitalpetri.modbus.exceptions.ModbusException as DPModbusException
 import com.digitalpetri.modbus.exceptions.ModbusResponseException as DPModbusResponseException
 
@@ -80,7 +80,7 @@ class ModbusDeviceDigitalPetri(
                         )
                     return buildRegisterBlock(firstRegister, response.registers)
                 } catch (_: DPModbusResponseException) {
-                    return createReadErrorResponse(firstRegister, count)
+                    return createReadErrorRegisterBlock(firstRegister, count)
                 } catch (e: DPModbusException) {
                     throw ModbusException(
                         "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
@@ -98,7 +98,7 @@ class ModbusDeviceDigitalPetri(
                         )
                     return buildRegisterBlock(firstRegister, response.registers)
                 } catch (_: DPModbusResponseException) {
-                    return createReadErrorResponse(firstRegister, count)
+                    return createReadErrorRegisterBlock(firstRegister, count)
                 } catch (e: ModbusException) {
                     throw ModbusException(
                         "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,

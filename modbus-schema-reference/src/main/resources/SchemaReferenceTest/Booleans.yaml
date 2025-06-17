@@ -1,0 +1,77 @@
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
+#
+# Modbus Schema Toolkit
+# Copyright (C) 2019-2025 Niels Basjes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+description: 'Handling Discretes (Coils and Discrete Inputs)'
+schemaFeatureLevel: 2
+maxRegistersPerModbusRequest: 42
+blocks:
+  - id: 'Booleans'
+    description: 'The block of booleans'
+    fields:
+      - id: 'Boolean Value'
+        expression: 'boolean(c:0)'
+
+      - id: 'Boolean String'
+        expression: "boolean(c:0;'No';'Yes')"
+
+      - id: 'String Using Boolean Value'
+        expression: "concat('Foo<',boolean(c:0),'>')"
+
+      - id: 'String Using Boolean String'
+        expression: "concat('Bar<',boolean(c:0;'No';'Yes'),'>')"
+
+      - id: 'String Using Booleans Mixed'
+        expression: "concat('Foo<',boolean(c:0),'>',' and ','Bar<',boolean(c:0;'No';'Yes'),'>')"
+
+      - id: 'Boolean Field Reference'
+        expression: "concat('Foo<',Boolean Value,'>',' and ','Bar<',Boolean String,'>')"
+
+tests:
+  - id: 'Discrete 0'
+    description: 'Test when the discrete is 0 (false)'
+    input:
+      - firstAddress: 'c:0'
+        rawValues: >-
+          0 1
+
+    blocks:
+      - id: 'Booleans'
+        expected:
+          'Boolean Value'               : [ 'false'                  ]
+          'Boolean String'              : [ 'No'                     ]
+          'String Using Boolean Value'  : [ 'Foo<false>'             ]
+          'String Using Boolean String' : [ 'Bar<No>'                ]
+          'String Using Booleans Mixed' : [ 'Foo<false> and Bar<No>' ]
+          'Boolean Field Reference'     : [ 'Foo<false> and Bar<No>' ]
+
+  - id: 'Discrete 1'
+    description: 'Test when the discrete is 1 (true)'
+    input:
+      - firstAddress: 'c:0'
+        rawValues: >-
+          1 0
+
+    blocks:
+      - id: 'Booleans'
+        expected:
+          'Boolean Value'               : [ 'true'                   ]
+          'Boolean String'              : [ 'Yes'                    ]
+          'String Using Boolean Value'  : [ 'Foo<true>'              ]
+          'String Using Boolean String' : [ 'Bar<Yes>'               ]
+          'String Using Booleans Mixed' : [ 'Foo<true> and Bar<Yes>' ]
+          'Boolean Field Reference'     : [ 'Foo<true> and Bar<Yes>' ]

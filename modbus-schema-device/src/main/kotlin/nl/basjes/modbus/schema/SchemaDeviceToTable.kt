@@ -147,8 +147,8 @@ private fun Field.toTable(
     if (parsedExpression != null) {
         bytes =
             parsedExpression!!
-                .getRegisterValues(block.schemaDevice)
-                .joinToString(" ") { it.hexValue }
+                .getModbusValues(block.schemaDevice)
+                .joinToString(" ") { it.asString }
     }
     val truncatedDescription = description.trunc(75)
 

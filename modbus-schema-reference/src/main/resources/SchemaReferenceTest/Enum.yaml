@@ -1,4 +1,4 @@
-# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json
+# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
 #
 # Modbus Schema Toolkit
 # Copyright (C) 2019-2025 Niels Basjes
@@ -17,7 +17,7 @@
 #
 
 description: 'Expressions for Enum'
-schemaFeatureLevel: 1
+schemaFeatureLevel: 2
 blocks:
   - id: 'EnumBlock'
     description: 'Fields that are an Enum'
@@ -39,8 +39,8 @@ tests:
   - id: 'Enum: Normal values'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0001 000F 4240
+      - firstAddress: 'hr:0'
+        rawValues: 0001 000F 4240
     blocks:
       - id: 'EnumBlock'
         expected:
@@ -52,8 +52,8 @@ tests:
   - id: 'Enum: Not mapped values'
     description: 'Normal values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: 0004 000F 4241
+      - firstAddress: 'hr:0'
+        rawValues: 0004 000F 4241
     blocks:
       - id: 'EnumBlock'
         expected:
@@ -65,8 +65,8 @@ tests:
   - id: 'Enum: Not Implemented'
     description: 'Not Implemented values'
     input:
-      - firstRegisterAddress: 'hr:0'
-        registers: DEAD DEAD DEAD
+      - firstAddress: 'hr:0'
+        rawValues: DEAD DEAD DEAD
     blocks:
       - id: 'EnumBlock'
         expected:

@@ -16,12 +16,17 @@
  */
 package nl.basjes.modbus.device.api
 
+import nl.basjes.modbus.device.api.AddressClass.Type.DISCRETE
+import nl.basjes.modbus.device.api.AddressClass.Type.REGISTER
+
 @Suppress("ktlint:standard:paren-spacing")
 enum class AddressClass(
     /** The "offset" used in the modicon notation. (I.e. the address is shifted by this much (* 10000, or * 100000) when specified).  */
     val baseOffset: Int,
-    /** Sometimes 1 bit per value (booleans really), sometimes 16 bits (normal registers)  */
+    /** Sometimes 1 bit per value (booleans really), sometimes 16 bits (registers)  */
     val bitsPerValue: Int,
+    /** An enum value making the distinction between 1 bit per value (booleans) and 16 bits (registers) */
+    val type: Type,
     /** Offset from the "Physical Modbus Address" to the "Register Number"  */
     val registerNumberOffset: Int,
     /** A human-readable name  */
@@ -34,16 +39,16 @@ enum class AddressClass(
     vararg labels: String,
 ) {
     /** A Coil is a read/write single bit value */
-    COIL(             0,  1, 1, "Coil",             "COIL",             "c",  "coil",             "coil",             "coils"),
+    COIL(             0,  1, DISCRETE, 1, "Coil",             "COIL",             "c",  "coil",             "coil",             "coils"),
 
     /** A Discrete Input is a readonly single bit value */
-    DISCRETE_INPUT(   1,  1, 1, "Discrete Input",   "DISCRETE_INPUT",   "di", "discrete-input",   "discrete input",   "discrete inputs"),
+    DISCRETE_INPUT(   1,  1, DISCRETE, 1, "Discrete Input",   "DISCRETE_INPUT",   "di", "discrete-input",   "discrete input",   "discrete inputs"),
 
     /** An Input Register is a readonly 16 bit register */
-    INPUT_REGISTER(   3, 16, 1, "Input Register",   "INPUT_REGISTER",   "ir", "input-register",   "input register",   "input registers"),
+    INPUT_REGISTER(   3, 16, REGISTER, 1, "Input Register",   "INPUT_REGISTER",   "ir", "input-register",   "input register",   "input registers"),
 
     /** A Holding Register is a read/write 16 bit register */
-    HOLDING_REGISTER( 4, 16, 1, "Holding Register", "HOLDING_REGISTER", "hr", "holding-register", "holding register", "holding registers"),
+    HOLDING_REGISTER( 4, 16, REGISTER, 1, "Holding Register", "HOLDING_REGISTER", "hr", "holding-register", "holding register", "holding registers"),
     ;
 
     val labels: MutableList<String> = ArrayList()
@@ -52,6 +57,11 @@ enum class AddressClass(
         this.labels.add(shortLabel)
         this.labels.add(longLabel)
         this.labels.addAll(listOf(*labels))
+    }
+
+    enum class Type {
+        DISCRETE,
+        REGISTER,
     }
 
     companion object {

@@ -28,26 +28,33 @@
 // ===========================================================
 package ${packageName};
 
+import nl.basjes.modbus.device.api.AddressClass;
 import nl.basjes.modbus.device.api.ModbusDevice;
 import nl.basjes.modbus.device.exception.ModbusException;
 import nl.basjes.modbus.schema.Field;
 import nl.basjes.modbus.schema.Block;
 import nl.basjes.modbus.schema.SchemaDevice;
 import nl.basjes.modbus.schema.YamlLoaderKt;
+import nl.basjes.modbus.schema.fetcher.ModbusQuery;
 import nl.basjes.modbus.schema.test.TestScenario;
+import nl.basjes.modbus.schema.utils.StringTable;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static nl.basjes.modbus.schema.YamlLoaderKt.toSchemaDevice;
 
+/**
+* ${schemaDevice.description}
+*/
 public class ${asClassName(className)} {
-    public static final String schema = """
-${yamlSchema(schemaDevice)}
-""";
 
-    public final SchemaDevice schemaDevice = toSchemaDevice(schema);
+    public ${asClassName(className)}() {
+        schemaDevice.initialize();
+    }
 
-    public final List<TestScenario> tests = schemaDevice.getTests();
+    public final SchemaDevice schemaDevice = new SchemaDevice();
 
     public ${asClassName(className)} connectBase(ModbusDevice modbusDevice) {
         schemaDevice.connectBase(modbusDevice);
@@ -59,35 +66,43 @@ ${yamlSchema(schemaDevice)}
         return this;
     }
 
-
-    /**
-     * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
-     * @param maxAge maximum age of the fields in milliseconds
-     */
-    public void update(Long maxAge) {
-        schemaDevice.update(maxAge);
+    public ${asClassName(className)} connect(ModbusDevice modbusDevice, int allowedGapReadSize){
+        schemaDevice.connect(modbusDevice, allowedGapReadSize);
+        return this;
     }
 
     /**
      * Update all registers related to the needed fields to be updated
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public void update() {
-        schemaDevice.update();
+    public List<ModbusQuery> update() {
+        return schemaDevice.update();
+    }
+
+    /**
+     * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
+     * @param maxAge maximum age of the fields in milliseconds
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
+     */
+    public List<ModbusQuery> update(Long maxAge) {
+        return schemaDevice.update(maxAge);
     }
 
     /**
      * Update all registers related to the specified field
      * @param field the Field that must be updated
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public void update(Field field) {
-        schemaDevice.update(field);
+    public List<ModbusQuery> update(Field field) {
+        return schemaDevice.update(field);
     }
 
     /**
      * Make sure all registers mentioned in all known fields are retrieved.
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public void updateAll() throws ModbusException {
-        schemaDevice.updateAll();
+    public List<ModbusQuery> updateAll() throws ModbusException {
+        return schemaDevice.updateAll();
     }
 
     /**
@@ -120,76 +135,152 @@ ${yamlSchema(schemaDevice)}
 
     abstract public static class DeviceField {
       public final Field field;
-      public DeviceField(Block block, String fieldId) {
-          field = block.getField(fieldId);
-          if (field == null) {
-              throw new IllegalArgumentException("The generated code was unable to find the Field \"" + fieldId + "\" in the Block \" + block.getId() + \"");
-          }
+      public DeviceField(Field field) {
+        this.field = field;
       }
+      /**
+       * Retrieve the value of this field using the currently available device data.
+       */
       abstract Object getValue();
-
+      /**
+       * We want this field to be kept up-to-date
+       */
       public void need() {
           field.need();
       }
-
+      /**
+       * We no longer want this field to be kept up-to-date
+       */
       public void unNeed() {
           field.unNeed();
       }
-
+      /**
+       * Directly update this field
+       * @return A list of all modbus queries that have been done (with duration and status)
+       */
+      public List<ModbusQuery> update() {
+          return field.update();
+      }
+      /**
+       * The unit of the returns value
+       */
+      public String getUnit() {
+          return field.getUnit();
+      }
+      /**
+       * The description of the Field
+       */
+      public String getDescription() {
+          return field.getDescription();
+      }
     }
 
 <#list schemaDevice.blocks as block>
     // ==========================================
-    public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(schemaDevice.getBlock("${block.id}"));
+    /**
+     * ${block.description}
+     */
+    public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(schemaDevice);
 
     public static class ${asClassName(block.id)} {
         private Block block;
-        ${asClassName(block.id)}(Block block) {
-            if (block == null) {
-                throw new IllegalArgumentException("The generated code was unable to find the Block \"${block.id}\"");
-            }
-            this.block = block;
+        ${asClassName(block.id)}(SchemaDevice schemaDevice) {
+            this.block = Block.builder()
+              .schemaDevice(schemaDevice)
+              .id("${block.id}")
+<#if block.description??>
+              .description("${block.description}")
+</#if>
+              .build();
+
 <#list block.fields as field>
-            this.${asVariableName(field.id)} = new ${asClassName(field.id)}(block);
+            this.${asVariableName(field.id)?right_pad(block.maxFieldIdLength)} = new ${asClassName(field.id)}(block);
 </#list>
         }
 
         /**
-        * Directly update all fields in this Block
-        */
-        public void update() {
-            block.getFields().stream().forEach(Field::update);
+         * Directly update all fields in this Block
+         * @return A list of all modbus queries that have been done (with duration and status)
+         */
+        public List<ModbusQuery> update() {
+            return block.update();
         }
 
         /**
-        * All fields in this Block must be kept up-to-date
-        */
+         * All fields in this Block must be kept up-to-date
+         */
         public void need() {
-            block.getFields().stream().forEach(Field::need);
+            block.needAll();
         }
 
         /**
-        * All fields in this Block no longer need to be kept up-to-date
-        */
+         * All fields in this Block no longer need to be kept up-to-date
+         */
         public void unNeed() {
-            block.getFields().stream().forEach(Field::unNeed);
+            block.unNeedAll();
         }
-
 <#list block.fields as field>
+
         // ==========================================
-        public final ${asClassName(field.id)} ${asVariableName(field.id)};
-        public static class ${asClassName(field.id)} extends DeviceField {
+        /**
+         * ${field.description}
+         <#if field.unit?has_content>
+         * Unit: ${field.unit}
+         </#if>
+         */
+        <#if field.system>private<#else>public</#if> final ${asClassName(field.id)} ${asVariableName(field.id)};
+        <#if field.system>private<#else>public</#if> static class ${asClassName(field.id)} extends DeviceField {
             public ${asClassName(field.id)}(Block block) {
-                super(block, "${field.id}");
+                super(Field.builder()
+                           .block(block)
+                           .id("${field.id}")
+                           .description("${field.description}")
+                           .expression("${field.parsedExpression}")
+                           .unit("${field.unit}")
+                           .immutable(${field.immutable?string('true', 'false')})
+                           .system(${field.system?string('true', 'false')})
+                           .fetchGroup("${field.fetchGroup}")
+                           .build());
             }
 
             @Override
             public ${jvmReturnType(field.returnType)} getValue() {
-                return super.field.get${asClassName(valueGetter(field.returnType))}();
+                return field.get${asClassName(valueGetter(field.returnType))}();
             }
         }
-
 </#list>
+
+        @Override
+        public String toString() {
+            StringTable table = new StringTable();
+            table.withHeaders("Block", "Field", "Value");
+            toStringTable(table);
+            return table.toString();
+        }
+
+        private void toStringTable(StringTable table) {
+<#assign nonSystemFields=block.fields?filter(f -> !f.system)>
+<#if nonSystemFields?has_content>
+            table
+<#list nonSystemFields as field>
+<#assign fieldId="\""+field.id+"\",">
+                .addRow("${block.id}", ${fieldId?right_pad(block.maxFieldIdLength+3)} "" + ${asVariableName(field.id)}.getValue())
+</#list>;
+<#else>
+            // This block has no fields
+</#if>
+        }
     }
 </#list>
+
+    @Override
+    public String toString() {
+        StringTable table = new StringTable();
+        table.withHeaders("Block", "Field", "Value");
+<#list schemaDevice.blocks as block>
+        ${asVariableName(block.id)?right_pad(schemaDevice.maxBlockIdLength+1)}.toStringTable(table);
+</#list>
+        return table.toString();
+    }
+
 }

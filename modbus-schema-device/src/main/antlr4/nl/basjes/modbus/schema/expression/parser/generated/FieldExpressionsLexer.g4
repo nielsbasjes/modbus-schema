@@ -52,6 +52,8 @@ CONCAT          : 'concat'                      ;
 EUI48           : 'eui48'                       ;
 ENUM            : 'enum'                        ;
 BITSET          : 'bitset'                      ;
+BITSETBIT       : 'bitsetbit'                   ;
+BOOLEAN         : 'boolean'                     ;
 IEEE754_32      : 'ieee754_32'                  ;
 IEEE754_64      : 'ieee754_64'                  ;
 INT16           : 'int16'                       ;
@@ -63,11 +65,14 @@ UINT64          : 'uint64'                      ;
 IPv4ADDR        : 'ipv4addr'                    ;
 IPv6ADDR        : 'ipv6addr'                    ;
 
+TRUE            : 'true' ;
+FALSE           : 'false' ;
+
 HEXLIKEREGISTER
     : '0x' [0-9][0-9][0-9][0-9]
     ;
 
-REGISTER
+ADDRESS
     : (
           'coil:'               | 'c:'  | '0x' |
           'discrete-input:'     | 'di:' | '1x' |

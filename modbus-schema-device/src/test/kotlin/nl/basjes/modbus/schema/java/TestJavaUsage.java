@@ -55,9 +55,9 @@ class TestJavaUsage {
     }
 
     String schema =
-        "# $schema: https://modbus.basjes.nl/v1/ModbusSchema.json\n" +
+        "# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json\n" +
         "description: 'Demo based on a SunSpec device schema'\n" +
-        "schemaFeatureLevel: 1\n" +
+        "schemaFeatureLevel: 2\n" +
         "\n" +
         "blocks:\n" +
         "  - id: 'Block 1'\n" +
@@ -72,8 +72,8 @@ class TestJavaUsage {
         "tests:\n" +
         "  - id: 'Just to demo the test capability'\n" +
         "    input:\n" +
-        "      - firstRegisterAddress: 'hr:0'\n" +
-        "        registers: |2-\n" +
+        "      - firstAddress: 'hr:0'\n" +
+        "        rawValues: |2-\n" +
         "          # --------------------------------------\n" +
         "          # The name is here\n" +
         "          4e69 656c 7320 4261 736a 6573 0000 0000 0000 0000 \n" +

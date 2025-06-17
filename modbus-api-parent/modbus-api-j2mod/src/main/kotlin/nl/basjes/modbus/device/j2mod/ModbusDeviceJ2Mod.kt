@@ -20,7 +20,10 @@ import com.ghgande.j2mod.modbus.ModbusSlaveException
 import com.ghgande.j2mod.modbus.facade.AbstractModbusMaster
 import com.ghgande.j2mod.modbus.procimg.InputRegister
 import com.ghgande.j2mod.modbus.procimg.Register
+import com.ghgande.j2mod.modbus.util.BitVector
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.FunctionCode.Companion.forReading
 import nl.basjes.modbus.device.api.FunctionCode.READ_COIL
 import nl.basjes.modbus.device.api.FunctionCode.READ_DISCRETE_INPUT
@@ -31,7 +34,8 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
-import nl.basjes.modbus.device.exception.createReadErrorResponse
+import nl.basjes.modbus.device.exception.createReadErrorDiscreteBlock
+import nl.basjes.modbus.device.exception.createReadErrorRegisterBlock
 import com.ghgande.j2mod.modbus.ModbusException as J2ModModbusException
 
 /**
@@ -67,19 +71,19 @@ class ModbusDeviceJ2Mod(
         when (val functionCode = forReading(firstRegister.addressClass)) {
             READ_COIL,
             READ_DISCRETE_INPUT,
-            -> {
+                -> {
                 throw NotYetImplementedException("Reading a ${firstRegister.addressClass} has not yet been implemented")
             }
 
             READ_HOLDING_REGISTERS,
-            -> {
+                -> {
                 try {
                     val registers: Array<Register> =
                         master
                             .readMultipleRegisters(unitId, firstRegister.physicalAddress, count)
                     return buildRegisterBlock(firstRegister, registers)
                 } catch (_: ModbusSlaveException) {
-                    return createReadErrorResponse(firstRegister, count)
+                    return createReadErrorRegisterBlock(firstRegister, count)
                 } catch (e: J2ModModbusException) {
                     throw ModbusException(
                         "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
@@ -89,14 +93,14 @@ class ModbusDeviceJ2Mod(
             }
 
             READ_INPUT_REGISTERS,
-            -> {
+                -> {
                 try {
                     val registers: Array<InputRegister> =
                         master
                             .readInputRegisters(unitId, firstRegister.physicalAddress, count)
                     return buildRegisterBlock(firstRegister, registers)
                 } catch (_: ModbusSlaveException) {
-                    return createReadErrorResponse(firstRegister, count)
+                    return createReadErrorRegisterBlock(firstRegister, count)
                 } catch (e: J2ModModbusException) {
                     throw ModbusException(
                         "For " + functionCode + " & " + firstRegister.physicalAddress + ":" + e.message,
@@ -107,7 +111,7 @@ class ModbusDeviceJ2Mod(
 
             else -> {
                 throw NotYetImplementedException(
-                    "The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented",
+                    "The function code $functionCode for ${firstRegister.addressClass} cannot be retrieved using getRegisters",
                 )
             }
         }
@@ -130,4 +134,65 @@ class ModbusDeviceJ2Mod(
         }
         return result
     }
+
+    @Throws(ModbusException::class)
+    override fun getDiscretes(
+        firstDiscrete: Address,
+        count: Int,
+    ): DiscreteBlock {
+        when (val functionCode = forReading(firstDiscrete.addressClass)) {
+            READ_COIL -> {
+                try {
+                    val coils: BitVector = master.readCoils(unitId, firstDiscrete.physicalAddress, count)
+                    return buildDiscreteBlock(firstDiscrete, coils)
+                } catch (_: ModbusSlaveException) {
+                    return createReadErrorDiscreteBlock(firstDiscrete, count)
+                } catch (e: J2ModModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstDiscrete.physicalAddress + ":" + e.message,
+                        e,
+                    )
+                }
+            }
+
+            READ_DISCRETE_INPUT -> {
+                try {
+                    val coils: BitVector = master.readInputDiscretes(unitId, firstDiscrete.physicalAddress, count)
+                    return buildDiscreteBlock(firstDiscrete, coils)
+                } catch (_: ModbusSlaveException) {
+                    return createReadErrorDiscreteBlock(firstDiscrete, count)
+                } catch (e: J2ModModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstDiscrete.physicalAddress + ":" + e.message,
+                        e,
+                    )
+                }
+            }
+
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstDiscrete.addressClass} cannot be retrieved using getDiscretes",
+                )
+            }
+        }
+    }
+
+    private fun buildDiscreteBlock(
+        firstAddress: Address,
+        bitVector: BitVector,
+    ): DiscreteBlock {
+        // Record all received values under the current timestamp.
+        // Many devices have a bad clock.
+        val now = System.currentTimeMillis()
+
+        var loopDiscreteAddress = firstAddress
+        val result = DiscreteBlock(firstAddress.addressClass)
+        for (index in 0 until bitVector.size()) {
+            result[loopDiscreteAddress] =
+                DiscreteValue(loopDiscreteAddress).setValue(bitVector.getBit(index), now)
+            loopDiscreteAddress = loopDiscreteAddress.increment(1)
+        }
+        return result
+    }
+
 }
