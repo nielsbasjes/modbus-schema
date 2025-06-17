@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.schema.expression.strings
+package nl.basjes.modbus.schema.expression.booleans
 
-import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 
-interface StringListExpression : Expression {
-
-    override val returnType: ReturnType
-        get() = ReturnType.STRINGLIST
-
+interface BooleanExpression : Expression {
     /**
-     * @return The (possibly empty) list with all set String values or null if it was not implemented
+     * @return The Boolean value or null if it was not implemented
      */
-    fun getValueAsStringList(schemaDevice: SchemaDevice): List<String>?
+    fun getValueAsBoolean(schemaDevice: SchemaDevice): Boolean? = null
 }

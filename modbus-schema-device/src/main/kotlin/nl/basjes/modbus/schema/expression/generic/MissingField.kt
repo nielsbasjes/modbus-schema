@@ -1,5 +1,4 @@
 /*
- * Modbus Schema Toolkit
  * Copyright (C) 2019-2025 Niels Basjes
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.schema.expression.strings
+package nl.basjes.modbus.schema.expression.generic
 
-import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
+import nl.basjes.modbus.schema.expression.booleans.BooleanExpression
+import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
+import nl.basjes.modbus.schema.expression.strings.StringExpression
 
-interface StringListExpression : Expression {
+class MissingField(
+    private val fieldName: String,
+) : StringExpression,
+    NumericalExpression,
+    BooleanExpression {
 
-    override val returnType: ReturnType
-        get() = ReturnType.STRINGLIST
+    override fun toString(): String = "<<MISSING FIELD: $fieldName>>"
 
-    /**
-     * @return The (possibly empty) list with all set String values or null if it was not implemented
-     */
-    fun getValueAsStringList(schemaDevice: SchemaDevice): List<String>?
+    override var isImmutable: Boolean = true
+
+    override val problems: List<Expression.Problem>
+        get() = listOf(Expression.Warning("Field $fieldName is missing"))
+
+    override fun getValue(schemaDevice: SchemaDevice) = null
 }

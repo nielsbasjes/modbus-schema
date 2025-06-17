@@ -14,70 +14,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.schema.expression.strings
+package nl.basjes.modbus.schema.expression.booleans
 
 import nl.basjes.modbus.device.api.RegisterValue
-import nl.basjes.modbus.device.exception.ModbusException
+import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.INTEGER_BYTES
 import nl.basjes.modbus.schema.expression.LONG_BYTES
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
-import nl.basjes.modbus.schema.expression.SHORT_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToInteger
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToLong
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToShort
+import java.util.BitSet
 
-class EnumString(
+class BitsetBoolean(
     private val registers: RegistersExpression,
     notImplemented: List<String>,
-    val mappings: Map<Long, String>,
+    val bitNr: Int,
 ) : NotImplemented(registers.returnedRegisters, notImplemented),
-    StringExpression {
+    BooleanExpression {
 
     override fun toString(): String =
-        "enum(" + registers + super<NotImplemented>.toString() + " ; " +
-            mappings.entries.joinToString(" ; ") { "${it.key}->'${it.value}'" } +
-            ")"
+        "bitsetbit(" + registers + super<NotImplemented>.toString() + " ; " + bitNr + ")"
 
     override val subExpressions: List<Expression>
         get() = listOf(registers)
 
-    override var isImmutable: Boolean = false
+    override val returnType: ReturnType
+        get() = ReturnType.BOOLEAN
+
+    override var isImmutable: Boolean
+        get() = registers.isImmutable
+        set(value) {
+            registers.isImmutable = value
+        }
 
     override val problems: List<Problem>
         get() =
             combine(
-                "enum",
+                "bitsetbit",
                 checkFatal(registers.returnedRegisters > 0, "No registers"),
-                checkFatal(registers.returnedRegisters <= LONG_BYTES / BYTES_PER_REGISTER, "Too many registers"),
-                super<StringExpression>.problems,
+                checkFatal(
+                    registers.returnedRegisters <=
+                        LONG_BYTES / BYTES_PER_REGISTER,
+                    "Too many registers",
+                ),
+                checkFatal(
+                    bitNr >= 0,
+                    "Negative bitNr requested",
+                ),
+                checkFatal(
+                    bitNr < registers.returnedRegisters * BYTES_PER_REGISTER * 8,
+                    "The requested bitNr $bitNr is larger than the maximum of ${(registers.returnedRegisters * BYTES_PER_REGISTER * 8) - 1 }",
+                ),
+                super<BooleanExpression>.problems,
                 super<NotImplemented>.problems,
             )
 
     override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
-    @Throws(ModbusException::class)
-    override fun getValue(schemaDevice: SchemaDevice): String? {
-        val bytes = registers.getByteArray(schemaDevice) ?: return null
-        if (isNotImplemented(bytes)) {
+    override fun getValueAsBoolean(schemaDevice: SchemaDevice): Boolean? {
+        val bytes = registers.getByteArray(schemaDevice)
+        if (bytes == null || bytes.isEmpty() || isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        val value =
-            when (bytes.size) {
-                SHORT_BYTES -> bytesToShort(bytes).toLong()
-                INTEGER_BYTES -> bytesToInteger(bytes).toLong()
-                LONG_BYTES -> bytesToLong(bytes)
-                else -> null
-            }
-        var mappedValue = mappings[value]
-        if (mappedValue == null) {
-            mappedValue = "No mapping for value " + ByteConversions.bytesToHexString(bytes)
-        }
-        return mappedValue
+        ByteConversions.reverse(bytes)
+        val bitSet = BitSet.valueOf(bytes)
+        return bitSet[bitNr]
     }
+
 }

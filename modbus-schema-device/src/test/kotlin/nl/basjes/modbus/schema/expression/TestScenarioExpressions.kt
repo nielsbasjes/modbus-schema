@@ -138,6 +138,45 @@ class TestScenarioExpressions {
         assertTrue(registers.isEmpty(), "Registers was not empty $registers")
     }
 
+
+    @Throws(ModbusException::class)
+    private fun verify(
+        bytes: String,
+        expression: String,
+        expected: Boolean?,
+    ) {
+        val schemaDevice =
+            buildVerifier(
+                bytes,
+                TestField("test1", expression),
+                TestField("test2", "boolean(test1 ; 'Zero' ; 'One')"),
+            )
+        val test1 = getField(schemaDevice, "test1") ?: throw AssertionError("Unable to load Field test1 back")
+        val test2 = getField(schemaDevice, "test2") ?: throw AssertionError("Unable to load Field test2 back")
+        assertTrue("Unable to initialize the expression: $expression: ${test1.parsedExpression?.problems ?: "No parsed expression available"}" ) { test1.initialized }
+        assertTrue("Unable to initialize the field reference: $expression: ${test2.parsedExpression?.problems ?: "No parsed expression available"}" ) { test2.initialized }
+        assertEquals(ReturnType.BOOLEAN, test1.returnType)
+        assertEquals(ReturnType.STRING, test2.returnType)
+
+        schemaDevice.updateAll()
+
+        if (expected == null) {
+            assertNull(test1.booleanValue)
+        } else {
+            assertEquals(expected, test1.booleanValue, "Expected $expected from $expression")
+        }
+
+        val parsedExpression1 = test1.parsedExpression
+        assertNotNull(parsedExpression1)
+        assertEquals(
+            bytes,
+            parsedExpression1
+                .getRegisterValues(schemaDevice)
+                .joinToString(separator = " ") { it.hexValue }
+                .replace("0x".toRegex(), ""),
+        )
+    }
+
     @Throws(ModbusException::class)
     private fun verify(
         bytes: String,
@@ -448,7 +487,7 @@ class TestScenarioExpressions {
     fun testStringIPv4Addr() {
         // IPv4ADDR        BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )* BRACECLOSE
         verifyToString(
-            "ipv4addr(hr:0#2 ; 0xDEAD 0xDEAD)",
+            " ipv4addr(hr:0#2 ; 0xDEAD 0xDEAD)",
             "ipv4addr(hr:00000 # 2 ; 0xDEAD 0xDEAD)",
         )
         verifyToString("ipv4addr(hr:0#2                )", "ipv4addr(hr:00000 # 2)")
@@ -700,6 +739,134 @@ class TestScenarioExpressions {
         // NotImplemented size mismatch
         iNvalid("bitset(hr:0 ; 0xDEAD 0xDEAD ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')")
         iNvalid("bitset(hr:0#4 ; 0xDEAD 0xDEAD ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testBooleanConstant() {
+        verifyToString( " tRuE ", "true")
+        verifyToString( " FaLsE ", "false")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testStringBoolean() {
+        verifyToString( "  boolean  ( tRuE ;    'Zero';'One'    )", "boolean( true ; 'Zero' ; 'One' )")
+        verifyToString( "boolean  (FaLsE;'Zero';'One')   ",         "boolean( false ; 'Zero' ; 'One' )")
+        verify("0000", "boolean( tRuE ; 'Zero'; 'One' )", "One")
+        verify("0000", "boolean( FaLsE ; 'Zero'; 'One' )", "Zero")
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun testBooleanBitSet() {
+        // BITSETBIT       BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  SEMICOLON bitNr=LONG   BRACECLOSE #booleanBitSetBit
+        verifyToString(
+            "bitsetbit(hr:0 ; 0xDEAD ; 3)",
+            "bitsetbit(hr:00000 ; 0xDEAD ; 3)",
+        )
+        verify("DEAD", "bitsetbit(hr:0 ; 0xDEAD ; 0)", null as Boolean?)
+        verify("DEAD", "bitsetbit(hr:0 ; 0xDEAD ; 1)", null as Boolean?)
+        verify("DEAD", "bitsetbit(hr:0 ; 0xDEAD ; 2)", null as Boolean?)
+
+        verify("0000", "bitsetbit(hr:0          ; 0)", false)
+        verify("0000", "bitsetbit(hr:0          ; 1)", false)
+        verify("0000", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0001", "bitsetbit(hr:0          ; 0)", true)
+        verify("0001", "bitsetbit(hr:0          ; 1)", false)
+        verify("0001", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0002", "bitsetbit(hr:0          ; 0)", false)
+        verify("0002", "bitsetbit(hr:0          ; 1)", true)
+        verify("0002", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0003", "bitsetbit(hr:0          ; 0)", true)
+        verify("0003", "bitsetbit(hr:0          ; 1)", true)
+        verify("0003", "bitsetbit(hr:0          ; 2)", false)
+
+        verify("0004", "bitsetbit(hr:0          ; 0)", false)
+        verify("0004", "bitsetbit(hr:0          ; 1)", false)
+        verify("0004", "bitsetbit(hr:0          ; 2)", true)
+
+        verify("0005", "bitsetbit(hr:0          ; 0)", true)
+        verify("0005", "bitsetbit(hr:0          ; 1)", false)
+        verify("0005", "bitsetbit(hr:0          ; 2)", true)
+
+        verify("0006", "bitsetbit(hr:0          ; 0)", false)
+        verify("0006", "bitsetbit(hr:0          ; 1)", true)
+        verify("0006", "bitsetbit(hr:0          ; 2)", true)
+
+        verify("0007", "bitsetbit(hr:0          ; 0)", true)
+        verify("0007", "bitsetbit(hr:0          ; 1)", true)
+        verify("0007", "bitsetbit(hr:0          ; 2)", true)
+
+        // 1 register (16 bits)
+        verify("100F", "bitsetbit(hr:0 ;  0)", true)
+        verify("100F", "bitsetbit(hr:0 ;  1)", true)
+        verify("100F", "bitsetbit(hr:0 ;  2)", true)
+        verify("100F", "bitsetbit(hr:0 ;  3)", true)
+        verify("100F", "bitsetbit(hr:0 ;  4)", false)
+        verify("100F", "bitsetbit(hr:0 ;  5)", false)
+        verify("100F", "bitsetbit(hr:0 ;  6)", false)
+        verify("100F", "bitsetbit(hr:0 ;  7)", false)
+        verify("100F", "bitsetbit(hr:0 ;  8)", false)
+        verify("100F", "bitsetbit(hr:0 ;  9)", false)
+        verify("100F", "bitsetbit(hr:0 ; 10)", false)
+        verify("100F", "bitsetbit(hr:0 ; 11)", false)
+        verify("100F", "bitsetbit(hr:0 ; 12)", true)
+        verify("100F", "bitsetbit(hr:0 ; 13)", false)
+        verify("100F", "bitsetbit(hr:0 ; 14)", false)
+        verify("100F", "bitsetbit(hr:0 ; 15)", false)
+
+        // 2 registers (32 bits)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  0)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  1)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  2)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  3)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  4)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  5)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  6)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  7)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  8)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ;  9)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 10)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 11)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 12)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 13)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 14)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 15)", false)
+
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 16)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 17)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 18)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 19)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 20)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 21)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 22)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 23)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 24)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 25)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 26)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 27)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 28)", true)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 29)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 30)", false)
+        verify("100F 100F", "bitsetbit(hr:0#2 ; 31)", false)
+
+        // Invalid bit number
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 16)")
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 32)")
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 48)")
+        iNvalid("bitsetbit(hr:0 ; -1)")
+        iNvalid("bitsetbit(hr:0 ; 64)")
+
+        // NotImplemented size mismatch
+        iNvalid("bitsetbit(hr:0 ; 0xDEAD 0xDEAD ; 0)")
+        iNvalid("bitsetbit(hr:0#4 ; 0xDEAD 0xDEAD ; 0)")
     }
 
     @Test

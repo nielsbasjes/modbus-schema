@@ -1,5 +1,4 @@
 /*
- * Modbus Schema Toolkit
  * Copyright (C) 2019-2025 Niels Basjes
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.schema.expression
+package nl.basjes.modbus.schema.expression.generic
 
-import nl.basjes.modbus.schema.expression.Expression.Problem
+import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
+import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.utils.ByteConversions
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToSeparatedTwoByteHexString
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToTwoByteHexStringList
-import nl.basjes.modbus.schema.utils.ByteConversions.hexStringToBytes
 
 abstract class NotImplemented(
     private val expectedRegisters: Int,
@@ -33,20 +30,20 @@ abstract class NotImplemented(
         return " ; " + notImplementedStrings.joinToString(separator = " ; ")
     }
 
-    private val notImplementedBytes: Array<ByteArray> = hexStringToBytes(notImplementedStrings)
+    private val notImplementedBytes: Array<ByteArray> = ByteConversions.hexStringToBytes(notImplementedStrings)
     private val notImplementedStrings: MutableList<String> = mutableListOf()
     val notImplemented: MutableList<List<String>> = mutableListOf()
 
     init {
         for (notImplementedByte in notImplementedBytes) {
             this.notImplementedStrings.add(
-                "0x" + bytesToSeparatedTwoByteHexString(notImplementedByte, " 0x"),
+                "0x" + ByteConversions.bytesToSeparatedTwoByteHexString(notImplementedByte, " 0x"),
             )
-            this.notImplemented.add(bytesToTwoByteHexStringList(notImplementedByte))
+            this.notImplemented.add(ByteConversions.bytesToTwoByteHexStringList(notImplementedByte))
         }
     }
 
-    override val problems: List<Problem>
+    override val problems: List<Expression.Problem>
         get() =
             combine(
                 "NotImplemented",

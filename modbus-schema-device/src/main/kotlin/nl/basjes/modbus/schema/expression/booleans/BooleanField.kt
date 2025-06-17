@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.basjes.modbus.schema.expression.strings
+package nl.basjes.modbus.schema.expression.booleans
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Field
+import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
+import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 import nl.basjes.modbus.schema.expression.generic.MissingField
-import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 
-class StringField(
+class BooleanField(
     val fieldName: String,
-) : StringExpression {
+) : BooleanExpression {
 
     private lateinit var field: Field
-    private var fieldExpression: StringExpression = MissingField(fieldName)
+    private var fieldExpression: BooleanExpression = MissingField(fieldName)
 
-    override fun toString() = toString(true)
-
-    override fun toString(isTop: Boolean) = fieldName
+    override fun toString(): String = fieldName
 
     override fun initialize(containingField: Field): Boolean {
         val block = containingField.block
@@ -47,13 +47,8 @@ class StringField(
         val expression = field.parsedExpression
 
         when (expression) {
-            is StringExpression -> {
+            is BooleanExpression -> {
                 fieldExpression = expression
-                return true
-            }
-
-            is NumericalExpression -> {
-                fieldExpression = StringFromNumber(expression)
                 return true
             }
         }
@@ -63,11 +58,11 @@ class StringField(
     override val subExpressions: List<Expression>
         get() = listOf(fieldExpression)
 
-    override val requiredFields: List<String>
-        get() = listOf(fieldName)
-
     override val requiredRegisters: List<Address>
         get() = listOf() // Fields are fetched separately !!
+
+    override val requiredFields: List<String>
+        get() = listOf(fieldName)
 
     override var isImmutable: Boolean
         get() = fieldExpression.isImmutable
@@ -75,12 +70,17 @@ class StringField(
             fieldExpression.isImmutable = value
         }
 
+
+    override val returnType: ReturnType
+        get() = fieldExpression.returnType
+
     override val problems: List<Problem>
         get() =
             combine(
-                "StringField",
+                "BooleanField",
                 super.problems,
             )
 
-    override fun getValue(schemaDevice: SchemaDevice): String? = fieldExpression.getValue(schemaDevice)
+    @Throws(ModbusException::class)
+    override fun getValueAsBoolean(schemaDevice: SchemaDevice): Boolean? = fieldExpression.getValueAsBoolean(schemaDevice)
 }

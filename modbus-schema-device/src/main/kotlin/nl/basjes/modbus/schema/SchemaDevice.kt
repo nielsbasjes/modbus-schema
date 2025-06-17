@@ -396,7 +396,7 @@ constructor(
         @JvmStatic
         fun builder(): SchemaDeviceBuilder = SchemaDeviceBuilder()
 
-        const val CURRENT_SCHEMA_FEATURE_LEVEL = 1
+        const val CURRENT_SCHEMA_FEATURE_LEVEL = 2
 
         private val LOG: Logger = LogManager.getLogger()
     }

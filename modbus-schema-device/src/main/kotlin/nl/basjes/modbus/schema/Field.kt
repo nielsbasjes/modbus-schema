@@ -28,6 +28,7 @@ import nl.basjes.modbus.schema.ReturnType.UNKNOWN
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaMissingFieldException
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.expression.Expression
+import nl.basjes.modbus.schema.expression.booleans.BooleanExpression
 import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 import nl.basjes.modbus.schema.expression.parser.ExpressionParser.Companion.parse
 import nl.basjes.modbus.schema.expression.strings.StringExpression
@@ -238,7 +239,7 @@ class Field(
         get() =
             when (returnType) {
                 UNKNOWN    -> TODO("Unknown returnType (Field $id) means we do not know yet")
-                BOOLEAN    -> TODO("Coils are not supported yet")
+                BOOLEAN    -> booleanValue
                 LONG       -> longValue
                 DOUBLE     -> doubleValue
                 STRING     -> stringValue
@@ -256,7 +257,7 @@ class Field(
     val stringListValue: List<String>?
         get() {
             if (parsedExpression is StringListExpression) {
-                return (parsedExpression as StringListExpression).getValue(block.schemaDevice)
+                return (parsedExpression as StringListExpression).getValueAsStringList(block.schemaDevice)
             }
             return null
         }
@@ -273,6 +274,14 @@ class Field(
         get() {
             if (parsedExpression is NumericalExpression) {
                 return (parsedExpression as NumericalExpression).getValueAsLong(block.schemaDevice)
+            }
+            return null
+        }
+
+    val booleanValue: Boolean?
+        get() {
+            if (parsedExpression is BooleanExpression) {
+                return (parsedExpression as BooleanExpression).getValueAsBoolean(block.schemaDevice)
             }
             return null
         }

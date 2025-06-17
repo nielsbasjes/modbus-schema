@@ -26,6 +26,7 @@ expression
     : number     EOF
     | string     EOF
     | stringList EOF
+    | boolean    EOF
     ;
 
 singleRegister
@@ -56,6 +57,7 @@ string
     | IPv6ADDR        BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*                         BRACECLOSE #stringIPv6Addr
     | ENUM            BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )+ BRACECLOSE #stringEnum
     | CONCAT          BRACEOPEN stringFragments        ( COMMA stringFragments    )*                         BRACECLOSE #stringConcat
+    | BOOLEAN         BRACEOPEN value=boolean SEMICOLON zeroString=STRING SEMICOLON  oneString=STRING        BRACECLOSE #stringBoolean
     | STRING                                                                                                            #stringConstant
     ;
 
@@ -67,6 +69,12 @@ stringFragments
 
 stringList
     : BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )* BRACECLOSE #stringListBitSet
+    ;
+
+boolean
+    : BITSETBIT       BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  SEMICOLON bitNr=LONG   BRACECLOSE #booleanBitSetBit
+    | FIELDNAME                                                                                                         #booleanField
+    | value=(TRUE|FALSE)                                                                                                #booleanConstant
     ;
 
 notImplemented

@@ -20,7 +20,7 @@ import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.NotImplemented
+import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 import java.util.BitSet
@@ -62,7 +62,7 @@ class BitsetStringList(
 
     override fun getRegisterValues(schemaDevice: SchemaDevice): List<RegisterValue> = registers.getRegisterValues(schemaDevice)
 
-    override fun getValue(schemaDevice: SchemaDevice): List<String>? {
+    override fun getValueAsStringList(schemaDevice: SchemaDevice): List<String>? {
         val bytes = registers.getByteArray(schemaDevice)
         if (bytes == null || bytes.isEmpty() || isNotImplemented(bytes)) {
             return null // Not implemented
