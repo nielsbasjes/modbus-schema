@@ -114,15 +114,6 @@ open class RegisterBlockFetcher(
         /** The affected list of fields */
         val fields: MutableList<Field> = mutableListOf()
 
-        fun isUsingReadErrorRegisters(): Boolean {
-            for (field in fields) {
-                if (field.isUsingReadErrorRegisters()) {
-                    return true
-                }
-            }
-            return false
-        }
-
         override fun compareTo(other: FetchBatch): Int {
             val addressCompare = start.compareTo(other.start)
             if (addressCompare != 0) {
