@@ -82,7 +82,7 @@ open class MockedModbusDevice : ModbusDevice() {
         count: Int,
     ): RegisterBlock {
 //        if (logRequests) {
-//            LOG.info("MODBUS GET: {} # {}",firstRegister, count );
+//            logger.info("MODBUS GET: {} # {}",firstRegister, count );
 //        }
         val addressClass = firstRegister.addressClass
         val registerBlock = registerBlocks[addressClass] ?: return RegisterBlock(addressClass)
@@ -99,6 +99,7 @@ open class MockedModbusDevice : ModbusDevice() {
                 return createReadErrorResponse(firstRegister, count)
             }
             if (registerValue.hasValue()) {
+                registerValue.fetchTimestamp = System.currentTimeMillis()
                 registers[address] = registerValue
             }
         }
