@@ -126,7 +126,7 @@ class RegisterValue(
             return false
         }
         // Any register with a valid value MUST be after 1900-01-01T00:00:00Z
-        if (fetchTimestamp > NEVER_VALID_BEFORE) {
+        if (fetchTimestamp < NEVER_VALID_BEFORE) {
             return true
         }
         return now - fetchTimestamp > maxAge
