@@ -161,8 +161,10 @@ open class RegisterBlockFetcher(
      */
     @JvmOverloads
     fun update(maxAge: Long = 0) {
-        for (fetchBatch in calculateFetchBatches(maxAge)) {
-            fetch(fetchBatch)
+        synchronized(this) {
+            for (fetchBatch in calculateFetchBatches(maxAge)) {
+                fetch(fetchBatch)
+            }
         }
     }
 
