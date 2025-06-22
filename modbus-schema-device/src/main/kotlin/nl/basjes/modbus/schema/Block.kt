@@ -142,7 +142,7 @@ open class Block(
     /**
      * Directly update all fields in this Block
      */
-    fun update() = fields.forEach { it.update() }
+    fun update() = fields.map { it.update() }.flatten()
 
     /**
      * All fields in this Block must be kept up-to-date

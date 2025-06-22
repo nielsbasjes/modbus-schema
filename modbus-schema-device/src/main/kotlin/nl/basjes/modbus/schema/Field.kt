@@ -32,6 +32,7 @@ import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 import nl.basjes.modbus.schema.expression.parser.ExpressionParser.Companion.parse
 import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringListExpression
+import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
 import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import kotlin.properties.Delegates
 
@@ -330,10 +331,11 @@ class Field(
     fun isUsingHardReadErrorRegisters() = !usedHardReadErrorAddresses().isEmpty()
 
     /**
-     * Directly update this field
+     * Directly update this field.
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    fun update() {
-        block.schemaDevice.update(this)
+    fun update(): List<FetchBatch> {
+        return block.schemaDevice.update(this)
     }
 
     // Essentially a semaphore. The number indicates how many need this field.

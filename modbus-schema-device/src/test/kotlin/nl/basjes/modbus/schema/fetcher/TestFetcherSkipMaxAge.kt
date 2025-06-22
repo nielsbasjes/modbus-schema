@@ -19,6 +19,8 @@ package nl.basjes.modbus.schema.fetcher
 import nl.basjes.modbus.schema.assertCorrectFieldValues
 import nl.basjes.modbus.schema.createTestModbusDevice
 import nl.basjes.modbus.schema.createTestSchemaDevice
+import nl.basjes.modbus.schema.utils.println
+import nl.basjes.modbus.schema.utils.toTable
 import kotlin.test.Test
 
 class TestFetcherSkipMaxAge {
@@ -31,7 +33,9 @@ class TestFetcherSkipMaxAge {
 
         schemaDevice.needAll()
 
+        println("First fetch should get everything")
         schemaDevice.update()
+            .toTable().println("\n") // After the fetch print what was fetched
         assertCorrectFieldValues(schemaDevice)
 
         modbusDevice.failOnFetch=true
@@ -39,7 +43,10 @@ class TestFetcherSkipMaxAge {
         // With a high max age there should be no fetch done because everything is
         // still up-to-date enough
         // Really large maxAge (1 day in milliseconds) to allow stepping through with debugger
+        println("Second fetch should get nothing")
         schemaDevice.update(86400000)
+            .toTable().println("\n") // After the fetch print what was fetched
+
         assertCorrectFieldValues(schemaDevice)
     }
 

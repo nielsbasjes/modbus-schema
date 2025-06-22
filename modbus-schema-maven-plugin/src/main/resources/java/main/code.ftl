@@ -35,6 +35,7 @@ import nl.basjes.modbus.schema.Field;
 import nl.basjes.modbus.schema.Block;
 import nl.basjes.modbus.schema.SchemaDevice;
 import nl.basjes.modbus.schema.YamlLoaderKt;
+import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch;
 import nl.basjes.modbus.schema.test.TestScenario;
 import nl.basjes.modbus.schema.utils.StringTable;
 
@@ -72,32 +73,36 @@ public class ${asClassName(className)} {
 
     /**
      * Update all registers related to the needed fields to be updated
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    public void update() {
-        schemaDevice.update();
+    public List<FetchBatch> update() {
+        return schemaDevice.update();
     }
 
     /**
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    public void update(Long maxAge) {
-        schemaDevice.update(maxAge);
+    public List<FetchBatch> update(Long maxAge) {
+        return schemaDevice.update(maxAge);
     }
 
     /**
      * Update all registers related to the specified field
      * @param field the Field that must be updated
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    public void update(Field field) {
-        schemaDevice.update(field);
+    public List<FetchBatch> update(Field field) {
+        return schemaDevice.update(field);
     }
 
     /**
      * Make sure all registers mentioned in all known fields are retrieved.
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    public void updateAll() throws ModbusException {
-        schemaDevice.updateAll();
+    public List<FetchBatch> updateAll() throws ModbusException {
+        return schemaDevice.updateAll();
     }
 
     /**
@@ -151,9 +156,10 @@ public class ${asClassName(className)} {
       }
       /**
        * Directly update this field
+       * @return A list of all fetches that have been done (with duration and status)
        */
-      public void update() {
-          field.update();
+      public List<FetchBatch> update() {
+          return field.update();
       }
       /**
        * The unit of the returns value
@@ -194,23 +200,24 @@ public class ${asClassName(className)} {
 
         /**
          * Directly update all fields in this Block
+         * @return A list of all fetches that have been done (with duration and status)
          */
-        public void update() {
-            block.getFields().stream().forEach(Field::update);
+        public List<FetchBatch> update() {
+            return block.update();
         }
 
         /**
          * All fields in this Block must be kept up-to-date
          */
         public void need() {
-            block.getFields().stream().forEach(Field::need);
+            block.needAll();
         }
 
         /**
          * All fields in this Block no longer need to be kept up-to-date
          */
         public void unNeed() {
-            block.getFields().stream().forEach(Field::unNeed);
+            block.unNeedAll();
         }
 <#list block.fields as field>
 

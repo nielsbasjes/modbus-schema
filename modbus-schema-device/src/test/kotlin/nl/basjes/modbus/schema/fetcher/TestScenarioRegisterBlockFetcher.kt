@@ -26,6 +26,8 @@ import nl.basjes.modbus.schema.deadAddress
 import nl.basjes.modbus.schema.deadSize
 import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
 import nl.basjes.modbus.schema.get
+import nl.basjes.modbus.schema.utils.println
+import nl.basjes.modbus.schema.utils.toTable
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.junit.jupiter.api.TestInstance
@@ -76,7 +78,7 @@ internal class TestScenarioRegisterBlockFetcher {
         var fetchBatches: List<FetchBatch> = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Clean ): {}", fetchBatches)
 
-        fetcher.update()
+        fetcher.update().toTable().println("\n")
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")
@@ -87,7 +89,7 @@ internal class TestScenarioRegisterBlockFetcher {
 
         fetchBatches = fetcher.calculateFetchBatches(0)
         LOG.warn("Fetch Batches (Update): {}", fetchBatches)
-        fetcher.update()
+        fetcher.update().toTable().println("\n")
 
         assertCorrectFieldValues(schemaDevice)
         assertFalse(modbusDevice.fetchErrors, "There were problems fetching the registers")

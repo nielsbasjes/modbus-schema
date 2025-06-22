@@ -18,14 +18,18 @@ package nl.basjes.modbus.schema.fetcher
 
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch.FetchStatus
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.Objects
 import java.util.TreeMap
+import kotlin.time.Duration
+import kotlin.time.TimeSource
 
 /**
  * A RegisterBlockFetcher needs to have a Schema, a target RegisterBlock and a ModbusDevice
@@ -81,16 +85,19 @@ open class RegisterBlockFetcher(
      * We force an immediate update of all registers needed for the provided field.
      * No batching, buffering or any optimization is done.
      * @param field The field that must be updated
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    fun update(field: Field) {
+    fun update(field: Field): List<FetchBatch> {
         require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
 
         if (field.isUsingHardReadErrorRegisters()) {
-            return // Cannot update
+            return listOf()// Cannot update
         }
 
+        val fetched = mutableListOf<FetchBatch>()
+
         // Make sure all fields needed to build the requested value are also present
-        field.requiredFields.forEach { it.update() }
+        field.requiredFields.forEach { fetched.addAll(it.update()) }
 
         val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
 
@@ -101,16 +108,55 @@ open class RegisterBlockFetcher(
 
         if (requiredRegisters.isEmpty()) {
             // Nothing to update
-            return
+            return listOf()
         }
-        val deviceRegisters = modbusDevice.getRegisters(requiredRegisters[0], requiredRegisters.size)
+        val fetchBatch = FetchBatch(requiredRegisters[0], requiredRegisters.size)
+        fetchBatch.fields.add(field)
+        val deviceRegisters = modbusDevice.getRegisters(fetchBatch)
+        if (deviceRegisters.values.any { it.isReadError() }) {
+            // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
+            fetchBatch.status = FetchStatus.ERROR
+            deviceRegisters.values.forEach { it.setHardReadError() }
+        }
+
         schemaDevice.getRegisterBlock(deviceRegisters.addressClass).merge(deviceRegisters)
+        fetched.add(fetchBatch)
+        return fetched
+    }
+
+    fun ModbusDevice.getRegisters(fetchBatch: FetchBatch): RegisterBlock {
+        val start = TimeSource.Monotonic.markNow()
+        try {
+            val registerBlock = this.getRegisters(fetchBatch.start, fetchBatch.count)
+            fetchBatch.status = FetchStatus.SUCCESS
+            return registerBlock
+        } catch (modbusException: ModbusException) {
+            fetchBatch.status = FetchStatus.ERROR
+            throw modbusException
+        }
+        finally {
+            val stop = TimeSource.Monotonic.markNow()
+            fetchBatch.duration = stop - start
+        }
     }
 
     open class FetchBatch(
         val start: Address,
         var count: Int,
     ) : Comparable<FetchBatch> {
+        /**
+         * The number of milliseconds the actual fetch took.
+         * NULL if not fetched yet.
+         */
+        var duration: Duration? = null
+        var status: FetchStatus = FetchStatus.NOT_FETCHED
+
+        enum class FetchStatus {
+            NOT_FETCHED,
+            ERROR,
+            SUCCESS
+        }
+
         /** The affected list of fields */
         val fields: MutableList<Field> = mutableListOf()
 
@@ -158,27 +204,32 @@ open class RegisterBlockFetcher(
     /**
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
+     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
     @JvmOverloads
-    fun update(maxAge: Long = 0) {
+    fun update(maxAge: Long = 0): List<FetchBatch> {
         synchronized(this) {
+            val fetched = mutableListOf<FetchBatch>()
             for (fetchBatch in calculateFetchBatches(maxAge)) {
-                fetch(fetchBatch)
+                fetched.addAll(fetch(fetchBatch))
             }
+            return fetched
         }
     }
 
-    private fun fetch(fetchBatch: FetchBatch) {
-//        println("Fetching $fetchBatch")
+    private fun fetch(fetchBatch: FetchBatch): List<FetchBatch> {
+        val fetched = mutableListOf<FetchBatch>()
         try {
-            val registers = modbusDevice.getRegisters(fetchBatch.start, fetchBatch.count)
+            val registers = modbusDevice.getRegisters(fetchBatch)
+            fetched.add(fetchBatch)
             val registerBlock = schemaDevice.getRegisterBlock(registers.addressClass)
             registerBlock.merge(registers)
             if (registers.values.any { it.isReadError() }) {
+                fetchBatch.status = FetchStatus.ERROR
                 if (fetchBatch is MergedFetchBatch) {
                     // If we have a merged fetch then we retry on the individuals.
                     for (fetchPart in fetchBatch.fetchBatches) {
-                        fetch(fetchPart)
+                        fetched.addAll(fetch(fetchPart))
                     }
 
                     // If only trying to fetch the requested parts we would skip the registers
@@ -187,15 +238,16 @@ open class RegisterBlockFetcher(
                     // We get the blocks this batch touches.
                     val blocks = fetchBatch.fields.map { it.block }.distinct()
 
-                    // We get ALL fields that have registers in the current batch and
-                    // update them one by one
+                    // We get ALL fields that have registers in the current batch range
+                    // and update them one by one. Regardless if they are needed.
+                    // This way we can permanently mark the bad ones and avoid them in all future calls
                     blocks
                         .map { it.fields }
                         .flatten()
                         .filter { !fetchBatch.fields.contains(it) }
                         .filter { it.requiredRegisters.overlaps(fetchBatch.start, fetchBatch.count) }
-                        .forEach { it.update() }
-
+                        .forEach { fetched.addAll(it.update()) }
+                    return fetched
                 } else {
 //                    println("-----READ ERROR getting $fetchBatch ; Fields are marked as DEAD")
                     registers.values.forEach { it.setHardReadError() }
@@ -205,6 +257,7 @@ open class RegisterBlockFetcher(
         } catch (me: ModbusException) {
             LOG.error("Got ModbusException on {} --> {}", fetchBatch, me)
         }
+        return listOf(fetchBatch)
     }
 
     /**
