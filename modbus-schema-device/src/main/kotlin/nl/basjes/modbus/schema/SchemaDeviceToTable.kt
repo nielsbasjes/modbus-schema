@@ -85,6 +85,16 @@ private fun Block.toTable(
 
 // ------------------------------------------
 
+private fun String?.trunc(maxChars: Int): String {
+    if (this == null) {
+        return "<<null>>"
+    }
+    if (maxChars < 5 || this.length <= maxChars) {
+        return this
+    }
+    return this.substring(0, maxChars-4) + " ..."
+}
+
 private fun Field.toTable(
     table: StringTable,
     onlyUseFullFields: Boolean,
@@ -130,10 +140,7 @@ private fun Field.toTable(
         }
         expressionString = "-------"
     } else {
-        expressionString = parsedExpression.toString()
-        if (expressionString.length > 50) {
-            expressionString = expressionString.substring(0, 45) + " ..."
-        }
+        expressionString = parsedExpression.toString().trunc(50)
     }
 
     var bytes = ""
@@ -143,17 +150,15 @@ private fun Field.toTable(
                 .getRegisterValues(block.schemaDevice)
                 .joinToString(" ") { it.hexValue }
     }
-    var truncatedDescription = description
-    if (truncatedDescription.length > 75) {
-        truncatedDescription = truncatedDescription.substring(0, 70) + " ..."
-    }
+    val truncatedDescription = description.trunc(75)
+
     if (includeRawDataAndMappings) {
         table.addRow(
             block.id,
             id,
             if (isSystem) "*" else "",
             truncatedDescription,
-            value.toString(),
+            value.toString().trunc(50),
             unit,
             expressionString,
             fetchGroup,
@@ -165,7 +170,7 @@ private fun Field.toTable(
             id,
             if (isSystem) "*" else "",
             truncatedDescription,
-            value.toString(),
+            value.toString().trunc(50),
             unit,
         )
     }
