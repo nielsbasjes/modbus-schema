@@ -21,6 +21,7 @@ object CodeGeneration {
         listOf(
             '_'.code,
             '-'.code,
+            ' '.code,
         )
 
     /**
@@ -38,9 +39,11 @@ object CodeGeneration {
         val finalName = StringBuilder(name.length)
 
         var sawSeparator = false
-        var first = true
+        var firstLetter = true
+        var firstWord = true
+        var allInFirstWordAreUppercase = true
         for (codepoint in name.chars().toArray()) {
-            if (first) {
+            if (firstLetter) {
                 if (
                     !Character.isUnicodeIdentifierStart(codepoint) ||
                     // Although Java does allow currency symbols as identifiers, we choose to drop them.
@@ -49,7 +52,7 @@ object CodeGeneration {
                 ) {
                     continue
                 }
-                first = false
+                firstLetter = false
                 if (firstUppercase) {
                     finalName.append(Character.toString(Character.toUpperCase(codepoint)))
                 } else {
@@ -57,11 +60,26 @@ object CodeGeneration {
                 }
                 continue
             }
-            if (!Character.isUnicodeIdentifierPart(codepoint) ||
+
+            if (Character.isUnicodeIdentifierPart(codepoint) &&
                 // Although Java does allow currency symbols as identifiers, we choose to drop them.
-                Character.getType(codepoint) == Character.CURRENCY_SYMBOL.toInt()
+                Character.getType(codepoint) != Character.CURRENCY_SYMBOL.toInt()
             ) {
+                if (firstWord && allInFirstWordAreUppercase) {
+                    allInFirstWordAreUppercase = Character.isUpperCase(codepoint)
+                }
+            } else {
                 sawSeparator = true
+                firstWord = false
+
+                if (allInFirstWordAreUppercase && finalName.length <= 3) {
+                    if (!firstUppercase) {
+                        val oldFinalName = finalName.toString()
+                        finalName.clear()
+                        finalName.append(oldFinalName.lowercase())
+                    }
+                }
+
                 continue
             }
 

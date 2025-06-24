@@ -54,6 +54,15 @@ internal class TestCodeGeneration {
         checkConvert("Active power (over-Excited$) rating", "activePowerOverExcitedRating", "ActivePowerOverExcitedRating")
         checkConvert("Today's Minimum Battery Voltage", "todaySMinimumBatteryVoltage", "TodaySMinimumBatteryVoltage")
         checkConvert("Data Log Daily (kWh)", "dataLogDailyKWh", "DataLogDailyKWh")
+
+        // If the first word is fully uppercase then and between 1 and 3 characters that part will be fully upper/lowercased in the output.
+        checkConvert("DC Voltage", "dcVoltage", "DCVoltage")
+        checkConvert("AC Current", "acCurrent", "ACCurrent")
+        checkConvert("VAR Limit Change Time window", "varLimitChangeTimeWindow", "VARLimitChangeTimeWindow")
+        checkConvert("NOT cONfIGuREd", "notCONfIGuREd", "NOTCONfIGuREd")
+
+        // More than 3 in the first word
+        checkConvert("DOES not compute", "dOESNotCompute", "DOESNotCompute")
     }
 
 
