@@ -24,7 +24,7 @@ import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.fetcher.OptimizingRegisterBlockFetcher
 import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
+import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import nl.basjes.modbus.schema.test.ExpectedBlock
 import nl.basjes.modbus.schema.test.TestScenario
 import nl.basjes.modbus.schema.test.TestScenarioResults
@@ -216,7 +216,7 @@ constructor(
      * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
     @JvmOverloads
-    fun update(maxAge: Long = 0): List<FetchBatch>  {
+    fun update(maxAge: Long = 0): List<ModbusQuery>  {
         return registerBlockFetcher?.update(maxAge) ?: listOf()
     }
 
@@ -225,7 +225,7 @@ constructor(
      * @param field the Field that must be updated
      * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    fun update(field: Field): List<FetchBatch> {
+    fun update(field: Field): List<ModbusQuery> {
         return registerBlockFetcher?.update(field) ?: listOf()
     }
 
@@ -235,7 +235,7 @@ constructor(
      */
     @Throws(ModbusException::class)
     @JvmOverloads
-    fun updateAll(maxAge: Long = 0): List<FetchBatch> {
+    fun updateAll(maxAge: Long = 0): List<ModbusQuery> {
         initialize()
         needAll()
         val fetched = update(maxAge)

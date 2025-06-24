@@ -32,7 +32,7 @@ import nl.basjes.modbus.schema.expression.numbers.NumericalExpression
 import nl.basjes.modbus.schema.expression.parser.ExpressionParser.Companion.parse
 import nl.basjes.modbus.schema.expression.strings.StringExpression
 import nl.basjes.modbus.schema.expression.strings.StringListExpression
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
+import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import kotlin.properties.Delegates
 
@@ -334,7 +334,7 @@ class Field(
      * Directly update this field.
      * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
-    fun update(): List<FetchBatch> {
+    fun update(): List<ModbusQuery> {
         return block.schemaDevice.update(this)
     }
 

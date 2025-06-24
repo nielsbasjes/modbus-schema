@@ -27,7 +27,7 @@ fun requireValidIdentifier(
     fieldName: String,
 ) {
     if (!isValidIdentifier(id)) {
-        throw ModbusSchemaParseException("Illegal $fieldName: $id")
+        throw ModbusSchemaParseException("Illegal $fieldName: \"$id\"")
     }
 }
 

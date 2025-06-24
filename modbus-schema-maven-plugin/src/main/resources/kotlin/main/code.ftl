@@ -58,7 +58,7 @@ open class ${asClassName(className)} {
     /**
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
-     * @return A list of all fetches that have been done (with duration and status)
+     * @return A list of all modbus queries that have been done (with duration and status)
      */
     @JvmOverloads
     fun update(maxAge: Long = 0) = schemaDevice.update(maxAge)
@@ -66,13 +66,13 @@ open class ${asClassName(className)} {
     /**
      * Update all registers related to the specified field
      * @param field the Field that must be updated
-     * @return A list of all fetches that have been done (with duration and status)
+     * @return A list of all modbus queries that have been done (with duration and status)
      */
     fun update(field: Field) = schemaDevice.update(field)
 
     /**
      * Make sure all registers mentioned in all known fields are retrieved.
-     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
     @JvmOverloads
     fun updateAll(maxAge: Long = 0) = schemaDevice.updateAll(maxAge)
@@ -112,7 +112,7 @@ open class ${asClassName(className)} {
         fun unNeed() = field.unNeed()
         /**
          * Directly update this field
-         * @return A list of all fetches that have been done (with duration and status)
+         * @return A list of all modbus queries that have been done (with duration and status)
          */
         fun update() = field.update();
         /**
@@ -138,7 +138,7 @@ open class ${asClassName(className)} {
 
         /**
          * Directly update all fields in this Block
-         * @return A list of all fetches that have been done (with duration and status)
+         * @return A list of all modbus queries that have been done (with duration and status)
          */
         fun update() = block.update()
 

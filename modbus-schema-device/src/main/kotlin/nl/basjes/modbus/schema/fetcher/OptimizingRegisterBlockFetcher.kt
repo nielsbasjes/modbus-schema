@@ -34,11 +34,11 @@ class OptimizingRegisterBlockFetcher(
             field = value
         }
 
-    override fun calculateFetchBatches(maxAge: Long): List<FetchBatch> {
-        val fetchBatches: MutableList<FetchBatch> = ArrayList()
+    override fun calculateModbusQueries(maxAge: Long): List<ModbusQuery> {
+        val modbusQueries: MutableList<ModbusQuery> = ArrayList()
 
         // This is the most fine-grained list of batches.
-        val rawFetchBatchList = super.calculateFetchBatches(maxAge)
+        val rawFetchBatchList = super.calculateModbusQueries(maxAge)
 
         // Any raw fetch batch that contains ANY ReadError register is dropped
         // Since these are the smallest possible ones this cannot be repaired.
@@ -80,18 +80,18 @@ class OptimizingRegisterBlockFetcher(
         // Copy the next batch from the provided list
         // Then for each following provided batch either merge or not merge.
         var nextInput = fetchBatchIterator.next()
-        var nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+        var nextBatch = MergedModbusQuery(nextInput.start, nextInput.count)
         nextBatch.add(nextInput)
-        fetchBatches.add(nextBatch)
+        modbusQueries.add(nextBatch)
 
         while (fetchBatchIterator.hasNext()) {
             nextInput = fetchBatchIterator.next()
 
             if (nextBatch.start.addressClass != nextInput.start.addressClass) {
                 // Different addressClass is ALWAYS start a new batch
-                nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+                nextBatch = MergedModbusQuery(nextInput.start, nextInput.count)
                 nextBatch.add(nextInput)
-                fetchBatches.add(nextBatch)
+                modbusQueries.add(nextBatch)
                 continue
             }
 
@@ -105,9 +105,9 @@ class OptimizingRegisterBlockFetcher(
                     nextBatch.add(nextInput)
                 } else {
                     // DO NOT Merge
-                    nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+                    nextBatch = MergedModbusQuery(nextInput.start, nextInput.count)
                     nextBatch.add(nextInput)
-                    fetchBatches.add(nextBatch)
+                    modbusQueries.add(nextBatch)
                 }
                 continue
             }
@@ -125,13 +125,13 @@ class OptimizingRegisterBlockFetcher(
                 nextBatch.add(nextInput)
             } else {
                 // DO NOT Merge (i.e. start a new one)
-                nextBatch = MergedFetchBatch(nextInput.start, nextInput.count)
+                nextBatch = MergedModbusQuery(nextInput.start, nextInput.count)
                 nextBatch.add(nextInput)
-                fetchBatches.add(nextBatch)
+                modbusQueries.add(nextBatch)
             }
         }
 
-        return fetchBatches
+        return modbusQueries
     }
 
 }

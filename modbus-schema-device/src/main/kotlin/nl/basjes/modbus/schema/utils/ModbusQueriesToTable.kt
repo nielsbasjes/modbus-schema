@@ -16,10 +16,10 @@
  */
 package nl.basjes.modbus.schema.utils
 
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
+import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import kotlin.time.DurationUnit
 
-fun List<FetchBatch>.toTable(): String {
+fun List<ModbusQuery>.toTable(): String {
     val table = StringTable()
     table.withHeaders("Start Address", "Registers", "Status", "Duration (ms)", "Block", "Fields")
     this.forEach { fetch ->

@@ -24,7 +24,6 @@ import nl.basjes.modbus.schema.createTestModbusDevice
 import nl.basjes.modbus.schema.createTestSchemaDevice
 import nl.basjes.modbus.schema.deadAddress
 import nl.basjes.modbus.schema.deadSize
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch
 import nl.basjes.modbus.schema.get
 import nl.basjes.modbus.schema.utils.println
 import nl.basjes.modbus.schema.utils.toTable
@@ -75,8 +74,8 @@ internal class TestScenarioRegisterBlockFetcher {
         // ----------------------------------------------------
         // First fetch. Nothing loaded yet: All must be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
-        var fetchBatches: List<FetchBatch> = fetcher.calculateFetchBatches(0)
-        LOG.warn("Fetch Batches (Clean ): {}", fetchBatches)
+        var modbusQueries: List<ModbusQuery> = fetcher.calculateModbusQueries(0)
+        LOG.warn("Fetch Batches (Clean ): {}", modbusQueries)
 
         fetcher.update().toTable().println("\n")
 
@@ -87,8 +86,8 @@ internal class TestScenarioRegisterBlockFetcher {
         // Second fetch. All fields have been loaded; only the mutable fields should be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
 
-        fetchBatches = fetcher.calculateFetchBatches(0)
-        LOG.warn("Fetch Batches (Update): {}", fetchBatches)
+        modbusQueries = fetcher.calculateModbusQueries(0)
+        LOG.warn("Fetch Batches (Update): {}", modbusQueries)
         fetcher.update().toTable().println("\n")
 
         assertCorrectFieldValues(schemaDevice)
@@ -163,8 +162,8 @@ internal class TestScenarioRegisterBlockFetcher {
         // ----------------------------------------------------
         // First fetch. Nothing loaded yet: All must be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
-        var fetchBatches: List<FetchBatch> = fetcher.calculateFetchBatches(0)
-        LOG.warn("Fetch Batches (Clean ): {}", fetchBatches)
+        var modbusQueries: List<ModbusQuery> = fetcher.calculateModbusQueries(0)
+        LOG.warn("Fetch Batches (Clean ): {}", modbusQueries)
 
         fetcher.update()
 
@@ -175,8 +174,8 @@ internal class TestScenarioRegisterBlockFetcher {
         // Second fetch. All fields have been loaded; only the mutable fields should be fetched
         TimeUnit.MILLISECONDS.sleep(10) // Needed to cleanly separate the first and second fetch
 
-        fetchBatches = fetcher.calculateFetchBatches(0)
-        LOG.warn("Fetch Batches (Update): {}", fetchBatches)
+        modbusQueries = fetcher.calculateModbusQueries(0)
+        LOG.warn("Fetch Batches (Update): {}", modbusQueries)
         fetcher.update()
 
         assertCorrectFieldValues(schemaDevice)

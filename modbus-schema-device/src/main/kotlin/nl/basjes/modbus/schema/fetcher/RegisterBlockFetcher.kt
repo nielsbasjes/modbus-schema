@@ -23,12 +23,10 @@ import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch.FetchStatus
+import nl.basjes.modbus.schema.fetcher.ModbusQuery.ModbusQueryStatus
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.util.Objects
 import java.util.TreeMap
-import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 /**
@@ -85,16 +83,16 @@ open class RegisterBlockFetcher(
      * We force an immediate update of all registers needed for the provided field.
      * No batching, buffering or any optimization is done.
      * @param field The field that must be updated
-     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    fun update(field: Field): List<FetchBatch> {
+    fun update(field: Field): List<ModbusQuery> {
         require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
 
         if (field.isUsingHardReadErrorRegisters()) {
             return listOf()// Cannot update
         }
 
-        val fetched = mutableListOf<FetchBatch>()
+        val fetched = mutableListOf<ModbusQuery>()
 
         // Make sure all fields needed to build the requested value are also present
         field.requiredFields.forEach { fetched.addAll(it.update()) }
@@ -110,94 +108,33 @@ open class RegisterBlockFetcher(
             // Nothing to update
             return listOf()
         }
-        val fetchBatch = FetchBatch(requiredRegisters[0], requiredRegisters.size)
-        fetchBatch.fields.add(field)
-        val deviceRegisters = modbusDevice.getRegisters(fetchBatch)
+        val modbusQuery = ModbusQuery(requiredRegisters[0], requiredRegisters.size)
+        modbusQuery.fields.add(field)
+        val deviceRegisters = modbusDevice.getRegisters(modbusQuery)
         if (deviceRegisters.values.any { it.isReadError() }) {
             // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
-            fetchBatch.status = FetchStatus.ERROR
+            modbusQuery.status = ModbusQueryStatus.ERROR
             deviceRegisters.values.forEach { it.setHardReadError() }
         }
 
         schemaDevice.getRegisterBlock(deviceRegisters.addressClass).merge(deviceRegisters)
-        fetched.add(fetchBatch)
+        fetched.add(modbusQuery)
         return fetched
     }
 
-    fun ModbusDevice.getRegisters(fetchBatch: FetchBatch): RegisterBlock {
+    fun ModbusDevice.getRegisters(modbusQuery: ModbusQuery): RegisterBlock {
         val start = TimeSource.Monotonic.markNow()
         try {
-            val registerBlock = this.getRegisters(fetchBatch.start, fetchBatch.count)
-            fetchBatch.status = FetchStatus.SUCCESS
+            val registerBlock = this.getRegisters(modbusQuery.start, modbusQuery.count)
+            modbusQuery.status = ModbusQueryStatus.SUCCESS
             return registerBlock
         } catch (modbusException: ModbusException) {
-            fetchBatch.status = FetchStatus.ERROR
+            modbusQuery.status = ModbusQueryStatus.ERROR
             throw modbusException
         }
         finally {
             val stop = TimeSource.Monotonic.markNow()
-            fetchBatch.duration = stop - start
-        }
-    }
-
-    open class FetchBatch(
-        val start: Address,
-        var count: Int,
-    ) : Comparable<FetchBatch> {
-        /**
-         * The number of milliseconds the actual fetch took.
-         * NULL if not fetched yet.
-         */
-        var duration: Duration? = null
-        var status: FetchStatus = FetchStatus.NOT_FETCHED
-
-        enum class FetchStatus {
-            NOT_FETCHED,
-            ERROR,
-            SUCCESS
-        }
-
-        /** The affected list of fields */
-        val fields: MutableList<Field> = mutableListOf()
-
-        override fun compareTo(other: FetchBatch): Int {
-            val addressCompare = start.compareTo(other.start)
-            if (addressCompare != 0) {
-                return addressCompare
-            }
-            return count.compareTo(other.count)
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) {
-                return true
-            }
-            if (other !is FetchBatch) {
-                return false
-            }
-            return count == other.count && start == other.start
-        }
-
-        override fun hashCode(): Int = Objects.hash(start, count)
-
-        override fun toString(): String =
-            "FetchBatch { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
-    }
-
-    /**
-     * When doing fetch optimization we are sometimes combining the FetchBatches.
-     * This is the class to hold such a combination.
-     * This is needed to be able to handle the retry in case of a read error
-     */
-    class MergedFetchBatch(
-        start: Address,
-        count: Int,
-    ) : FetchBatch(start, count) {
-        val fetchBatches: MutableList<FetchBatch> = ArrayList()
-
-        fun add(fetchBatch: FetchBatch) {
-            fetchBatches.add(fetchBatch)
-            fields.addAll(fetchBatch.fields)
+            modbusQuery.duration = stop - start
         }
     }
 
@@ -207,28 +144,28 @@ open class RegisterBlockFetcher(
      * @return A (possibly empty) list of all fetches that have been done (with duration and status)
      */
     @JvmOverloads
-    fun update(maxAge: Long = 0): List<FetchBatch> {
+    fun update(maxAge: Long = 0): List<ModbusQuery> {
         synchronized(this) {
-            val fetched = mutableListOf<FetchBatch>()
-            for (fetchBatch in calculateFetchBatches(maxAge)) {
+            val fetched = mutableListOf<ModbusQuery>()
+            for (fetchBatch in calculateModbusQueries(maxAge)) {
                 fetched.addAll(fetch(fetchBatch))
             }
             return fetched
         }
     }
 
-    private fun fetch(fetchBatch: FetchBatch): List<FetchBatch> {
-        val fetched = mutableListOf<FetchBatch>()
+    private fun fetch(modbusQuery: ModbusQuery): List<ModbusQuery> {
+        val fetched = mutableListOf<ModbusQuery>()
         try {
-            val registers = modbusDevice.getRegisters(fetchBatch)
-            fetched.add(fetchBatch)
+            val registers = modbusDevice.getRegisters(modbusQuery)
+            fetched.add(modbusQuery)
             val registerBlock = schemaDevice.getRegisterBlock(registers.addressClass)
             registerBlock.merge(registers)
             if (registers.values.any { it.isReadError() }) {
-                fetchBatch.status = FetchStatus.ERROR
-                if (fetchBatch is MergedFetchBatch) {
+                modbusQuery.status = ModbusQueryStatus.ERROR
+                if (modbusQuery is MergedModbusQuery) {
                     // If we have a merged fetch then we retry on the individuals.
-                    for (fetchPart in fetchBatch.fetchBatches) {
+                    for (fetchPart in modbusQuery.modbusQueries) {
                         fetched.addAll(fetch(fetchPart))
                     }
 
@@ -236,7 +173,7 @@ open class RegisterBlockFetcher(
                     // of any intermediate Fields ... that have just been wiped.
 
                     // We get the blocks this batch touches.
-                    val blocks = fetchBatch.fields.map { it.block }.distinct()
+                    val blocks = modbusQuery.fields.map { it.block }.distinct()
 
                     // We get ALL fields that have registers in the current batch range
                     // and update them one by one. Regardless if they are needed.
@@ -244,8 +181,8 @@ open class RegisterBlockFetcher(
                     blocks
                         .map { it.fields }
                         .flatten()
-                        .filter { !fetchBatch.fields.contains(it) }
-                        .filter { it.requiredRegisters.overlaps(fetchBatch.start, fetchBatch.count) }
+                        .filter { !modbusQuery.fields.contains(it) }
+                        .filter { it.requiredRegisters.overlaps(modbusQuery.start, modbusQuery.count) }
                         .forEach { fetched.addAll(it.update()) }
                     return fetched
                 } else {
@@ -255,9 +192,9 @@ open class RegisterBlockFetcher(
                 }
             }
         } catch (me: ModbusException) {
-            LOG.error("Got ModbusException on {} --> {}", fetchBatch, me)
+            LOG.error("Got ModbusException on {} --> {}", modbusQuery, me)
         }
-        return listOf(fetchBatch)
+        return listOf(modbusQuery)
     }
 
     /**
@@ -265,7 +202,7 @@ open class RegisterBlockFetcher(
      * @param maxAge The maximum age (in milliseconds) of the data for it to need an update.
      * @return The list of address ranges that must be retrieved (Sorted by the start address)
      */
-    open fun calculateFetchBatches(maxAge: Long): List<FetchBatch> {
+    open fun calculateModbusQueries(maxAge: Long): List<ModbusQuery> {
         val now = System.currentTimeMillis()
 
         val fieldsThatMustBeUpdated: MutableList<Field> = ArrayList()
@@ -294,7 +231,7 @@ open class RegisterBlockFetcher(
         val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
 
         // For each fetchGroup that needs to be updated we create a single batch
-        val fetchBatchesMap: MutableMap<String, FetchBatch> = TreeMap()
+        val fetchBatchesMap: MutableMap<String, ModbusQuery> = TreeMap()
         for (field in fieldsThatMustBeUpdated) {
             var fetchBatch = fetchBatchesMap[field.fetchGroup]
             if (fetchBatch != null) {
@@ -302,7 +239,7 @@ open class RegisterBlockFetcher(
                 continue  // Already have this one
             }
             val addresses: List<Address> = fetchGroupToAddresses[field.fetchGroup]!!
-            fetchBatch = FetchBatch(addresses[0], addresses.size)
+            fetchBatch = ModbusQuery(addresses[0], addresses.size)
             fetchBatch.fields.add(field)
             fetchBatchesMap[field.fetchGroup] = fetchBatch
         }

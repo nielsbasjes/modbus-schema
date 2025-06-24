@@ -35,7 +35,7 @@ import nl.basjes.modbus.schema.Field;
 import nl.basjes.modbus.schema.Block;
 import nl.basjes.modbus.schema.SchemaDevice;
 import nl.basjes.modbus.schema.YamlLoaderKt;
-import nl.basjes.modbus.schema.fetcher.RegisterBlockFetcher.FetchBatch;
+import nl.basjes.modbus.schema.fetcher.ModbusQuery;
 import nl.basjes.modbus.schema.test.TestScenario;
 import nl.basjes.modbus.schema.utils.StringTable;
 
@@ -73,35 +73,35 @@ public class ${asClassName(className)} {
 
     /**
      * Update all registers related to the needed fields to be updated
-     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public List<FetchBatch> update() {
+    public List<ModbusQuery> update() {
         return schemaDevice.update();
     }
 
     /**
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
      * @param maxAge maximum age of the fields in milliseconds
-     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public List<FetchBatch> update(Long maxAge) {
+    public List<ModbusQuery> update(Long maxAge) {
         return schemaDevice.update(maxAge);
     }
 
     /**
      * Update all registers related to the specified field
      * @param field the Field that must be updated
-     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public List<FetchBatch> update(Field field) {
+    public List<ModbusQuery> update(Field field) {
         return schemaDevice.update(field);
     }
 
     /**
      * Make sure all registers mentioned in all known fields are retrieved.
-     * @return A (possibly empty) list of all fetches that have been done (with duration and status)
+     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    public List<FetchBatch> updateAll() throws ModbusException {
+    public List<ModbusQuery> updateAll() throws ModbusException {
         return schemaDevice.updateAll();
     }
 
@@ -156,9 +156,9 @@ public class ${asClassName(className)} {
       }
       /**
        * Directly update this field
-       * @return A list of all fetches that have been done (with duration and status)
+       * @return A list of all modbus queries that have been done (with duration and status)
        */
-      public List<FetchBatch> update() {
+      public List<ModbusQuery> update() {
           return field.update();
       }
       /**
@@ -200,9 +200,9 @@ public class ${asClassName(className)} {
 
         /**
          * Directly update all fields in this Block
-         * @return A list of all fetches that have been done (with duration and status)
+         * @return A list of all modbus queries that have been done (with duration and status)
          */
-        public List<FetchBatch> update() {
+        public List<ModbusQuery> update() {
             return block.update();
         }
 
