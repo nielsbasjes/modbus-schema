@@ -4,7 +4,7 @@ This is a specification and a library that makes reading data from Modbus device
 # Modbus Schema Toolkit
 This is part of the Modbus Schema Toolkit I ([Niels Basjes](https://niels.basjes.nl)) created that makes retrieving data from Modbus based devices a lot easier.
 
-I have split this into 3 projects:
+I have split this into 4 projects:
 - [Modbus Schema](https://github.com/nielsbasjes/modbus-schema):
   - A toolkit and schema definition
   - [![License](https://img.shields.io/:license-apache-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
