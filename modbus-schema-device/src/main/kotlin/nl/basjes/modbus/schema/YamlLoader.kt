@@ -226,7 +226,7 @@ data class Schema(
     val maxRegistersPerModbusRequest: Int = MODBUS_MAX_REGISTERS_PER_REQUEST,
     val blocks: List<SchemaBlock>,
     /** A list of all test scenarios for this block */
-    val tests: List<SchemaTest>,
+    val tests: List<SchemaTest> = emptyList(),
 ) {
     override fun toString(): String = yaml.encodeToString(serializer(), this)
 }

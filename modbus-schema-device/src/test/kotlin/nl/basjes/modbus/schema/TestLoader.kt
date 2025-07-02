@@ -65,6 +65,32 @@ class TestLoader {
     }
 
     @Test
+    fun testGoodSchemaWithoutTests() {
+        val schema =
+            """
+            description: 'A device'
+            schemaFeatureLevel: 1
+            blocks:
+            - id: 'Main'
+              description:  'The only block of registers'
+              fields:
+              - id: 'MyFloat'
+                description:  'A Float 32'
+                expression: 'ieee754_32(hr:00000 # 2)'
+                unit: 'Foo'
+
+              - id: 'MyDouble'
+                description:  'A Float 64'
+                expression: 'ieee754_64(hr:00002 # 4)'
+                unit: 'Bar'
+            """.trimIndent()
+
+        val device =  schema.toSchemaDevice()
+        assertNotNull(device)
+        assertTrue(device.initializeAndVerify())
+    }
+
+    @Test
     fun testBadSchema() {
         val schema =
             """
