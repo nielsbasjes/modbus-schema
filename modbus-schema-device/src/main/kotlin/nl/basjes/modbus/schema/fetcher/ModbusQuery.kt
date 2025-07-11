@@ -31,9 +31,9 @@ open class ModbusQuery(
      * NULL if not fetched yet.
      */
     var duration: Duration? = null
-    var status: ModbusQueryStatus = ModbusQueryStatus.NOT_FETCHED
+    var status: Status = Status.NOT_FETCHED
 
-    enum class ModbusQueryStatus {
+    enum class Status {
         NOT_FETCHED,
         ERROR,
         SUCCESS
@@ -59,10 +59,10 @@ open class ModbusQuery(
         if (other !is ModbusQuery) {
             return false
         }
-        return count == other.count && start == other.start
+        return count == other.count && start == other.start && status == other.status && fields == other.fields
     }
 
-    override fun hashCode(): Int = Objects.hash(start, count)
+    override fun hashCode(): Int = Objects.hash(start, count, status, fields)
 
     override fun toString(): String =
         "FetchBatch { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"

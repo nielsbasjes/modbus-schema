@@ -22,12 +22,13 @@ import nl.basjes.modbus.device.api.AddressClass.Type.REGISTER
 import nl.basjes.modbus.device.api.DiscreteBlock
 import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.ModbusValue
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.fetcher.ModbusQuery.ModbusQueryStatus
+import nl.basjes.modbus.schema.fetcher.ModbusQuery.Status
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.TreeMap
@@ -119,7 +120,7 @@ open class ModbusBlockFetcher(
                 val deviceDiscretes = modbusDevice.getDiscretes(modbusQuery)
                 if (deviceDiscretes.values.any { it.isReadError() }) {
                     // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
-                    modbusQuery.status = ModbusQueryStatus.ERROR
+                    modbusQuery.status = Status.ERROR
                     deviceDiscretes.values.forEach { it.setHardReadError() }
                 }
                 val modbusBlock = schemaDevice.getModbusBlock(deviceDiscretes.addressClass)
@@ -131,7 +132,7 @@ open class ModbusBlockFetcher(
                 val deviceRegisters = modbusDevice.getRegisters(modbusQuery)
                 if (deviceRegisters.values.any { it.isReadError() }) {
                     // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
-                    modbusQuery.status = ModbusQueryStatus.ERROR
+                    modbusQuery.status = Status.ERROR
                     deviceRegisters.values.forEach { it.setHardReadError() }
                 }
                 val modbusBlock = schemaDevice.getModbusBlock(deviceRegisters.addressClass)
@@ -149,10 +150,10 @@ open class ModbusBlockFetcher(
         val start = TimeSource.Monotonic.markNow()
         try {
             val discreteBlock = this.getDiscretes(modbusQuery.start, modbusQuery.count)
-            modbusQuery.status = ModbusQueryStatus.SUCCESS
+            modbusQuery.status = Status.SUCCESS
             return discreteBlock
         } catch (modbusException: ModbusException) {
-            modbusQuery.status = ModbusQueryStatus.ERROR
+            modbusQuery.status = Status.ERROR
             throw modbusException
         }
         finally {
@@ -165,10 +166,10 @@ open class ModbusBlockFetcher(
         val start = TimeSource.Monotonic.markNow()
         try {
             val registerBlock = this.getRegisters(modbusQuery.start, modbusQuery.count)
-            modbusQuery.status = ModbusQueryStatus.SUCCESS
+            modbusQuery.status = Status.SUCCESS
             return registerBlock
         } catch (modbusException: ModbusException) {
-            modbusQuery.status = ModbusQueryStatus.ERROR
+            modbusQuery.status = Status.ERROR
             throw modbusException
         }
         finally {
@@ -213,7 +214,7 @@ open class ModbusBlockFetcher(
             val existingModbusBlock = schemaDevice.getModbusBlock(fetchedModbusBlock.addressClass)
             existingModbusBlock.mergeFetched(fetchedModbusBlock)
             if (fetchedModbusBlock.values.any { it.isReadError() }) {
-                modbusQuery.status = ModbusQueryStatus.ERROR
+                modbusQuery.status = Status.ERROR
                 if (modbusQuery is MergedModbusQuery) {
                     // If we have a merged fetch then we retry on the individuals.
                     for (fetchPart in modbusQuery.modbusQueries) {
@@ -235,6 +236,46 @@ open class ModbusBlockFetcher(
                         .filter { !modbusQuery.fields.contains(it) }
                         .filter { it.requiredAddresses.overlaps(modbusQuery.start, modbusQuery.count) }
                         .forEach { fetched.addAll(it.update()) }
+
+                    // At this point we have fetched all fields defined as use values which are part of this error query.
+                    // If there is a hole (i.e. no field defined for an address) this is now still a soft read error.
+                    // We now try to fetch each of those to contiguous blocks to make them either a value or a hard error
+                    // This is needed for later queries to be optimized better.
+                    val holes = mutableListOf<ModbusValue<*,*>>()
+                    for (index in 0 until modbusQuery.count) {
+                        val modbusValue = existingModbusBlock[modbusQuery.start.increment(index)]
+                        // Checking known hard read errors is useless, only soft read errors
+                        if (modbusValue.isReadError() && !modbusValue.hardReadError) {
+                            holes.add(modbusValue)
+                        }
+                    }
+                    // We must recombine the holes into blocks because reading 'half' of an (undefined) logical value
+                    // may result in a needless read error.
+                    // We can combine everything we find because we know all fit into a single modbus query.
+                    if (holes.isNotEmpty()) {
+                        val holeQueries = mutableListOf<ModbusQuery>()
+                        var previousHole = holes[0]
+                        var holeQuery = ModbusQuery(previousHole.address, 1)
+                        for (holeIndex in 1 until holes.size) {
+                            val hole = holes[holeIndex]
+                            if (previousHole.address.increment(1) == hole.address) {
+                                // Extend current query
+                                holeQuery.count++
+                            } else {
+                                // Keep the current query and create a new one for this hole
+                                holeQueries.add(holeQuery)
+                                holeQuery = ModbusQuery(hole.address, 1)
+                            }
+                            previousHole = hole
+                        }
+                        holeQueries.add(holeQuery)
+
+                        // Now do the queries
+                        for (holeQuery in holeQueries) {
+                            fetched.addAll(fetch(holeQuery))
+                        }
+                    }
+
                     return fetched
                 } else {
 //                    println("-----READ ERROR getting $fetchBatch ; Fields are marked as DEAD")
