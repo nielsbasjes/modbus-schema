@@ -53,4 +53,9 @@ class TestSchemaYamlCycle: VerifyYamlCycle() {
         verifySchemaCycle(File("src/test/resources/TestSchemas/SunSpecEmulatedDer.yaml").readText().toSchemaDevice())
     }
 
+    @Test
+    fun `Verify Yaml cycle with Test Device Schema which includes Discretes`() {
+        verifySchemaCycle(File("src/test/resources/TestSchemas/TestDevice.yaml").readText().toSchemaDevice())
+    }
+
 }
