@@ -166,7 +166,7 @@ open class ${asClassName(className)} {
             Field.builder()
                  .block(block)
                  .id("${field.id}")
-                 .description("${field.description}")
+                 .description("${escapeForJava(field.description)}")
                  .expression("${field.parsedExpression}")
                  .unit("${field.unit}")
                  .immutable(${field.immutable?string('true', 'false')})
@@ -182,7 +182,7 @@ open class ${asClassName(className)} {
               .schemaDevice(schemaDevice)
               .id("${block.id}")
 <#if block.description??>
-              .description("${block.description}")
+              .description("${escapeForJava(block.description)}")
 </#if>
               .build()
 

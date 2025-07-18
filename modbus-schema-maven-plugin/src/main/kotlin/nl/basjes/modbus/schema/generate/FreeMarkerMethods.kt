@@ -160,7 +160,6 @@ class PackageAsPath : BaseSingleStringMethod() {
 class EscapeStringForJava : BaseSingleStringMethod() {
     override fun transform(input: String) : String {
         val sb = StringBuilder()
-        sb.append('"')
         for (char in input) {
             when (char) {
                 '\\' -> sb.append("\\\\")
@@ -179,7 +178,6 @@ class EscapeStringForJava : BaseSingleStringMethod() {
                 }
             }
         }
-        sb.append('"')
         return sb.toString()
     }
 }
