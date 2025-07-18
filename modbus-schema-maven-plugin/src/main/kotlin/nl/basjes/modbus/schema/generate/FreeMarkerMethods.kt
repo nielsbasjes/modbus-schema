@@ -25,6 +25,10 @@ import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
+import nl.basjes.modbus.schema.expression.booleans.BooleanBit
+import nl.basjes.modbus.schema.expression.booleans.BooleanBitset
+import nl.basjes.modbus.schema.expression.booleans.BooleanConstant
+import nl.basjes.modbus.schema.expression.booleans.BooleanField
 import nl.basjes.modbus.schema.expression.numbers.Add
 import nl.basjes.modbus.schema.expression.numbers.Divide
 import nl.basjes.modbus.schema.expression.numbers.DoubleConstant
@@ -43,6 +47,7 @@ import nl.basjes.modbus.schema.expression.numbers.Power
 import nl.basjes.modbus.schema.expression.numbers.Subtract
 import nl.basjes.modbus.schema.expression.registers.RegistersConstantExpression
 import nl.basjes.modbus.schema.expression.modbus.DiscreteModbusExpression
+import nl.basjes.modbus.schema.expression.modbus.RegistersModbusExpression
 import nl.basjes.modbus.schema.expression.registers.SwapBytes
 import nl.basjes.modbus.schema.expression.registers.SwapEndian
 import nl.basjes.modbus.schema.expression.strings.BitsetStringList
@@ -54,6 +59,7 @@ import nl.basjes.modbus.schema.expression.strings.IPv6AddrString
 import nl.basjes.modbus.schema.expression.strings.StringConcat
 import nl.basjes.modbus.schema.expression.strings.StringConstant
 import nl.basjes.modbus.schema.expression.strings.StringField
+import nl.basjes.modbus.schema.expression.strings.StringFromBoolean
 import nl.basjes.modbus.schema.expression.strings.StringFromNumber
 import nl.basjes.modbus.schema.expression.strings.UTF8String
 import nl.basjes.modbus.schema.toYaml
@@ -64,7 +70,8 @@ val expressionMappings =
     mapOf(
         // Registers
         "ExpressionRegistersConstant"          to RegistersConstantExpression::class,
-        "ExpressionGetModbus"                  to DiscreteModbusExpression::class,
+        "ExpressionGetModbusRegisters"         to RegistersModbusExpression::class,
+        "ExpressionGetModbusDiscretes"         to DiscreteModbusExpression::class,
         "ExpressionSwapBytes"                  to SwapBytes::class,
         "ExpressionSwapEndian"                 to SwapEndian::class,
         // Numerical Values
@@ -99,10 +106,17 @@ val expressionMappings =
         // String Operations
         "ExpressionStringConcat"               to StringConcat::class,
         "ExpressionStringFromNumber"           to StringFromNumber::class,
+        "ExpressionStringFromBoolean"          to StringFromBoolean::class,
+        // Boolean values
+        "ExpressionBooleanBit"                 to BooleanBit::class,
+        "ExpressionBooleanBitset"              to BooleanBitset::class,
+        "ExpressionBooleanField"               to BooleanField::class,
+        "ExpressionBooleanConstant"            to BooleanConstant::class,
     )
 
 fun Configuration.registerAdditionalMethods() =
     run {
+        this.setSharedVariable("escapeForJava",         EscapeStringForJava())
         this.setSharedVariable("packageAsPath",         PackageAsPath())
         this.setSharedVariable("asClassName",           MakeCodeCompliantName(true))
         this.setSharedVariable("asVariableName",        MakeCodeCompliantName(false))
@@ -141,6 +155,33 @@ class MakeCodeCompliantName(
 
 class PackageAsPath : BaseSingleStringMethod() {
     override fun transform(input: String) = input.replace('.', '/')
+}
+
+class EscapeStringForJava : BaseSingleStringMethod() {
+    override fun transform(input: String) : String {
+        val sb = StringBuilder()
+        sb.append('"')
+        for (char in input) {
+            when (char) {
+                '\\' -> sb.append("\\\\")
+                '\"' -> sb.append("\\\"")
+                '\n' -> sb.append("\\n")
+                '\r' -> sb.append("\\r")
+                '\t' -> sb.append("\\t")
+                '\b' -> sb.append("\\b")
+                '\u000C' -> sb.append("\\f") // form feed
+                else -> {
+                    if (char < ' ' || char > '~') {
+                        sb.append(String.format("\\u%04x", char.code))
+                    } else {
+                        sb.append(char)
+                    }
+                }
+            }
+        }
+        sb.append('"')
+        return sb.toString()
+    }
 }
 
 class BreakStringBlock : TemplateMethodModelEx {

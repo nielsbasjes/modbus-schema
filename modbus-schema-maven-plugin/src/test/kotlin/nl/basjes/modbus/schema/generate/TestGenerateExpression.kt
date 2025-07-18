@@ -21,6 +21,7 @@ import nl.basjes.modbus.schema.toSchemaDevice
 import java.io.File
 import java.io.StringWriter
 import kotlin.test.Test
+import kotlin.test.assertFalse
 
 class TestGenerateExpression {
 
@@ -38,6 +39,7 @@ class TestGenerateExpression {
             "Foo",
             output,
         )
-        log.info("\n$output")
+        log.info("\n${output.toString().replace(Regex("(@@@[A-Za-z0-9: _-]+@@@)"), "${LogColor.RED}$1${LogColor.RESET}")}")
+        assertFalse(output.toString().contains("@@@"), "Something went wrong in the generated code" )
     }
 }
