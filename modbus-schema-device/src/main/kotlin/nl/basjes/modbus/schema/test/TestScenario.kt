@@ -20,6 +20,7 @@ import nl.basjes.modbus.device.api.DiscreteBlock
 import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.memory.MockedModbusDevice
+ import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.SchemaDevice.TestResult
 import nl.basjes.modbus.schema.get
@@ -146,17 +147,34 @@ open class TestScenarioResults(
     fun toTable(onlyFailed: Boolean = false): String {
         val stringTable =
             StringTable()
-                .withHeaders("Test", "Block", "Field", "Unit", "Expected", "Actual", "Good?")
+                .withHeaders("Test", "Block", "Field", "Unit", "Expected", "Actual", "ReturnType", "Good?")
+
+        fun List<String>.typedString(returnType: ReturnType) =
+            when(returnType) {
+                ReturnType.BOOLEAN,
+                ReturnType.LONG,
+                ReturnType.DOUBLE -> "[ " + joinToString { it } + " ]"
+                ReturnType.UNKNOWN,
+                ReturnType.STRING,
+                ReturnType.STRINGLIST -> "[ " + joinToString { "\"$it\"" } + " ]"
+            }
+
+
         for ((blockId, results) in testResults) {
             for ((fieldId, testResult) in results) {
                 if (!onlyFailed || !testResult.passed) {
+                    val field = schemaDevice[blockId][fieldId]
+                    requireNotNull(field) {
+                        "The field: $blockId->$fieldId which was present while running the test is now suddenly no longer available"
+                    }
                     stringTable.addRow(
                         testName,
                         blockId,
                         fieldId,
-                        schemaDevice.getBlock(blockId)?.getField(fieldId)?.unit ?: "",
-                        "\"" + testResult.expectedValue + "\"",
-                        "\"" + testResult.actualValue + "\"",
+                        field.unit,
+                        testResult.expectedValue.typedString(field.returnType),
+                        testResult.actualValue.typedString(field.returnType),
+                        field.returnType.name,
                         testResult.passed.toString(),
                     )
                 }
