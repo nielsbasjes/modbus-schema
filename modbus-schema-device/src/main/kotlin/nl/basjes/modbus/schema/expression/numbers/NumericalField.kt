@@ -23,8 +23,8 @@ import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 import nl.basjes.modbus.schema.expression.generic.MissingField
+import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
 
 class NumericalField(
     val fieldName: String,

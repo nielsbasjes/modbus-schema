@@ -16,7 +16,6 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
@@ -24,8 +23,8 @@ import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.INTEGER_BYTES
 import nl.basjes.modbus.schema.expression.LONG_BYTES
-import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.SHORT_BYTES
+import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToInteger

@@ -16,7 +16,6 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem

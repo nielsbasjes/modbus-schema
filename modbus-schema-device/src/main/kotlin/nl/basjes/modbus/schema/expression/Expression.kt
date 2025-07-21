@@ -16,9 +16,7 @@
 package nl.basjes.modbus.schema.expression
 
 import nl.basjes.modbus.device.api.Address
-import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.ModbusValue
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice

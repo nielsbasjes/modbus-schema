@@ -17,7 +17,6 @@
 package nl.basjes.modbus.schema.expression.numbers
 
 import nl.basjes.modbus.device.api.ModbusValue
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
