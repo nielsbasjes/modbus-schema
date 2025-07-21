@@ -85,17 +85,8 @@ class TestSchemaSpecification {
         val schemaDevice = schemaStream.toSchemaDevice()
         require(schemaDevice.initialize()) { "Unable to initialize schema device" }
         val results = schemaDevice.verifyProvidedTests()
-        var failed = false
-        for (result in results) {
-            if (result.allPassed) {
-                LOG.info("[PASS] Schema test \"${result.testName}\"")
-//                LOG.info("\n${result.toTable()}")
-            } else {
-                LOG.error("[FAIL] Schema test \"${result.testName}\":")
-                LOG.error("Failed fields:\n${result.toTable(true)}")
-                failed = true
-            }
+        require(results.logResults()) {
+            "Unable to verify all tests defined in the schema definition"
         }
-        require(!failed) { "Unable to verify all tests defined in the schema definition" }
     }
 }

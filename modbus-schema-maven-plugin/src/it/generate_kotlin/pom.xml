@@ -85,6 +85,7 @@
         <artifactId>modbus-schema-maven-plugin</artifactId>
         <version>${modbus-schema.version}</version>
         <configuration>
+          <!-- The schema is loaded from within this project -->
           <modbusSchemaFile>src/main/modbus/TestDevice.yaml</modbusSchemaFile>
           <packageName>nl.example.modbus</packageName>
           <className>MyNewDevice</className>

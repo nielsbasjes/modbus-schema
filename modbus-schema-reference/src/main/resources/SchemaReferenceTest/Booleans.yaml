@@ -29,13 +29,13 @@ blocks:
       - id: 'Boolean String'
         expression: "boolean(c:0;'No';'Yes')"
 
-      - id: 'String Using Boolean Value'
+      - id: 'String From Bool Value'
         expression: "concat('Foo<',boolean(c:0),'>')"
 
-      - id: 'String Using Boolean String'
+      - id: 'String From Bool String'
         expression: "concat('Bar<',boolean(c:0;'No';'Yes'),'>')"
 
-      - id: 'String Using Booleans Mixed'
+      - id: 'String From Bool Mixed'
         expression: "concat('Foo<',boolean(c:0),'>',' and ','Bar<',boolean(c:0;'No';'Yes'),'>')"
 
       - id: 'Boolean Field Reference'
@@ -54,9 +54,9 @@ tests:
         expected:
           'Boolean Value'               : [ 'false'                  ]
           'Boolean String'              : [ 'No'                     ]
-          'String Using Boolean Value'  : [ 'Foo<false>'             ]
-          'String Using Boolean String' : [ 'Bar<No>'                ]
-          'String Using Booleans Mixed' : [ 'Foo<false> and Bar<No>' ]
+          'String From Bool Value'      : [ 'Foo<false>'             ]
+          'String From Bool String'     : [ 'Bar<No>'                ]
+          'String From Bool Mixed'      : [ 'Foo<false> and Bar<No>' ]
           'Boolean Field Reference'     : [ 'Foo<false> and Bar<No>' ]
 
   - id: 'Discrete 1'
@@ -71,7 +71,7 @@ tests:
         expected:
           'Boolean Value'               : [ 'true'                   ]
           'Boolean String'              : [ 'Yes'                    ]
-          'String Using Boolean Value'  : [ 'Foo<true>'              ]
-          'String Using Boolean String' : [ 'Bar<Yes>'               ]
-          'String Using Booleans Mixed' : [ 'Foo<true> and Bar<Yes>' ]
+          'String From Bool Value'      : [ 'Foo<true>'              ]
+          'String From Bool String'     : [ 'Bar<Yes>'               ]
+          'String From Bool Mixed'      : [ 'Foo<true> and Bar<Yes>' ]
           'Boolean Field Reference'     : [ 'Foo<true> and Bar<Yes>' ]

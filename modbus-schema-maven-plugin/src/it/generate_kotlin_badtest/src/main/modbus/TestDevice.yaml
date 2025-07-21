@@ -16,90 +16,16 @@
 # limitations under the License.
 #
 
-description: 'Fake Device that uses all possible expressions'
-schemaFeatureLevel: 2
+description: 'Fake Device with error test'
+schemaFeatureLevel: 1
 blocks:
   - id: 'Main'
     description: 'The only block of registers'
     fields:
-      - id: 'CombinedNumerical'
-        description:  'A Combined Numerical Expression'
-        expression: '(ieee754_32(hr:00000 # 2) + ieee754_64(hr:00002 # 4))^2 / (MyShort * (5-3))'
-        unit: 'Foo'
-
-      - id: 'CombinedString'
-        description:  'A Combined String Expression'
-        expression: 'concat (MyName , ''@'' , MyIPv6)'
-        unit: 'Foo'
-
       - id: 'MyFloat'
         description:  'A Float 32'
         expression: 'ieee754_32(hr:00000 # 2)'
         unit: 'Foo'
-
-      - id: 'MyDouble'
-        description:  'A Float 64'
-        expression: 'ieee754_64(hr:00002 # 4)'
-        unit: 'Bar'
-
-      - id: 'MyBitset1'
-        description:  'Bitset 1 register'
-        expression: "bitset(hr:06                                  ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
-      - id: 'MyBitset2'
-        description:  'Bitset 2 registers'
-        expression: "bitset(hr:07#2                                ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )"
-      - id: 'MyBitset3'
-        description:  'Bitset 3 registers'
-        expression: "bitset(hr:9#3                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' )"
-      - id: 'MyBitset4'
-        description:  'Bitset 4 registers'
-        expression: "bitset(hr:12#4                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50' )"
-
-      - id: 'MyEnum'
-        description:  'Enum'
-        expression: "enum(hr:16 ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')"
-
-      - id: 'MyEUI48'
-        description:  'EUI48'
-        expression: "eui48(hr:17#3 )"
-
-      - id: 'MyShort'
-        description:  'Int 16'
-        expression: "int16(hr:21)"
-
-      - id: 'MyUnsignedShort'
-        description:  'Unsigned Int 16'
-        expression: "uint16(hr:22)"
-
-      - id: 'MyInteger'
-        description:  'Int 32'
-        expression: "int32(hr:23#2)"
-
-      - id: 'MyUnsignedInteger'
-        description:  'Unsigned Int 32'
-        expression: "uint32(hr:25#2)"
-
-      - id: 'MyLong'
-        description:  'Int 64'
-        expression: "int64(hr:27#4)"
-
-      - id: 'MyUnsignedLong'
-        description:  'Unsigned Int 64'
-        expression: "uint64(hr:31#4)"
-
-      - id: 'MyIPv4'
-        description:  'IPv4'
-        expression: "ipv4addr(hr:35#2)"
-
-      - id: 'MyIPv6'
-        description:  'IPv6'
-        expression: 'ipv6addr(hr:37#8)'
-
-      - id: 'MyName'
-        expression: 'utf8(hr:45#6)'
-
-      - id: 'MyNameHex'
-        expression: 'hexstring(hr:45#6)'
 
 tests:
   - id: 'Normal values'
@@ -108,45 +34,7 @@ tests:
       - firstAddress: 'hr:0'
         rawValues: >-
           449A 5225
-          4093 4A45 84FC D47C
-
-          100F
-          100F 100F
-          100F 100F 100F
-          100F 100F 100F 100F
-          0001
-
-          0102 0304 0506 0708
-
-          CFC7
-          3039
-          B669 FD2E
-          4996 02d2
-          EEDD EF0B 8216 7EEB
-          1122 10F4 7DE9 8115
-          0102 0304
-          0001 0203 0405 0607 0809 1011 1213 1415
-          4E69 656C 7320 4261 736A 6573
     blocks:
       - id: 'Main'
         expected:
-          MyFloat            : [ 111.111 ]
-          MyDouble           : [ 111.111 ]
-          MyEnum             : [ 'Automatic'   ]
-          MyBitset1          : [ 'Zero' ]
-          MyBitset2          : [ 'Zero' ]
-          MyBitset3          : [ '0'  ]
-          MyBitset4          : [ '0'  ]
-          MyEUI48            : [ '06:05:04:03:02:01' ]
-          MyShort            : [ -11111 ]
-          MyUnsignedShort    : [  11111 ]
-          MyInteger          : [ -1111111111 ]
-          MyUnsignedInteger  : [  1111111111 ]
-          MyLong             : [ -1111111111111111111 ]
-          MyUnsignedLong     : [  1111111111111111111 ]
-          MyIPv4             : [ '4.3.2.1' ]
-          MyIPv6             : [ '1514:1312:1110:0908:0706:0504:0302:0100' ]
-          MyName             : [ 'Basjes Niels' ]
-          MyNameHex          : [ '0xF0 0x0D' ]
-          CombinedNumerical  : [ -11111 ]
-          CombinedString     : [ 'Niels Basjes@xxx' ]
+          MyFloat            : [ 42 ] # Incorrect value

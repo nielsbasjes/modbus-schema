@@ -23,19 +23,35 @@ blocks:
   - id: 'Main'
     description: 'The block with all fields'
     fields:
-      - id:           'CombinedNumerical'
-        description:  'A Combined Numerical Expression'
-        expression:   '(ieee754_32(hr:00000 # 2) + ieee754_64(hr:00002 # 4))^2 / (MyShort * (5-3))'
-        unit:         'Foo'
 
-      - id:           'CombinedString'
-        description:  'A Combined String Expression'
-        expression:   'concat (''@ '' , MyName , '' @ '' , MyFloat, '' @ '' , MyEnum, '' @ '' , MyLong, '' @ '' , Boolean Value, '' @'')'
-        unit:         'Foo'
+      - id:           'ConstantLong'
+        description:  'A constant long value'
+        expression:   '42'
+
+      - id:           'ConstantDouble'
+        description:  'A constant double value'
+        expression:   '42.42'
+
+      - id:           'ConstantValue'
+        description:  'Using a fixed register value in an expression'
+        expression:   'int16("0x1234")'
+
+      - id:           'ConstantValueSwapBytes'
+        description:  'Using a fixed register value in an expression'
+        expression:   'int16(swapbytes("0x3412"))' # == 0x1234 byte swapped
+
+      - id:           'ConstantValueSwapEndian'
+        description:  'Using a fixed register value in an expression'
+        expression:   'int16(swapendian("0x2c48"))' # == 0x1234 reversed
 
       - id:           'MyFloat'
         description:  'A Float 32'
         expression:   'ieee754_32(hr:00000 # 2)'
+        unit:         'Foo'
+
+      - id:           'MyFloatNI'
+        description:  'A Float 32 using "Not Implemented" option'
+        expression:   'ieee754_32(hr:00000 # 2; 0xDEAD 0xDEAD)'
         unit:         'Foo'
 
       - id:           'MyDouble'
@@ -43,61 +59,130 @@ blocks:
         expression:   'ieee754_64(hr:00002 # 4)'
         unit:         'Bar'
 
+      - id:           'MyDoubleNI'
+        description:  'A Float 64 using "Not Implemented" option'
+        expression:   'ieee754_64(hr:00002 # 4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)'
+        unit:         'Bar'
+
+      - id:           'MyBitset1Bit2'
+        description:  'Bitset 1 register getting bit 2'
+        expression:   "bitsetbit(hr:06     ; 2)"
+
+      - id:           'MyBitset1Bit2NI'
+        description:  'Bitset 1 register using "Not Implemented" option'
+        expression:   "bitsetbit(hr:06     ; 0xDEAD ; 2)"
+
       - id:           'MyBitset1'
         description:  'Bitset 1 register'
-        expression:   "bitset(hr:06                                  ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
+        expression:   "bitset(hr:06     ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
+
+      - id:           'MyBitset1NI'
+        description:  'Bitset 1 register using "Not Implemented" option'
+        expression:   "bitset(hr:06     ; 0xDEAD ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two')"
 
       - id:           'MyBitset2'
         description:  'Bitset 2 registers'
-        expression:   "bitset(hr:07#2                                ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )"
+        expression:   "bitset(hr:07#2   ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen' )"
+
+      - id:           'MyBitset2NI'
+        description:  'Bitset 2 registers using "Not Implemented" option'
+        expression:   "bitset(hr:07#2   ; 0xDEAD 0xDEAD ; 0-> 'Zero'; 1-> 'One'; 2-> 'Two'; 16 -> 'Sixteen'; 17-> 'Seventeen'; 18-> 'Eighteen')"
 
       - id:           'MyBitset3'
         description:  'Bitset 3 registers'
-        expression:   "bitset(hr:9#3                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' )"
+        expression:   "bitset(hr:9#3    ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' )"
+
+      - id:           'MyBitset3NI'
+        description:  'Bitset 3 registers using "Not Implemented" option'
+        expression:   "bitset(hr:9#3    ; 0xDEAD 0xDEAD 0xDEAD ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34')"
 
       - id:           'MyBitset4'
         description:  'Bitset 4 registers'
-        expression:   "bitset(hr:12#4                                ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50' )"
+        expression:   "bitset(hr:12#4  ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50' )"
+
+      - id:           'MyBitset4NI'
+        description:  'Bitset 4 registers using "Not Implemented" option'
+        expression:   "bitset(hr:12#4  ; 0xDEAD 0xDEAD 0xDEAD 0xDEAD ; 0  -> '0' ;  1-> '1' ;  2-> '2'; 16 -> '16'; 17-> '17'; 18-> '18' ; 32 -> '32'; 33-> '33'; 34-> '34' ; 48 -> '48'; 49-> '49'; 50-> '50')"
 
       - id:           'MyEnum'
         description:  'Enum'
         expression:   "enum(hr:16 ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')"
 
+      - id:           'MyEnumNI'
+        description:  'Enum using "Not Implemented" option'
+        expression:   "enum(hr:16 ; 0xDEAD ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')"
+
       - id:           'MyEUI48'
         description:  'EUI48'
         expression:   "eui48(hr:17#3 )"
+
+      - id:           'MyEUI48NI'
+        description:  'EUI48 using "Not Implemented" option'
+        expression:   "eui48(hr:17#3 ; 0xDEAD 0xDEAD 0xDEAD)"
 
       - id:           'MyShort'
         description:  'Int 16'
         expression:   "int16(hr:21)"
 
+      - id:           'MyShortNI'
+        description:  'Int 16 using "Not Implemented" option'
+        expression:   "int16(hr:21; 0xDEAD)"
+
       - id:           'MyUnsignedShort'
         description:  'Unsigned Int 16'
         expression:   "uint16(hr:22)"
+
+      - id:           'MyUnsignedShortNI'
+        description:  'Unsigned Int 16 using "Not Implemented" option'
+        expression:   "uint16(hr:22; 0xDEAD)"
 
       - id:           'MyInteger'
         description:  'Int 32'
         expression:   "int32(hr:23#2)"
 
+      - id:           'MyIntegerNI'
+        description:  'Int 32 using "Not Implemented" option'
+        expression:   "int32(hr:23#2; 0xDEAD 0xDEAD)"
+
       - id:           'MyUnsignedInteger'
         description:  'Unsigned Int 32'
         expression:   "uint32(hr:25#2)"
+
+      - id:           'MyUnsignedIntegerNI'
+        description:  'Unsigned Int 32 using "Not Implemented" option'
+        expression:   "uint32(hr:25#2; 0xDEAD 0xDEAD)"
 
       - id:           'MyLong'
         description:  'Int 64'
         expression:   "int64(hr:27#4)"
 
+      - id:           'MyLongNI'
+        description:  'Int 64 using "Not Implemented" option'
+        expression:   "int64(hr:27#4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)"
+
       - id:           'MyUnsignedLong'
         description:  'Unsigned Int 64'
         expression:   "uint64(hr:31#4)"
+
+      - id:           'MyUnsignedLongNI'
+        description:  'Unsigned Int 64 using "Not Implemented" option'
+        expression:   "uint64(hr:31#4; 0xDEAD 0xDEAD 0xDEAD 0xDEAD)"
 
       - id:           'MyIPv4'
         description:  'IPv4'
         expression:   "ipv4addr(hr:35#2)"
 
+      - id:           'MyIPv4NI'
+        description:  'IPv4 using "Not Implemented" option'
+        expression:   "ipv4addr(hr:35#2; 0xDEAD 0xDEAD )"
+
       - id:           'MyIPv6'
         description:  'IPv6'
         expression:   'ipv6addr(hr:37#8)'
+
+      - id:           'MyIPv6NI'
+        description:  'IPv6 using "Not Implemented" option'
+        expression:   'ipv6addr(hr:37#8; 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD 0xDEAD)'
 
       - id:           'MyName'
         expression:   'utf8(hr:45#6)'
@@ -105,23 +190,66 @@ blocks:
       - id:           'MyNameHex'
         expression:   'hexstring(hr:45#6)'
 
-      - id:           'Boolean Value'
+      # ============================================
+
+      - id:           'ConstantBoolean'
+        description:  'A constant boolean value'
+        expression:   ' true'
+
+      - id:           'MyBoolean'
         expression:   'boolean(c:0)'
 
       - id:           'Boolean String'
         expression:   "boolean(c:0;'No';'Yes')"
 
-      - id:           'String Using Boolean Value'
+      - id:           'String From Bool Value'
         expression:   "concat('Foo<',boolean(c:0),'>')"
 
-      - id:           'String Using Boolean String'
+      - id:           'String From Bool String'
         expression:   "concat('Bar<',boolean(c:0;'No';'Yes'),'>')"
 
-      - id:           'String Using Booleans Mixed'
+      - id:           'String From Bool Mixed'
         expression:   "concat('Foo<',boolean(c:0),'>',' and ','Bar<',boolean(c:0;'No';'Yes'),'>')"
 
       - id:           'Boolean Field Reference'
-        expression:   "concat('Foo<',Boolean Value,'>',' and ','Bar<',Boolean String,'>')"
+        expression:   "concat('Foo<',MyBoolean,'>',' and ','Bar<',Boolean String,'>')"
+
+      #=======================================
+
+      - id:           'CombinedNumerical'
+        description:  'A Combined Numerical Expression'
+        expression:   '(ieee754_32(hr:00000 # 2) + ieee754_64(hr:00002 # 4))^2 / (MyShort * (5-3))'
+        unit:         'Foo'
+
+      # Not possible because all addresses of a single field MUST be part of the SAME fetch group
+      #      - id:           'CombinedString'
+      #        description:  'A Combined String Expression'
+      #        expression:   "concat ('@ ' , utf8(hr:45#6) ,
+      #                            ' @ ' , ieee754_32(hr:00000 # 2),
+      #                            ' @ ' , enum(hr:16 ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic'),
+      #                            ' @ ' , int64(hr:27#4),
+      #                            ' @ ' , boolean(c:0),
+      #                             ' @')"
+      #        unit:         'Foo'
+
+      - id:           'CombinedStringFromFields'
+        description:  'A Combined String Expression'
+        expression:   'concat (''@ '' , MyName , '' @ '' , MyFloat, '' @ '' , MyEnum, '' @ '' , MyLong, '' @ '' , MyBoolean, '' @'')'
+        unit:         'Foo'
+
+      - id:           'Field of a String'
+        expression:   'concat (MyName)'
+      # NOTE: A field of a String LIST does not make any sense
+      - id:           'Field of a Double'
+        expression:   'MyFloat * 1.0'
+      - id:           'Field of a Enum'
+        expression:   'concat (MyEnum)'
+      - id:           'Field of a Long'
+        expression:   'MyLong * 1'
+      - id:           'Field of a Boolean'
+        expression:   "boolean (MyBoolean ; 'Zero' ; 'One' )"
+
+      #=======================================
 
 tests:
   - id: 'Normal values'
@@ -151,61 +279,149 @@ tests:
       - firstAddress: 'c:0'
         rawValues: >-
           0 1
-
     blocks:
-      - id: 'Main'
+      - id:          'Main'
         expected:
-          MyFloat            : [ 1234.567 ]
-          MyDouble           : [ 1234.568 ]
-          MyEnum             : [ 'Manual'   ]
-          MyBitset1          : [ 'Zero', 'One', 'Two', 'Bit 3', 'Bit 12' ]
-          MyBitset2          : [ 'Zero', 'One', 'Two', 'Bit 3', 'Bit 12', 'Sixteen', 'Seventeen', 'Eighteen', 'Bit 19', 'Bit 28' ]
-          MyBitset3          : [ '0', '1', '2', 'Bit 3', 'Bit 12', '16', '17', '18', 'Bit 19', 'Bit 28', '32', '33', '34', 'Bit 35', 'Bit 44' ]
-          MyBitset4          : [ '0', '1', '2', 'Bit 3', 'Bit 12', '16', '17', '18', 'Bit 19', 'Bit 28', '32', '33', '34', 'Bit 35', 'Bit 44', '48', '49', '50', 'Bit 51', 'Bit 60' ]
-          MyEUI48            : [ '01:02:03:04:05:06' ]
-          MyShort            : [ -12345 ]
-          MyUnsignedShort    : [  12345 ]
-          MyInteger          : [ -1234567890 ]
-          MyUnsignedInteger  : [  1234567890 ]
-          MyLong             : [ -1234567890123456789 ]
-          MyUnsignedLong     : [  1234567890123456789 ]
-          MyIPv4             : [ '1.2.3.4' ]
-          MyIPv6             : [ '0001:0203:0405:0607:0809:1011:1213:1415' ]
-          MyName             : [ 'Niels Basjes' ]
-          MyNameHex          : [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73' ]
-          CombinedNumerical  : [ -246.927 ]
-          CombinedString     : ['@ Niels Basjes @ 1234.5670166015625 @ Manual @ -1234567890123456789 @ false @' ]
+          'ConstantLong':              [ '42' ]
+          'ConstantDouble':            [ '42.420' ]
+          'ConstantValue':             [ '4660' ]
+          'ConstantValueSwapBytes':    [ '4660' ]
+          'ConstantValueSwapEndian':   [ '4660' ]
+          'MyFloat':                   [ '1234.567' ]
+          'MyFloatNI':                 [ '1234.567' ]
+          'MyDouble':                  [ '1234.568' ]
+          'MyDoubleNI':                [ '1234.568' ]
+          'MyBitset1Bit2':             [ 'true' ]
+          'MyBitset1Bit2NI':           [ 'true' ]
+          'MyBitset1':                 [ 'Zero' , 'One' , 'Two' , 'Bit 3' , 'Bit 12' ]
+          'MyBitset1NI':               [ 'Zero' , 'One' , 'Two' , 'Bit 3' , 'Bit 12' ]
+          'MyBitset2':                 [ 'Zero' , 'One' , 'Two' , 'Bit 3' , 'Bit 12' , 'Sixteen' , 'Seventeen' , 'Eighteen' , 'Bit 19' , 'Bit 28' ]
+          'MyBitset2NI':               [ 'Zero' , 'One' , 'Two' , 'Bit 3' , 'Bit 12' , 'Sixteen' , 'Seventeen' , 'Eighteen' , 'Bit 19' , 'Bit 28' ]
+          'MyBitset3':                 [ '0' , '1' , '2' , 'Bit 3' , 'Bit 12' , '16' , '17' , '18' , 'Bit 19' , 'Bit 28' , '32' , '33' , '34' , 'Bit 35' , 'Bit 44' ]
+          'MyBitset3NI':               [ '0' , '1' , '2' , 'Bit 3' , 'Bit 12' , '16' , '17' , '18' , 'Bit 19' , 'Bit 28' , '32' , '33' , '34' , 'Bit 35' , 'Bit 44' ]
+          'MyBitset4':                 [ '0' , '1' , '2' , 'Bit 3' , 'Bit 12' , '16' , '17' , '18' , 'Bit 19' , 'Bit 28' , '32' , '33' , '34' , 'Bit 35' , 'Bit 44' , '48' , '49' , '50' , 'Bit 51' , 'Bit 60' ]
+          'MyBitset4NI':               [ '0' , '1' , '2' , 'Bit 3' , 'Bit 12' , '16' , '17' , '18' , 'Bit 19' , 'Bit 28' , '32' , '33' , '34' , 'Bit 35' , 'Bit 44' , '48' , '49' , '50' , 'Bit 51' , 'Bit 60' ]
+          'MyEnum':                    [ 'Manual' ]
+          'MyEnumNI':                  [ 'Manual' ]
+          'MyEUI48':                   [ '01:02:03:04:05:06' ]
+          'MyEUI48NI':                 [ '01:02:03:04:05:06' ]
+          'MyShort':                   [ '-12345' ]
+          'MyShortNI':                 [ '-12345' ]
+          'MyUnsignedShort':           [ '12345' ]
+          'MyUnsignedShortNI':         [ '12345' ]
+          'MyInteger':                 [ '-1234567890' ]
+          'MyIntegerNI':               [ '-1234567890' ]
+          'MyUnsignedInteger':         [ '1234567890' ]
+          'MyUnsignedIntegerNI':       [ '1234567890' ]
+          'MyLong':                    [ '-1234567890123456789' ]
+          'MyLongNI':                  [ '-1234567890123456789' ]
+          'MyUnsignedLong':            [ '1234567890123456789' ]
+          'MyUnsignedLongNI':          [ '1234567890123456789' ]
+          'MyIPv4':                    [ '1.2.3.4' ]
+          'MyIPv4NI':                  [ '1.2.3.4' ]
+          'MyIPv6':                    [ '0001:0203:0405:0607:0809:1011:1213:1415' ]
+          'MyIPv6NI':                  [ '0001:0203:0405:0607:0809:1011:1213:1415' ]
+          'MyName':                    [ 'Niels Basjes' ]
+          'MyNameHex':                 [ '0x4E 0x69 0x65 0x6C 0x73 0x20 0x42 0x61 0x73 0x6A 0x65 0x73' ]
+          'ConstantBoolean':           [ 'true' ]
+          'MyBoolean':                 [ 'false' ]
+          'Boolean String':            [ 'No' ]
+          'String From Bool Value':    [ 'Foo<false>' ]
+          'String From Bool String':   [ 'Bar<No>' ]
+          'String From Bool Mixed':    [ 'Foo<false> and Bar<No>' ]
+          'Boolean Field Reference':   [ 'Foo<false> and Bar<No>' ]
+          'CombinedNumerical':         [ '-246.927' ]
+          'CombinedStringFromFields':  [ '@ Niels Basjes @ 1234.5670166015625 @ Manual @ -1234567890123456789 @ false @' ]
+          'Field of a String':         [ 'Niels Basjes' ]
+          'Field of a Double':         [ '1234.567' ]
+          'Field of a Enum':           [ 'Manual' ]
+          'Field of a Long':           [ '-1234567890123456789' ]
+          'Field of a Boolean':        [ 'Zero' ]
 
-  - id: 'Discrete 0'
-    description: 'Test when the discrete is 0 (false)'
+  - id: 'Not implemented values'
+    description: 'Test when the discrete is 1 (true) and all registers are the not implemented value'
     input:
-      - firstAddress: 'c:0'
+      - firstAddress: 'hr:0'
         rawValues: >-
-          0 1
+          DEAD DEAD
+          DEAD DEAD DEAD DEAD
 
-    blocks:
-      - id: 'Main'
-        expected:
-          'Boolean Value'               : [ 'false'                  ]
-          'Boolean String'              : [ 'No'                     ]
-          'String Using Boolean Value'  : [ 'Foo<false>'             ]
-          'String Using Boolean String' : [ 'Bar<No>'                ]
-          'String Using Booleans Mixed' : [ 'Foo<false> and Bar<No>' ]
-          'Boolean Field Reference'     : [ 'Foo<false> and Bar<No>' ]
+          DEAD
+          DEAD DEAD
+          DEAD DEAD DEAD
+          DEAD DEAD DEAD DEAD
+          DEAD
 
-  - id: 'Discrete 1'
-    description: 'Test when the discrete is 1 (true)'
-    input:
+          DEAD DEAD DEAD DEAD
+
+          DEAD
+          DEAD
+          DEAD DEAD
+          DEAD DEAD
+          DEAD DEAD DEAD DEAD
+          DEAD DEAD DEAD DEAD
+          DEAD DEAD
+          DEAD DEAD DEAD DEAD DEAD DEAD DEAD DEAD
+          0000 0000 0000 0000 0000 0000
       - firstAddress: 'c:0'
         rawValues: >-
           1 0
 
     blocks:
-      - id: 'Main'
+      - id:          'Main'
         expected:
-          'Boolean Value'               : [ 'true'                   ]
-          'Boolean String'              : [ 'Yes'                    ]
-          'String Using Boolean Value'  : [ 'Foo<true>'              ]
-          'String Using Boolean String' : [ 'Bar<Yes>'               ]
-          'String Using Booleans Mixed' : [ 'Foo<true> and Bar<Yes>' ]
-          'Boolean Field Reference'     : [ 'Foo<true> and Bar<Yes>' ]
+          'ConstantLong':              [ '42' ]
+          'ConstantDouble':            [ '42.420' ]
+          'ConstantValue':             [ '4660' ]
+          'ConstantValueSwapBytes':    [ '4660' ]
+          'ConstantValueSwapEndian':   [ '4660' ]
+          'MyFloat':                   [ '-6264320714451452000.000' ]
+          'MyFloatNI':                 []
+          'MyDouble':                  [ '-11935504820988231000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000' ]
+          'MyDoubleNI':                []
+          'MyBitset1Bit2':             [ 'true' ]
+          'MyBitset1Bit2NI':           []
+          'MyBitset1':                 [ 'Zero' , 'Two' , 'Bit 3' , 'Bit 5' , 'Bit 7' , 'Bit 9' , 'Bit 10' , 'Bit 11' , 'Bit 12' , 'Bit 14' , 'Bit 15' ]
+          'MyBitset1NI':               []
+          'MyBitset2':                 [ 'Zero' , 'Two' , 'Bit 3' , 'Bit 5' , 'Bit 7' , 'Bit 9' , 'Bit 10' , 'Bit 11' , 'Bit 12' , 'Bit 14' , 'Bit 15' , 'Sixteen' , 'Eighteen' , 'Bit 19' , 'Bit 21' , 'Bit 23' , 'Bit 25' , 'Bit 26' , 'Bit 27' , 'Bit 28' , 'Bit 30' , 'Bit 31' ]
+          'MyBitset2NI':               []
+          'MyBitset3':                 [ '0' , '2' , 'Bit 3' , 'Bit 5' , 'Bit 7' , 'Bit 9' , 'Bit 10' , 'Bit 11' , 'Bit 12' , 'Bit 14' , 'Bit 15' , '16' , '18' , 'Bit 19' , 'Bit 21' , 'Bit 23' , 'Bit 25' , 'Bit 26' , 'Bit 27' , 'Bit 28' , 'Bit 30' , 'Bit 31' , '32' , '34' , 'Bit 35' , 'Bit 37' , 'Bit 39' , 'Bit 41' , 'Bit 42' , 'Bit 43' , 'Bit 44' , 'Bit 46' , 'Bit 47' ]
+          'MyBitset3NI':               []
+          'MyBitset4':                 [ '0' , '2' , 'Bit 3' , 'Bit 5' , 'Bit 7' , 'Bit 9' , 'Bit 10' , 'Bit 11' , 'Bit 12' , 'Bit 14' , 'Bit 15' , '16' , '18' , 'Bit 19' , 'Bit 21' , 'Bit 23' , 'Bit 25' , 'Bit 26' , 'Bit 27' , 'Bit 28' , 'Bit 30' , 'Bit 31' , '32' , '34' , 'Bit 35' , 'Bit 37' , 'Bit 39' , 'Bit 41' , 'Bit 42' , 'Bit 43' , 'Bit 44' , 'Bit 46' , 'Bit 47' , '48' , '50' , 'Bit 51' , 'Bit 53' , 'Bit 55' , 'Bit 57' , 'Bit 58' , 'Bit 59' , 'Bit 60' , 'Bit 62' , 'Bit 63' ]
+          'MyBitset4NI':               []
+          'MyEnum':                    [ 'No mapping for value 0xDE 0xAD' ]
+          'MyEnumNI':                  []
+          'MyEUI48':                   [ 'DE:AD:DE:AD:DE:AD' ]
+          'MyEUI48NI':                 []
+          'MyShort':                   [ '-8531' ]
+          'MyShortNI':                 []
+          'MyUnsignedShort':           [ '57005' ]
+          'MyUnsignedShortNI':         []
+          'MyInteger':                 [ '-559030611' ]
+          'MyIntegerNI':               []
+          'MyUnsignedInteger':         [ '3735936685' ]
+          'MyUnsignedIntegerNI':       []
+          'MyLong':                    [ '-2401018187971961171' ]
+          'MyLongNI':                  []
+          'MyUnsignedLong':            []
+          'MyUnsignedLongNI':          []
+          'MyIPv4':                    [ '222.173.222.173' ]
+          'MyIPv4NI':                  []
+          'MyIPv6':                    [ 'DEAD:DEAD:DEAD:DEAD:DEAD:DEAD:DEAD:DEAD' ]
+          'MyIPv6NI':                  []
+          'MyName':                    [ '' ]
+          'MyNameHex':                 [ '0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00' ]
+          'ConstantBoolean':           [ 'true' ]
+          'MyBoolean':                 [ 'true' ]
+          'Boolean String':            [ 'Yes' ]
+          'String From Bool Value':    [ 'Foo<true>' ]
+          'String From Bool String':   [ 'Bar<Yes>' ]
+          'String From Bool Mixed':    [ 'Foo<true> and Bar<Yes>' ]
+          'Boolean Field Reference':   [ 'Foo<true> and Bar<Yes>' ]
+          'CombinedNumerical':         [ '-8349330402756612000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000' ]
+          'CombinedStringFromFields':  [ '@  @ -6.264320714451452E18 @ No mapping for value 0xDE 0xAD @ -2401018187971961171 @ true @' ]
+          'Field of a String':         [ "" ]
+          'Field of a Double':         [ '-6264320714451452000.000' ]
+          'Field of a Enum':           [ 'No mapping for value 0xDE 0xAD' ]
+          'Field of a Long':           [ '-2401018187971961171' ]
+          'Field of a Boolean':        [ 'One' ]

@@ -80,8 +80,16 @@
         <groupId>nl.basjes.modbus</groupId>
         <artifactId>modbus-schema-maven-plugin</artifactId>
         <version>${modbus-schema.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>nl.basjes.modbus</groupId>
+            <artifactId>modbus-schema-reference</artifactId>
+            <version>${modbus-schema.version}</version>
+          </dependency>
+        </dependencies>
         <configuration>
-          <modbusSchemaFile>src/main/modbus/TestDevice.yaml</modbusSchemaFile>
+          <!-- This schema is loaded from the dependency -->
+          <modbusSchemaFile>SchemaReferenceTest/QuickTestDevice.yaml</modbusSchemaFile>
           <packageName>nl.example.modbus</packageName>
           <className>MyNewDevice</className>
           <language>java</language>
