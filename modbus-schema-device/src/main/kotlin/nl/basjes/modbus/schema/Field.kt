@@ -84,9 +84,6 @@ class Field(
      * By default, filled with a random unique value or what was dictated by the block
      */
     fetchGroup: String = "",
-
-//    /** The return type that the programming language must support. */
-//    returnType: ReturnType = UNKNOWN,
 ) : Comparable<Field> {
 
     val id: String = id.trim()
@@ -184,7 +181,9 @@ class Field(
                         for (requiredRegister in requiredRegisters) {
                             if (addressClass != requiredRegister.addressClass) {
                                 throw ModbusSchemaParseException(
-                                    "For field ${block.id}::$id the expression $theExpression requires values from multiple AddressClasses (which is illegal)",
+                                    "For field ${block.id}::$id the expression $theExpression requires values from multiple AddressClasses. " +
+                                        "This is not supported because it would put them in the same fetch group. " +
+                                        "Use multiple Fields to achieve this (mark them as system field to hide them).",
                                 )
                             }
                         }
