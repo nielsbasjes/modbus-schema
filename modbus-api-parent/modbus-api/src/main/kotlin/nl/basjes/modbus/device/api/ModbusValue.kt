@@ -16,7 +16,6 @@
  */
 package nl.basjes.modbus.device.api
 
-import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.device.exception.ModbusIllegalAddressClassException
 
 // ------------------------------------------

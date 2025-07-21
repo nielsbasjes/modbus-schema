@@ -18,14 +18,9 @@ package nl.basjes.modbus.device.j2mod
 
 import com.ghgande.j2mod.modbus.facade.AbstractModbusMaster
 import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
-import com.ghgande.j2mod.modbus.procimg.Register
 import com.ghgande.j2mod.modbus.util.BitVector
 import nl.basjes.modbus.device.api.Address
-import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
-import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.testcases.sunspec.SUNSPEC_STANDARD_UNITID
-import nl.basjes.modbus.device.testcases.sunspec.SunSpecBasicsPrinter
 import kotlin.test.Ignore
 import kotlin.test.Test
 
