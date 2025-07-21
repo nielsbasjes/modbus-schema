@@ -303,17 +303,12 @@ open class ModbusBlockFetcher(
         for (field in schemaDevice.neededFields()) {
             require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
 
-            val requiredRegisters = field.requiredAddresses
-
-            if (requiredRegisters.isEmpty()) {
-                continue
-            }
-            val registerBlock = schemaDevice.getModbusBlock(requiredRegisters[0].addressClass)
             // If at least one of the needed addresses links to a 'too old' value
             // the entire set for the field needs to be retrieved again.
-            if (requiredRegisters
-                    .map { registerBlock[it] }
-                    .firstOrNull { it.needsToBeUpdated(now, maxAge) }
+            if (field
+                .requiredAddresses
+                .map { schemaDevice.getModbusBlock(it.addressClass)[it] }
+                .firstOrNull { it.needsToBeUpdated(now, maxAge) }
                 != null
             ) {
                 fieldsThatMustBeUpdated.add(field)
