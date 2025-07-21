@@ -16,32 +16,29 @@
  */
 package nl.basjes.modbus.schema.generate
 
-import nl.basjes.modbus.schema.generate.Generator.Companion.fileName
-import nl.basjes.modbus.schema.generate.Generator.Companion.generate
 import nl.basjes.modbus.schema.toSchemaDevice
-import java.io.File
 import java.io.StringWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class TestGenerateJava {
+class TestGenerateJava: QuickTestDevice() {
 
     private val log = PluginLoggerToLog4J()
 
     @Test
     fun checkOutputFileName() {
-        val mainFileName = fileName(null, "java", "main", "nl.klokko.demo", "Foo")
+        val mainFileName = Generator().fileName(null, "java", "main", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/Foo.java", mainFileName)
 
-        val testFileName = fileName(null, "java", "test", "nl.klokko.demo", "Foo")
+        val testFileName = Generator().fileName(null, "java", "test", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/TestFoo.java", testFileName)
     }
 
     @Test
     fun generateJava() {
         val output = StringWriter()
-        generate(
-            File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
+        Generator().generate(
+            testDevice().toSchemaDevice(),
             null,
             "java",
             "main",
@@ -55,8 +52,8 @@ class TestGenerateJava {
     @Test
     fun generateJavaTest() {
         val output = StringWriter()
-        generate(
-            File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
+        Generator().generate(
+            testDevice().toSchemaDevice(),
             null,
             "java",
             "test",

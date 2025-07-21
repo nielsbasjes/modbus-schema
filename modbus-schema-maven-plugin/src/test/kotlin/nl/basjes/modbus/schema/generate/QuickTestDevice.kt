@@ -16,23 +16,12 @@
  */
 package nl.basjes.modbus.schema.generate
 
-import nl.basjes.modbus.schema.toSchemaDevice
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import java.io.InputStream
 
-class TestDeviceSchema: QuickTestDevice() {
-
-    private val log: Logger = LogManager.getLogger()
-
-    @Test
-    fun ensureValidTestDeviceSchema() {
-        val schemaDevice = testDevice().toSchemaDevice()
-        require(schemaDevice.initialize()) { "Unable to initialize schema device" }
-        val results = schemaDevice.verifyProvidedTests()
-        results.logResults()
-        assertTrue(results.allPassed, "Unable to verify all tests defined in the schema definition")
+open class QuickTestDevice {
+    fun testDevice(): InputStream {
+        val schemaStream = javaClass.classLoader.getResourceAsStream("SchemaReferenceTest/QuickTestDevice.yaml")
+        requireNotNull(schemaStream) { "Schema reference test failed to load" }
+        return schemaStream
     }
 }
-

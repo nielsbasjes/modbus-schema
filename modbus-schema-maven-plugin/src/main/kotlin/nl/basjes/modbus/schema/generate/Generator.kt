@@ -27,8 +27,10 @@ import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.logging.Log
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.io.OutputStreamWriter
 import java.io.Writer
 import java.util.TimeZone
@@ -36,139 +38,146 @@ import java.util.regex.Pattern
 
 class Generator {
 
-    companion object {
+    fun String.openAsStream(): InputStream {
+        val fileStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(this)
+        if (fileStream != null) {
+            return fileStream
+        }
+        return FileInputStream(this)
+    }
 
-        fun execute(
-            log: Log,
-            outputDirectory: File?,
-            modbusSchemaFile: File?,
-            templateDirectory: File?,
-            packageName: String?,
-            className: String?,
-            language: String,
-            type: String,
-        ) {
-            require(outputDirectory != null) {
-                throw MojoExecutionException("outputDirectory is mandatory")
-            }
-            require(modbusSchemaFile != null && modbusSchemaFile.exists() && modbusSchemaFile.isFile) {
-                throw MojoExecutionException("modbusSchemaFile must be an existing file")
-            }
-            require(!packageName.isNullOrBlank()) { throw MojoExecutionException("packageName is mandatory") }
-            require(!className.isNullOrBlank()) { throw MojoExecutionException("className is mandatory") }
-            require(packageName.matches("[a-zA-Z][a-zA-Z0-9.]+".toRegex())) { throw MojoExecutionException("Invalid packageName was provided.") }
-            require(className.matches("[a-zA-Z][a-zA-Z0-9]+".toRegex())) { throw MojoExecutionException("Invalid className was provided.") }
+    fun execute(
+        log: Log,
+        outputDirectory: File?,
+        modbusSchemaFile: String?,
+        templateDirectory: File?,
+        packageName: String?,
+        className: String?,
+        language: String,
+        type: String,
+    ) {
+        require(outputDirectory != null) {
+            throw MojoExecutionException("outputDirectory is mandatory")
+        }
 
-            require(language.matches("[a-zA-Z0-9]+".toRegex())) { throw MojoExecutionException("Invalid programming language name was provided.") }
-            require(type == "main" || type == "test") { throw MojoExecutionException("Invalid type was provided.") }
+        log.info("Trying to open $modbusSchemaFile")
+        val schemaDevice = modbusSchemaFile?.openAsStream()?.toSchemaDevice()
 
-            val languageSpecificOutputDirectoryPath = (outputDirectory.absolutePath + File.separator + language).replace(Regex(Pattern.quote(File.separator) + "+"), File.separator)
-            val languageSpecificOutputDirectory =  File(languageSpecificOutputDirectoryPath)
+        requireNotNull(schemaDevice) {
+            throw MojoExecutionException("Could not open the specified modbusSchemaFile does not exist $modbusSchemaFile")
+        }
 
-            if (!languageSpecificOutputDirectory.exists()) {
-                if (!languageSpecificOutputDirectory.mkdirs()) {
-                    throw MojoExecutionException("Cannot create directory $languageSpecificOutputDirectory")
-                }
-            }
+        require(!packageName.isNullOrBlank()) { throw MojoExecutionException("packageName is mandatory") }
+        require(!className.isNullOrBlank()) { throw MojoExecutionException("className is mandatory") }
+        require(packageName.matches("[a-zA-Z][a-zA-Z0-9.]+".toRegex())) { throw MojoExecutionException("Invalid packageName was provided.") }
+        require(className.matches("[a-zA-Z][a-zA-Z0-9]+".toRegex())) { throw MojoExecutionException("Invalid className was provided.") }
 
-            if (!modbusSchemaFile.exists()) {
-                throw MojoExecutionException("The specified Schema file does not exist $modbusSchemaFile")
-            }
+        require(language.matches("[a-zA-Z0-9]+".toRegex())) { throw MojoExecutionException("Invalid programming language name was provided.") }
+        require(type == "main" || type == "test") { throw MojoExecutionException("Invalid type was provided.") }
 
-            val outputFileName =
-                buildFullFileName(
-                    languageSpecificOutputDirectoryPath,
-                    fileName(templateDirectory, language, type, packageName, className),
-                )
+        val languageSpecificOutputDirectoryPath = (outputDirectory.absolutePath + File.separator + language).replace(Regex(Pattern.quote(File.separator) + "+"), File.separator)
+        val languageSpecificOutputDirectory =  File(languageSpecificOutputDirectoryPath)
 
-            try {
-                val outputFile = File(outputFileName)
-                outputFile.parentFile.mkdirs()
-                if (outputFile.exists() && outputFile.isFile) {
-                    outputFile.delete()
-                }
-                require(outputFile.createNewFile()) { throw MojoExecutionException("Unable to create file $outputFile") }
-                val fileOutput = FileOutputStream(outputFile)
-                val output = OutputStreamWriter(fileOutput)
-                generate(
-                    modbusSchemaFile.toSchemaDevice(),
-                    templateDirectory,
-                    language,
-                    type,
-                    packageName,
-                    className,
-                    output,
-                )
-                log.info("Generated ($language ; $type): $outputFileName")
-            }
-            catch (e: ModbusSchemaParseException) {
-                throw MojoExecutionException(e.message)
-            }
-            catch (e: IOException) {
-                throw MojoExecutionException(e)
+        if (!languageSpecificOutputDirectory.exists()) {
+            if (!languageSpecificOutputDirectory.mkdirs()) {
+                throw MojoExecutionException("Cannot create directory $languageSpecificOutputDirectory")
             }
         }
 
-        fun getTemplateConfiguration(
-            templateDirectory: File?,
-            language: String,
-            type: String,
-        ): Configuration {
-            val cfg = Configuration(Configuration.VERSION_2_3_34)
-            if (templateDirectory == null) {
-                cfg.setClassForTemplateLoading(Generator::class.java, "/${language}/${type}")
-            } else {
-                cfg.setDirectoryForTemplateLoading(File("${templateDirectory.absolutePath}/${type}"))
+        val outputFileName =
+            buildFullFileName(
+                languageSpecificOutputDirectoryPath,
+                fileName(templateDirectory, language, type, packageName, className),
+            )
+
+        try {
+            val outputFile = File(outputFileName)
+            outputFile.parentFile.mkdirs()
+            if (outputFile.exists() && outputFile.isFile) {
+                outputFile.delete()
             }
-            cfg.registerAdditionalMethods()
-            cfg.defaultEncoding = "UTF-8"
-            cfg.templateExceptionHandler= TemplateExceptionHandler.RETHROW_HANDLER
-            cfg.logTemplateExceptions = false
-            cfg.wrapUncheckedExceptions = true
-            cfg.fallbackOnNullLoopVariable = false
-            cfg.sqlDateAndTimeTimeZone = TimeZone.getDefault()
-            return cfg
-        }
-
-        fun fileName(
-            templateDirectory: File?,
-            language: String,
-            type: String,
-            packageName: String,
-            className: String,
-        ): String {
-            val templateConfig = getTemplateConfiguration(templateDirectory, language, type)
-            val template: Template = templateConfig.getTemplate("filename.ftl")
-            val output = ByteArrayOutputStream()
-            template.process(mapOf("packageName" to packageName, "className" to className), OutputStreamWriter(output))
-            return output.toString().replace("\r\n", "").replace("\n", "")
-        }
-
-        fun generate(
-            schemaDevice: SchemaDevice?,
-            templateDirectory: File?,
-            language: String,
-            type: String,
-            packageName: String,
-            className: String,
-            output: Writer,
-        ) {
-            val templateConfig = getTemplateConfiguration(templateDirectory, language, type)
-            val template: Template = templateConfig.getTemplate("code.ftl")
-            template.process(
-                mapOf(
-                    "pluginVersion" to PROJECT_VERSION,
-                    "packageName"   to packageName,
-                    "className"     to className,
-                    "schemaDevice" to schemaDevice,
-                ),
+            require(outputFile.createNewFile()) { throw MojoExecutionException("Unable to create file $outputFile") }
+            val fileOutput = FileOutputStream(outputFile)
+            val output = OutputStreamWriter(fileOutput)
+            generate(
+                schemaDevice,
+                templateDirectory,
+                language,
+                type,
+                packageName,
+                className,
                 output,
             )
+            log.info("Generated ($language ; $type): $outputFileName")
         }
-
-        fun buildFullFileName(
-            directory: String,
-            fileName: String,
-        ) = directory.trim { it <= ' ' } + '/' + fileName.trim { it <= ' ' }.replace("/+".toRegex(), "/")
+        catch (e: ModbusSchemaParseException) {
+            throw MojoExecutionException(e.message)
+        }
+        catch (e: IOException) {
+            throw MojoExecutionException(e)
+        }
     }
+
+    fun getTemplateConfiguration(
+        templateDirectory: File?,
+        language: String,
+        type: String,
+    ): Configuration {
+        val cfg = Configuration(Configuration.VERSION_2_3_34)
+        if (templateDirectory == null) {
+            cfg.setClassForTemplateLoading(Generator::class.java, "/${language}/${type}")
+        } else {
+            cfg.setDirectoryForTemplateLoading(File("${templateDirectory.absolutePath}/${type}"))
+        }
+        cfg.registerAdditionalMethods()
+        cfg.defaultEncoding = "UTF-8"
+        cfg.templateExceptionHandler= TemplateExceptionHandler.RETHROW_HANDLER
+        cfg.logTemplateExceptions = false
+        cfg.wrapUncheckedExceptions = true
+        cfg.fallbackOnNullLoopVariable = false
+        cfg.sqlDateAndTimeTimeZone = TimeZone.getDefault()
+        return cfg
+    }
+
+    fun fileName(
+        templateDirectory: File?,
+        language: String,
+        type: String,
+        packageName: String,
+        className: String,
+    ): String {
+        val templateConfig = getTemplateConfiguration(templateDirectory, language, type)
+        val template: Template = templateConfig.getTemplate("filename.ftl")
+        val output = ByteArrayOutputStream()
+        template.process(mapOf("packageName" to packageName, "className" to className), OutputStreamWriter(output))
+        return output.toString().replace("\r\n", "").replace("\n", "")
+    }
+
+    fun generate(
+        schemaDevice: SchemaDevice?,
+        templateDirectory: File?,
+        language: String,
+        type: String,
+        packageName: String,
+        className: String,
+        output: Writer,
+    ) {
+        val templateConfig = getTemplateConfiguration(templateDirectory, language, type)
+        val template: Template = templateConfig.getTemplate("code.ftl")
+        template.process(
+            mapOf(
+                "pluginVersion" to PROJECT_VERSION,
+                "packageName"   to packageName,
+                "className"     to className,
+                "schemaDevice" to schemaDevice,
+            ),
+            output,
+        )
+    }
+
+    fun buildFullFileName(
+        directory: String,
+        fileName: String,
+    ) = directory.trim { it <= ' ' } + '/' + fileName.trim { it <= ' ' }.replace("/+".toRegex(), "/")
+
 }

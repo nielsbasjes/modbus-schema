@@ -21,20 +21,21 @@ import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
+import org.apache.maven.plugins.annotations.ResolutionScope
 import org.apache.maven.project.MavenProject
 import java.io.File
 
 @Suppress("unused") // Use reflection via @Mojo annotation
-@Mojo(name = "generate-test", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES, threadSafe = true)
+@Mojo(name = "generate-test", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES, threadSafe = true, requiresDependencyResolution = ResolutionScope.RUNTIME)
 class GenerateTestMojo: AbstractMojo() {
-    @Parameter(defaultValue = "\${project.build.directory}/generated-test-sources/modbus-schema/", required = true)
+    @Parameter(defaultValue = $$"${project.build.directory}/generated-test-sources/modbus-schema/", required = true)
     private val outputDirectory: File? = null
 
     @Parameter(property = "language", defaultValue = "kotlin", required = true)
     private val language: String = "kotlin"
 
     @Parameter(property = "modbusSchemaFile", required = true)
-    private val modbusSchemaFile: File? = null
+    private val modbusSchemaFile: String? = null
 
     @Parameter(property = "templateDirectory")
     private val templateDirectory: File? = null
@@ -45,12 +46,12 @@ class GenerateTestMojo: AbstractMojo() {
     @Parameter(property = "className", defaultValue = "ModbusDevice", required = true)
     private val className: String = "ModbusDevice"
 
-    @Parameter(defaultValue = "\${project}")
+    @Parameter(defaultValue = $$"${project}")
     private var project: MavenProject? = null
 
     @Throws(MojoExecutionException::class)
     override fun execute() {
-        Generator.execute(
+        Generator().execute(
             log,
             outputDirectory,
             modbusSchemaFile,

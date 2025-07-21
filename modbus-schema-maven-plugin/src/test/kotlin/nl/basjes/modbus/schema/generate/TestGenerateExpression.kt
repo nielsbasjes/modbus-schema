@@ -16,22 +16,20 @@
  */
 package nl.basjes.modbus.schema.generate
 
-import nl.basjes.modbus.schema.generate.Generator.Companion.generate
 import nl.basjes.modbus.schema.toSchemaDevice
-import java.io.File
 import java.io.StringWriter
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
-class TestGenerateExpression {
+class TestGenerateExpression: QuickTestDevice() {
 
     private val log = PluginLoggerToLog4J()
 
     @Test
     fun generateExpression() {
         val output = StringWriter()
-        generate(
-            File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
+        Generator().generate(
+            testDevice().toSchemaDevice(),
             null,
             "expression",
             "main",

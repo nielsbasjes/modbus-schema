@@ -16,32 +16,29 @@
  */
 package nl.basjes.modbus.schema.generate
 
-import nl.basjes.modbus.schema.generate.Generator.Companion.fileName
-import nl.basjes.modbus.schema.generate.Generator.Companion.generate
 import nl.basjes.modbus.schema.toSchemaDevice
-import java.io.File
 import java.io.StringWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class TestGenerateKotlin {
+class TestGenerateKotlin: QuickTestDevice() {
 
     private val log = PluginLoggerToLog4J()
 
     @Test
     fun checkOutputFileName() {
-        val mainFileName = fileName(null, "kotlin", "main", "nl.klokko.demo", "Foo")
+        val mainFileName = Generator().fileName(null, "kotlin", "main", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/Foo.kt", mainFileName)
 
-        val testFileName = fileName(null, "kotlin", "test", "nl.klokko.demo", "Foo")
+        val testFileName = Generator().fileName(null, "kotlin", "test", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/TestFoo.kt", testFileName)
     }
 
     @Test
     fun generateKotlin() {
         val output = StringWriter()
-        generate(
-            File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
+        Generator().generate(
+            testDevice().toSchemaDevice(),
             null,
             "kotlin",
             "main",
@@ -55,8 +52,8 @@ class TestGenerateKotlin {
     @Test
     fun generateKotlinTest() {
         val output = StringWriter()
-        generate(
-            File("src/test/resources/TestDevice.yaml").toSchemaDevice(),
+        Generator().generate(
+            testDevice().toSchemaDevice(),
             null,
             "kotlin",
             "test",
