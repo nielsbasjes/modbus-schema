@@ -27,17 +27,17 @@ class TestGenerateJava: QuickTestDevice() {
 
     @Test
     fun checkOutputFileName() {
-        val mainFileName = Generator().fileName(null, "java", "main", "nl.klokko.demo", "Foo")
+        val mainFileName = Generator(log).fileName(null, "java", "main", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/Foo.java", mainFileName)
 
-        val testFileName = Generator().fileName(null, "java", "test", "nl.klokko.demo", "Foo")
+        val testFileName = Generator(log).fileName(null, "java", "test", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/TestFoo.java", testFileName)
     }
 
     @Test
     fun generateJava() {
         val output = StringWriter()
-        Generator().generate(
+        Generator(log).generate(
             testDevice().toSchemaDevice(),
             null,
             "java",
@@ -52,7 +52,7 @@ class TestGenerateJava: QuickTestDevice() {
     @Test
     fun generateJavaTest() {
         val output = StringWriter()
-        Generator().generate(
+        Generator(log).generate(
             testDevice().toSchemaDevice(),
             null,
             "java",

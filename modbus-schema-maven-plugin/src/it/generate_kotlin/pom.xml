@@ -20,11 +20,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>nl.example</groupId>
-  <artifactId>generate_kotlin</artifactId>
+  <artifactId>generate_kotlin_parent</artifactId>
   <version>0.1</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
-  <name>Generate Kotlin</name>
+  <name>Generate Kotlin: Parent</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,86 +53,7 @@
     </dependencies>
   </dependencyManagement>
 
-  <dependencies>
-
-    <dependency>
-      <groupId>nl.basjes.modbus</groupId>
-      <artifactId>modbus-schema-device</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-test-junit5</artifactId>
-      <version>${kotlin.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-<!--    <dependency>-->
-<!--      <groupId>org.apache.logging.log4j</groupId>-->
-<!--      <artifactId>log4j-core</artifactId>-->
-<!--      <version>${log4j.version}</version>-->
-<!--    </dependency>-->
-
-  </dependencies>
-
-  <build>
-    <sourceDirectory>src/main/kotlin</sourceDirectory>
-    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-
-    <plugins>
-      <plugin>
-        <groupId>nl.basjes.modbus</groupId>
-        <artifactId>modbus-schema-maven-plugin</artifactId>
-        <version>${modbus-schema.version}</version>
-        <configuration>
-          <!-- The schema is loaded from within this project -->
-          <modbusSchemaFile>src/main/modbus/TestDevice.yaml</modbusSchemaFile>
-          <packageName>nl.example.modbus</packageName>
-          <className>MyNewDevice</className>
-        </configuration>
-        <executions>
-          <execution>
-            <id>Generate MAIN</id>
-            <goals><goal>generate-main</goal></goals>
-          </execution>
-          <execution>
-            <id>Generate TEST</id>
-            <goals><goal>generate-test</goal></goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <version>${kotlin.version}</version>
-        <executions>
-          <execution>
-            <id>compile</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>test-compile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
-        <configuration>
-          <failIfNoTests>true</failIfNoTests>
-        </configuration>
-      </plugin>
-
-    </plugins>
-  </build>
+  <modules>
+    <module>module</module>
+  </modules>
 </project>

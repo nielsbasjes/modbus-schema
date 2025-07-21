@@ -28,6 +28,7 @@ import org.apache.maven.plugin.logging.Log
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -36,18 +37,28 @@ import java.io.Writer
 import java.util.TimeZone
 import java.util.regex.Pattern
 
-class Generator {
+class Generator(val log: Log) {
 
-    fun String.openAsStream(): InputStream {
-        val fileStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(this)
-        if (fileStream != null) {
-            return fileStream
+    fun String.openAsStream(): InputStream? {
+        log.debug("Trying to open: $this")
+        val resourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(this)
+        if (resourceStream != null) {
+            log.debug("- open as resource: success")
+            return resourceStream
         }
-        return FileInputStream(this)
+        log.debug("- open as resource: failed")
+        try {
+            val fileInputStream = FileInputStream(this)
+            log.debug("- open as file: success")
+            return fileInputStream
+        } catch (_: FileNotFoundException) {
+            log.debug("- open as file: not found")
+            return null
+        }
     }
 
     fun execute(
-        log: Log,
+        basedir: File,
         outputDirectory: File?,
         modbusSchemaFile: String?,
         templateDirectory: File?,
@@ -60,8 +71,19 @@ class Generator {
             throw MojoExecutionException("outputDirectory is mandatory")
         }
 
-        log.info("Trying to open $modbusSchemaFile")
-        val schemaDevice = modbusSchemaFile?.openAsStream()?.toSchemaDevice()
+        require(modbusSchemaFile != null) {
+            throw MojoExecutionException("No modbusSchemaFile was specified")
+        }
+
+        log.info("Using Modbus Schema file $modbusSchemaFile")
+        var schemaStream = modbusSchemaFile.openAsStream()
+        if (schemaStream == null) {
+            schemaStream = "${basedir.absolutePath}/${modbusSchemaFile}".openAsStream()
+        }
+        requireNotNull(schemaStream) {
+            throw MojoExecutionException("Could not open the specified modbusSchemaFile $modbusSchemaFile")
+        }
+        val schemaDevice = schemaStream.toSchemaDevice()
 
         requireNotNull(schemaDevice) {
             throw MojoExecutionException("Could not open the specified modbusSchemaFile does not exist $modbusSchemaFile")

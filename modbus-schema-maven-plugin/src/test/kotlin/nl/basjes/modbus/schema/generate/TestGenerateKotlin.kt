@@ -27,17 +27,17 @@ class TestGenerateKotlin: QuickTestDevice() {
 
     @Test
     fun checkOutputFileName() {
-        val mainFileName = Generator().fileName(null, "kotlin", "main", "nl.klokko.demo", "Foo")
+        val mainFileName = Generator(log).fileName(null, "kotlin", "main", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/Foo.kt", mainFileName)
 
-        val testFileName = Generator().fileName(null, "kotlin", "test", "nl.klokko.demo", "Foo")
+        val testFileName = Generator(log).fileName(null, "kotlin", "test", "nl.klokko.demo", "Foo")
         assertEquals("nl/klokko/demo/TestFoo.kt", testFileName)
     }
 
     @Test
     fun generateKotlin() {
         val output = StringWriter()
-        Generator().generate(
+        Generator(log).generate(
             testDevice().toSchemaDevice(),
             null,
             "kotlin",
@@ -52,7 +52,7 @@ class TestGenerateKotlin: QuickTestDevice() {
     @Test
     fun generateKotlinTest() {
         val output = StringWriter()
-        Generator().generate(
+        Generator(log).generate(
             testDevice().toSchemaDevice(),
             null,
             "kotlin",

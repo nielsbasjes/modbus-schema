@@ -51,8 +51,8 @@ class GenerateMainMojo: AbstractMojo() {
 
     @Throws(MojoExecutionException::class)
     override fun execute() {
-        Generator().execute(
-            log,
+        Generator(log).execute(
+            project!!.basedir,
             outputDirectory,
             modbusSchemaFile,
             templateDirectory,

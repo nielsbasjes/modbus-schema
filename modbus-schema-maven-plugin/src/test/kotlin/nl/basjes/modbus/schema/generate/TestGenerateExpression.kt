@@ -28,7 +28,7 @@ class TestGenerateExpression: QuickTestDevice() {
     @Test
     fun generateExpression() {
         val output = StringWriter()
-        Generator().generate(
+        Generator(log).generate(
             testDevice().toSchemaDevice(),
             null,
             "expression",
