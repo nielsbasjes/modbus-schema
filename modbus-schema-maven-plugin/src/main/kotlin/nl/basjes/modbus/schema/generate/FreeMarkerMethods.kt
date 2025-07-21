@@ -25,10 +25,11 @@ import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
-import nl.basjes.modbus.schema.expression.booleans.BooleanBit
 import nl.basjes.modbus.schema.expression.booleans.BooleanBitset
 import nl.basjes.modbus.schema.expression.booleans.BooleanConstant
 import nl.basjes.modbus.schema.expression.booleans.BooleanField
+import nl.basjes.modbus.schema.expression.modbus.DiscreteModbusExpression
+import nl.basjes.modbus.schema.expression.modbus.RegistersModbusExpression
 import nl.basjes.modbus.schema.expression.numbers.Add
 import nl.basjes.modbus.schema.expression.numbers.Divide
 import nl.basjes.modbus.schema.expression.numbers.DoubleConstant
@@ -46,8 +47,6 @@ import nl.basjes.modbus.schema.expression.numbers.NumericalField
 import nl.basjes.modbus.schema.expression.numbers.Power
 import nl.basjes.modbus.schema.expression.numbers.Subtract
 import nl.basjes.modbus.schema.expression.registers.RegistersConstantExpression
-import nl.basjes.modbus.schema.expression.modbus.DiscreteModbusExpression
-import nl.basjes.modbus.schema.expression.modbus.RegistersModbusExpression
 import nl.basjes.modbus.schema.expression.registers.SwapBytes
 import nl.basjes.modbus.schema.expression.registers.SwapEndian
 import nl.basjes.modbus.schema.expression.strings.BitsetStringList
@@ -64,6 +63,7 @@ import nl.basjes.modbus.schema.expression.strings.StringFromNumber
 import nl.basjes.modbus.schema.expression.strings.UTF8String
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
+import kotlin.reflect.KClass
 
 
 val expressionMappings =
@@ -108,7 +108,6 @@ val expressionMappings =
         "ExpressionStringFromNumber"           to StringFromNumber::class,
         "ExpressionStringFromBoolean"          to StringFromBoolean::class,
         // Boolean values
-        "ExpressionBooleanBit"                 to BooleanBit::class,
         "ExpressionBooleanBitset"              to BooleanBitset::class,
         "ExpressionBooleanField"               to BooleanField::class,
         "ExpressionBooleanConstant"            to BooleanConstant::class,
@@ -130,6 +129,9 @@ fun Configuration.registerAdditionalMethods() =
         // Determine if an expression is of a specific expression type
         // Usage:  <#if isExpressionType(expr, "ExpressionRegistersConstant")>...</#if>
         this.setSharedVariable("isExpressionType",      IsExpressionType())
+
+        // Usage: <#switch expressionType(expr)><#on "ExpressionRegistersConstant")>...</#switch>
+        this.setSharedVariable("expressionType",        GetExpressionType())
     }
 
 abstract class BaseSingleStringMethod : TemplateMethodModelEx {
@@ -336,7 +338,29 @@ class IsExpressionType : TemplateMethodModelEx {
         val theClass = expressionMappings[theClassName] ?: return false
 
         // -----
-        return theClass.java.isAssignableFrom(theExpression.javaClass)
+        return theClass.isInstance(theExpression)
+    }
+}
+
+class GetExpressionType : TemplateMethodModelEx {
+    override fun exec(arguments: MutableList<Any?>): Any {
+        if (arguments.size != 1) {
+            throw TemplateModelException("Need exactly 1 argument")
+        }
+        val arg0 = arguments[0]
+        if (arg0 !is WrapperTemplateModel) {
+            throw TemplateModelException("Bad input")
+        }
+        val input = arg0.wrappedObject
+        if (input !is Expression) {
+            throw TemplateModelException("Only works on Expressions")
+        }
+        expressionMappings.forEach { ( name, clazz ) ->
+            if (clazz.isInstance(input)) {
+                return name
+            }
+        }
+        throw TemplateModelException("The provided input is an instance of ${input::class.simpleName} which is unknown.")
     }
 }
 
