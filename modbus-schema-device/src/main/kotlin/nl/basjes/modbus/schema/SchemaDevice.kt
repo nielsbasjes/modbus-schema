@@ -26,12 +26,10 @@ import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.api.ModbusValue
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.schema.fetcher.OptimizingModbusBlockFetcher
 import nl.basjes.modbus.schema.fetcher.ModbusBlockFetcher
 import nl.basjes.modbus.schema.fetcher.ModbusQuery
-import nl.basjes.modbus.schema.test.ExpectedBlock
+import nl.basjes.modbus.schema.fetcher.OptimizingModbusBlockFetcher
 import nl.basjes.modbus.schema.test.TestScenario
-import nl.basjes.modbus.schema.test.TestScenarioResults
 import nl.basjes.modbus.schema.test.TestScenarioResultsList
 import nl.basjes.modbus.schema.utils.StringTable
 import org.apache.logging.log4j.LogManager
@@ -72,7 +70,7 @@ constructor(
             field = value
         }
 
-    private fun clearModbusBlocks() {
+    fun clearModbusBlocks() {
         modbusBlocks.values.forEach { it.clear() }
     }
 
@@ -328,13 +326,7 @@ constructor(
         for (modbusBlock in modbusBlocks.values) {
             test.addModbusBlock(modbusBlock.clone())
         }
-        for (block in blocks) {
-            val expectedBlock = ExpectedBlock(block.id)
-            test.addExpectedBlock(expectedBlock)
-            for (field in block.fields) {
-                expectedBlock.addExpectation(field.id, field.testCompareValue)
-            }
-        }
+        test.recreateExpectedValues(this)
     }
 
     data class TestResult(
@@ -351,49 +343,10 @@ constructor(
     fun verifyProvidedTests(): TestScenarioResultsList {
         val allTestResults = TestScenarioResultsList()
         for (test in tests) {
-            val testResults: MutableMap<String, MutableMap<String, TestResult>> = mutableMapOf()
-            allTestResults.add(TestScenarioResults(test.name, this, testResults))
-
-            // First we set all the TEST registers in the schema device
-            clearModbusBlocks() // Wipe anything old
-            // Then we load all provided values for this test
-            for (testRegisterBlock in test.modbusBlocks) {
-                val block = this.getModbusBlock(testRegisterBlock.addressClass)
-                if (block is DiscreteBlock && testRegisterBlock is DiscreteBlock) {
-                    block.merge(testRegisterBlock)
-                }
-                if (block is RegisterBlock && testRegisterBlock is RegisterBlock) {
-                    block.merge(testRegisterBlock)
-                }
-            }
-
-            // Then for each block as defined in the test scenario
-            for (expectedBlock in test.expectedBlocks) {
-                val blockId = expectedBlock.blockId
-                val block = getBlock(blockId)
-                requireNotNull(block) {
-                    "There are expectations for the blockid \"${expectedBlock.blockId}\" in the test \"${test.name}\" which does not exist."
-                }
-                testResults[blockId] = mutableMapOf()
-                val blockTestResult = testResults[blockId]!!
-                for ((fieldId, expectedValue) in expectedBlock.expected) {
-                    val field = block.getField(fieldId)
-                    requireNotNull(field) {
-                        "For block '${block.id}' an expected value was specified for a non existent field '$fieldId'"
-                    }
-
-                    val actualValue = field.testCompareValue
-                    blockTestResult[fieldId] =
-                        TestResult(expectedValue, actualValue, expectedValue == actualValue)
-                }
-            }
+            allTestResults.add(test.verify(this))
         }
-        // Finally ensure no test registers remain in the schema device
-        clearModbusBlocks()
-
         return allTestResults
     }
-
 
     override fun toString(): String = toTable(false, true)
 

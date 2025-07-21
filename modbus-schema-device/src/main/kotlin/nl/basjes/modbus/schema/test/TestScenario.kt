@@ -21,6 +21,8 @@ import nl.basjes.modbus.device.api.ModbusBlock
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.memory.MockedModbusDevice
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.SchemaDevice.TestResult
+import nl.basjes.modbus.schema.get
 import nl.basjes.modbus.schema.utils.StringTable
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -61,6 +63,72 @@ class TestScenario(
 
     fun addExpectedBlock(block: ExpectedBlock) {
         expectedBlocks.add(block)
+    }
+
+    /**
+     * Verify if the schema matches this test scenario.
+     * NOTE: The previously cached modbus values in the provided SchemaDevice are WIPED!
+     * @return The results object
+     */
+    fun verify(schemaDevice: SchemaDevice): TestScenarioResults {
+        val testResults: MutableMap<String, MutableMap<String, TestResult>> = mutableMapOf()
+
+        // First we set all the TEST registers in the schema device
+        loadTestModbusValues(schemaDevice)
+
+        // Then for each block as defined in the test scenario
+        for (expectedBlock in expectedBlocks) {
+            val blockId = expectedBlock.blockId
+            val block = schemaDevice.getBlock(blockId)
+            requireNotNull(block) {
+                "There are expectations for the blockid \"${expectedBlock.blockId}\" in the test \"${name}\" which does not exist."
+            }
+            testResults[blockId] = mutableMapOf()
+            val blockTestResult = testResults[blockId]!!
+            for ((fieldId, expectedValue) in expectedBlock.expected) {
+                val field = block.getField(fieldId)
+                requireNotNull(field) {
+                    "For block '${block.id}' an expected value was specified for a non existent field '$fieldId'"
+                }
+
+                val actualValue = field.testCompareValue
+                blockTestResult[fieldId] =
+                    TestResult(expectedValue, actualValue, expectedValue == actualValue)
+            }
+        }
+        // Finally ensure no test registers remain in the schema device
+        schemaDevice.clearModbusBlocks()
+        return TestScenarioResults(name, schemaDevice, testResults)
+    }
+
+    /**
+     * Load the test input modbus values in this test into the schema device.
+     * NOTE: The previously cached modbus values in the provided SchemaDevice are WIPED!
+     */
+    fun loadTestModbusValues(schemaDevice: SchemaDevice) {
+        schemaDevice.clearModbusBlocks() // Wipe anything old
+        // Then we load all provided values for this test
+        for (testRegisterBlock in modbusBlocks) {
+            val block = schemaDevice.getModbusBlock(testRegisterBlock.addressClass)
+            if (block is DiscreteBlock && testRegisterBlock is DiscreteBlock) {
+                block.merge(testRegisterBlock)
+            }
+            if (block is RegisterBlock && testRegisterBlock is RegisterBlock) {
+                block.merge(testRegisterBlock)
+            }
+        }
+    }
+
+    fun recreateExpectedValues(schemaDevice: SchemaDevice) {
+        expectedBlocks.clear()
+
+        for (block in schemaDevice.blocks) {
+            val expectedBlock = ExpectedBlock(block.id)
+            expectedBlocks.add(expectedBlock)
+            for (field in block.fields) {
+                expectedBlock.addExpectation(field.id, field.testCompareValue)
+            }
+        }
     }
 
     override fun toString(): String = "TestScenario: '$name' => $description)"
