@@ -189,7 +189,7 @@ public class ${asClassName(className)} {
               .schemaDevice(schemaDevice)
               .id("${block.id}")
 <#if block.description??>
-              .description("${block.description}")
+              .description("${escapeForJava(block.description)}")
 </#if>
               .build();
 
@@ -234,8 +234,8 @@ public class ${asClassName(className)} {
                 super(Field.builder()
                            .block(block)
                            .id("${field.id}")
-                           .description("${field.description}")
-                           .expression("${field.parsedExpression}")
+                           .description("${escapeForJava(field.description)}")
+                           .expression("${escapeForJava(field.parsedExpression.toString())}")
                            .unit("${field.unit}")
                            .immutable(${field.immutable?string('true', 'false')})
                            .system(${field.system?string('true', 'false')})

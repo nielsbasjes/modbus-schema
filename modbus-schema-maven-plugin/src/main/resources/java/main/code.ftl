@@ -235,7 +235,7 @@ public class ${asClassName(className)} {
                            .block(block)
                            .id("${field.id}")
                            .description("${escapeForJava(field.description)}")
-                           .expression("${field.parsedExpression}")
+                           .expression("${escapeForJava(field.parsedExpression.toString())}")
                            .unit("${field.unit}")
                            .immutable(${field.immutable?string('true', 'false')})
                            .system(${field.system?string('true', 'false')})
