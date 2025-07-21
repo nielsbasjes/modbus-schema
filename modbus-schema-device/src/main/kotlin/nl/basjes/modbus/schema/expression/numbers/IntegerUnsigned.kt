@@ -23,9 +23,9 @@ import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 abstract class IntegerUnsigned(
     name: String,
     bytesPerValue: Int,
-    addressExpression: RegistersExpression,
+    registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerSigned(name, bytesPerValue, addressExpression, notImplemented) {
+) : IntegerSigned(name, bytesPerValue, registersExpression, notImplemented) {
 
     override fun getGuarantee(): ValueGuarantee = POSITIVE
 }

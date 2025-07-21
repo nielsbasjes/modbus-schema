@@ -27,17 +27,17 @@ import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 abstract class IntegerSigned(
     private val name: String,
     private val bytesPerValue: Int,
-    private val addressExpression: RegistersExpression,
+    private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
 ) : NotImplemented(bytesPerValue / BYTES_PER_REGISTER, notImplemented),
     NumericalExpression {
 
-    override fun toString(): String = "$name(" + addressExpression + super<NotImplemented>.toString() + ")"
+    override fun toString(): String = "$name(" + registersExpression + super<NotImplemented>.toString() + ")"
 
     override val subExpressions: List<Expression>
-        get() = listOf(addressExpression)
+        get() = listOf(registersExpression)
 
-    override var isImmutable: Boolean = addressExpression.isImmutable
+    override var isImmutable: Boolean = registersExpression.isImmutable
 
     override val returnType: ReturnType
         get() = ReturnType.LONG
@@ -49,12 +49,12 @@ abstract class IntegerSigned(
                 super<NumericalExpression>.problems,
                 super<NotImplemented>.problems,
                 checkFatal(
-                    addressExpression.returnedAddresses == bytesPerValue / BYTES_PER_REGISTER,
-                    "Wrong number of registers: Got ${addressExpression.returnedAddresses}, need ${bytesPerValue / BYTES_PER_REGISTER}",
+                    registersExpression.returnedAddresses == bytesPerValue / BYTES_PER_REGISTER,
+                    "Wrong number of registers: Got ${registersExpression.returnedAddresses}, need ${bytesPerValue / BYTES_PER_REGISTER}",
                 ),
             )
 
-    override fun getModbusValues(schemaDevice: SchemaDevice) = addressExpression.getModbusValues(schemaDevice)
+    override fun getModbusValues(schemaDevice: SchemaDevice) = registersExpression.getModbusValues(schemaDevice)
 
     abstract override fun getValueAsLong(schemaDevice: SchemaDevice): Long?
 }

@@ -22,12 +22,12 @@ import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IntegerSigned64(
-    private val addressExpression: RegistersExpression,
+    private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerSigned("int64", LONG_BYTES, addressExpression, notImplemented) {
+) : IntegerSigned("int64", LONG_BYTES, registersExpression, notImplemented) {
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
-        val bytes = addressExpression.getByteArray(schemaDevice) ?: return null
+        val bytes = registersExpression.getByteArray(schemaDevice) ?: return null
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
