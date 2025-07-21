@@ -16,7 +16,6 @@
 package nl.basjes.modbus.schema.expression.generic
 
 import nl.basjes.modbus.schema.ReturnType
-import nl.basjes.modbus.schema.ReturnType.STRING
 import nl.basjes.modbus.schema.ReturnType.UNKNOWN
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
@@ -39,6 +38,8 @@ class MissingField(
 
     override fun getValue(schemaDevice: SchemaDevice) = null
     override fun getBoolean(schemaDevice: SchemaDevice) = null
+    override fun getValueAsDouble(schemaDevice: SchemaDevice) = null
+    override fun getValueAsLong(schemaDevice: SchemaDevice) = null
 
     override val returnType: ReturnType
         get() = UNKNOWN

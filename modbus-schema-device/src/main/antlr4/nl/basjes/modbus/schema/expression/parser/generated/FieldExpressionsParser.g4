@@ -19,7 +19,7 @@ parser grammar FieldExpressionsParser;
 options { tokenVocab=FieldExpressionsLexer; }
 
 // ===============================================================
-// SIMPLIFICATION: ONLY DO Number, String and StringList expressions
+// SIMPLIFICATION: ONLY DO Boolean, Number, String and StringList expressions
 
 // An expression can only result in one of these
 expression
@@ -42,7 +42,7 @@ registerlist
     | startRegister=singleAddress DOTDOT lastRegister=singleAddress         #registerRange      // "1x0001.. 1x0004" range both start and end inclusive!
     | SWAPENDIAN    BRACEOPEN registers=registerlist BRACECLOSE             #registerSwapEndian // Reverse the ordering of the retrieved bits
     | SWAPBYTES     BRACEOPEN registers=registerlist BRACECLOSE             #registerSwapBytes  // Reverse the ordering of the retrieved bytes
-    | DOUBLEQUOTE constantHexString DOUBLEQUOTE                             #registerValues     // A hardcoded list of register values (between " to separate them from the singleRegister coils)
+    | DOUBLEQUOTE value=constantHexString DOUBLEQUOTE                       #registerValues     // A hardcoded list of register values (between " to separate them from the singleRegister coils)
     ;
 
 constantHexString
@@ -70,15 +70,15 @@ stringFragments
     ;
 
 stringList
-    : BITSET          BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )*  BRACECLOSE #stringListBitSet
+    : BITSET        BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  ( SEMICOLON mapping )*  BRACECLOSE  #stringListBitSet
     ;
 
 boolean
-    : BOOLEAN         BRACEOPEN address=singleAddress BRACECLOSE                                                         #booleanBit
-    // Extract a single bit from a set of registers
-    | BITSETBIT       BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )*  SEMICOLON bitNr=LONG    BRACECLOSE #booleanBitSetBit
-    | FIELDNAME                                                                                                          #booleanField
+    : BOOLEAN       BRACEOPEN address=singleAddress BRACECLOSE                                                           #loadBoolean
     | value=(TRUE|FALSE)                                                                                                 #booleanConstant
+    // Extract a single bit from a set of registers
+    | BITSETBIT     BRACEOPEN registers=registerlist ( SEMICOLON notImplemented )* SEMICOLON bitNr=LONG BRACECLOSE #booleanBitSetBit
+    | FIELDNAME                                                                                                          #booleanField
     ;
 
 notImplemented
@@ -109,11 +109,9 @@ number
     | BRACEOPEN number BRACECLOSE                                                                 #extraBraces
 
     // Other fields
-    // Fields are only used when a calculation is needed (like in SunSpec) and
-    // thus it is assumed to always be a number (which is true in all known cases where this is needed)
     | FIELDNAME                                                                                   #numberField
 
-    // Convert registers to value
+    // Do calculations: These are ordered/grouped according to the PEMDAS rules.
     | base=number     POWER              exponent=number                                          #power
     | left=number     (MULTIPLY|DIVIDE)  right=number                                             #multiplyDivide
     |           left=number               BRACEOPEN middle=number BRACECLOSE                      #implicitMultiply

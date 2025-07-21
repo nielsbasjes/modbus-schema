@@ -16,11 +16,9 @@
  */
 package nl.basjes.modbus.schema.expression.booleans
 
-import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.ReturnType.BOOLEAN
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.expression.Expression
 
 interface BooleanExpression : Expression {

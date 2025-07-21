@@ -18,7 +18,6 @@ package nl.basjes.modbus.schema.expression.parser
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.expression.Expression
-import nl.basjes.modbus.schema.expression.booleans.BooleanBit
 import nl.basjes.modbus.schema.expression.booleans.BooleanBitset
 import nl.basjes.modbus.schema.expression.booleans.BooleanConstant
 import nl.basjes.modbus.schema.expression.booleans.BooleanExpression
@@ -45,13 +44,13 @@ import nl.basjes.modbus.schema.expression.numbers.Subtract
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsLexer
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.AddSubtractContext
-import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanBitContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanBitSetBitContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanConstantContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.BooleanFieldContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.DoubleConstantContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.ExtraBracesContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.ImplicitMultiplyContext
+import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.LoadBooleanContext
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.LoadIeee754_32Context
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.LoadIeee754_64Context
 import nl.basjes.modbus.schema.expression.parser.generated.FieldExpressionsParser.LoadInt16Context
@@ -178,7 +177,7 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
     }
 
     override fun visitBooleanConstant(ctx: BooleanConstantContext): Expression {
-        return BooleanConstant(ctx.value.text.toBoolean())
+        return BooleanConstant(ctx.value.text)
     }
 
     override fun visitBooleanField(ctx: BooleanFieldContext): Expression =
@@ -289,7 +288,6 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
             ctx.oneString.text.toString()
         )
 
-
     override fun visitStringFromBoolean(ctx: StringFromBooleanContext): Expression =
         StringFromBoolean(
             visitBooleanExpression(ctx.value),
@@ -297,8 +295,8 @@ class ExpressionParser : FieldExpressionsParserBaseVisitor<Expression?>() {
             ctx.oneString.text.toString()
         )
 
-    override fun visitBooleanBit(ctx: BooleanBitContext): Expression =
-        BooleanBit(DiscreteModbusExpression(Address.of(ctx.singleAddress().text)))
+    override fun visitLoadBoolean(ctx: LoadBooleanContext): Expression =
+        DiscreteModbusExpression(Address.of(ctx.singleAddress().text))
 
     override fun visitBooleanBitSetBit(ctx: BooleanBitSetBitContext): Expression =
         BooleanBitset(

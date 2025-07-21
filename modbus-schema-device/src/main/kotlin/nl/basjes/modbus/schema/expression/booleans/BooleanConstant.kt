@@ -18,13 +18,23 @@ package nl.basjes.modbus.schema.expression.booleans
 
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.numbers.NumericalExpression.ValueGuarantee
+import java.util.Locale
 
 open class BooleanConstant(
-    val value: Boolean,
+    val value: String,
 ) : BooleanExpression {
 
-    override fun toString(): String = value.toString()
+    private val theBit = when (value.lowercase(Locale.ROOT).trim()) {
+        "0", "false"    -> false
+        "1", "true"     -> true
+        else            -> null
+    }
+
+    override fun toString(): String = when(theBit) {
+        true  -> "true"
+        false -> "false"
+        null -> ""
+    }
 
     override var isImmutable: Boolean = true
         set(unused) {
@@ -34,5 +44,5 @@ open class BooleanConstant(
     override val returnType: ReturnType
         get() = ReturnType.BOOLEAN
 
-    override fun getBoolean(schemaDevice: SchemaDevice): Boolean? = value
+    override fun getBoolean(schemaDevice: SchemaDevice): Boolean? = theBit
 }
