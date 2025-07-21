@@ -66,6 +66,35 @@ object ByteConversions {
         return result.joinToString(separator = separator)
     }
 
+    fun bytesToSeparatedUnsignedIntegerString(
+        bytes: ByteArray,
+        separator: String,
+    ): String {
+        if (bytes.isEmpty()) {
+            return ""
+        }
+        val result: MutableList<String> = ArrayList()
+        for (aByte in bytes) {
+            result.add(String.format("%d", byteToUnsignedLong(aByte)))
+        }
+        return result.joinToString(separator = separator)
+    }
+
+    fun byteToUnsignedLong(aByte: Byte): Long {
+        val longBytes =
+            byteArrayOf(
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                0x00.toByte(),
+                aByte,
+            )
+        return bytesToLong(longBytes)
+    }
+
     fun bytesToSeparatedTwoByteHexString(
         bytes: ByteArray,
         separator: String,

@@ -57,6 +57,6 @@ class IPv4AddrString(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        return ByteConversions.bytesToSeparatedIntegerString(bytes, ".")
+        return ByteConversions.bytesToSeparatedUnsignedIntegerString(bytes, ".")
     }
 }
