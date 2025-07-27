@@ -37,7 +37,7 @@ BLOCK: ${asClassName(block.id)} -> id = "${block.id}"<#if block.description??> ;
 <#list block.fields as field>
     // ==========================================
     FIELD: ${asClassName(field.id)} ; id = "${field.id}"; description = "${field.description}"; unit = "${field.unit}"; immutable = ${field.immutable?string('true', 'false')}; system = ${field.system?string('true', 'false')}; fetchGroup = "${field.fetchGroup}" ))
-           GETTER     = field.get${asClassName(valueGetter(field.returnType))}();
+           GETTER               = field.get${asClassName(valueGetter(field.returnType))}();
            ORIGINAL  EXPRESSION = ${field.parsedExpression}
            REWRITTEN EXPRESSION = <@expr.expression expr=field.parsedExpression/>
 </#list>
