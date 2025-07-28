@@ -18,6 +18,7 @@
 package nl.basjes.modbus.schema.fetcher
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.schema.Field
 import java.util.Objects
 import kotlin.time.Duration
@@ -39,8 +40,15 @@ open class ModbusQuery(
         SUCCESS
     }
 
-    /** The affected list of fields */
-    val fields: MutableList<Field> = mutableListOf()
+    /** The list of fields why this query was done. */
+    internal val fieldsMutableList: MutableList<Field> = mutableListOf()
+
+    val fields: List<Field>
+        get() = fieldsMutableList
+
+    open fun addField(field: Field) {
+        fieldsMutableList.add(field)
+    }
 
     val type = start.addressClass.type
 
@@ -65,22 +73,42 @@ open class ModbusQuery(
     override fun hashCode(): Int = Objects.hash(start, count, status, fields)
 
     override fun toString(): String =
-        "FetchBatch { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
+        "ModbusQuery { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
 }
 
 /**
- * When doing fetch optimization we are sometimes combining the FetchBatches.
+ * When doing fetch optimization we are sometimes combining the ModbusQueries.
  * This is the class to hold such a combination.
  * This is needed to be able to handle the retry in case of a read error
  */
 class MergedModbusQuery(
+    /** The start address for the query */
     start: Address,
+    /** The number of elements (registers/discretes) fetched. */
     count: Int,
 ) : ModbusQuery(start, count) {
     val modbusQueries: MutableList<ModbusQuery> = ArrayList()
 
     fun add(modbusQuery: ModbusQuery) {
         modbusQueries.add(modbusQuery)
-        fields.addAll(modbusQuery.fields)
+        fieldsMutableList.addAll(modbusQuery.fields)
     }
+}
+
+/**
+ * When doing fetch optimization we are sometimes combining the ModbusQueries.
+ * This is the class to hold such a combination.
+ * This is needed to be able to handle the retry in case of a read error
+ */
+class HoleModbusQuery(
+    start: Address,
+    count: Int,
+) : ModbusQuery(start, count) {
+    override fun addField(field: Field) {
+        throw ModbusApiException("A query for a hole is NOT related to any Fields, so don't try adding fields")
+    }
+
+    override fun toString(): String =
+        "ModbusQuery { $start # $count } (HOLE: No fields!)"
+
 }

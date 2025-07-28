@@ -84,97 +84,22 @@ open class ModbusBlockFetcher(
     }
 
     /**
-     * We force an immediate update of all registers needed for the provided field.
+     * We force an immediate update of all registers needed for the provided field which have a maximum age of the provided milliseconds.
      * No batching, buffering or any optimization is done.
      * @param field The field that must be updated
      * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
      */
-    fun update(field: Field): List<ModbusQuery> {
-        require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
+    fun update(field: Field, maxAge: Long = 0): List<ModbusQuery> {
+        synchronized(this) {
+            require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
+            // Normally in the 'need' call the underlying fields referenced in the expression are also 'needed'.
+            // Here this is not the case because we are ignoring the 'need'.
+            val allFields = listOf(field, *field.requiredFields.toTypedArray()).sorted().distinct().toList()
 
-        if (field.isUsingHardReadErrorRegisters()) {
-            return listOf()// Cannot update
-        }
-
-        val fetched = mutableListOf<ModbusQuery>()
-
-        // Make sure all fields needed to build the requested value are also present
-        field.requiredFields.forEach { fetched.addAll(it.update()) }
-
-        val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
-
-        var requiredRegisters: List<Address>? = fetchGroupToAddresses[field.fetchGroup]
-        if (requiredRegisters.isNullOrEmpty()) {
-            requiredRegisters = field.requiredAddresses
-        }
-
-        if (requiredRegisters.isEmpty()) {
-            // Nothing to update
-            return listOf()
-        }
-        val modbusQuery = ModbusQuery(requiredRegisters[0], requiredRegisters.size)
-        modbusQuery.fields.add(field)
-
-        when(modbusQuery.type) {
-            DISCRETE -> {
-                val deviceDiscretes = modbusDevice.getDiscretes(modbusQuery)
-                if (deviceDiscretes.values.any { it.isReadError() }) {
-                    // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
-                    modbusQuery.status = Status.ERROR
-                    deviceDiscretes.values.forEach { it.setHardReadError() }
-                }
-                val modbusBlock = schemaDevice.getModbusBlock(deviceDiscretes.addressClass)
-                require(modbusBlock is DiscreteBlock) { "This should never fail" }
-                modbusBlock.merge(deviceDiscretes)
-            }
-
-            REGISTER -> {
-                val deviceRegisters = modbusDevice.getRegisters(modbusQuery)
-                if (deviceRegisters.values.any { it.isReadError() }) {
-                    // We are only fetching a SINGLE field so all registers must be marked as a HARD read error
-                    modbusQuery.status = Status.ERROR
-                    deviceRegisters.values.forEach { it.setHardReadError() }
-                }
-                val modbusBlock = schemaDevice.getModbusBlock(deviceRegisters.addressClass)
-                require(modbusBlock is RegisterBlock) { "This should never fail" }
-                modbusBlock.merge(deviceRegisters)
-            }
-        }
-
-
-        fetched.add(modbusQuery)
-        return fetched
-    }
-
-    fun ModbusDevice.getDiscretes(modbusQuery: ModbusQuery): DiscreteBlock {
-        val start = TimeSource.Monotonic.markNow()
-        try {
-            val discreteBlock = this.getDiscretes(modbusQuery.start, modbusQuery.count)
-            modbusQuery.status = Status.SUCCESS
-            return discreteBlock
-        } catch (modbusException: ModbusException) {
-            modbusQuery.status = Status.ERROR
-            throw modbusException
-        }
-        finally {
-            val stop = TimeSource.Monotonic.markNow()
-            modbusQuery.duration = stop - start
-        }
-    }
-
-    fun ModbusDevice.getRegisters(modbusQuery: ModbusQuery): RegisterBlock {
-        val start = TimeSource.Monotonic.markNow()
-        try {
-            val registerBlock = this.getRegisters(modbusQuery.start, modbusQuery.count)
-            modbusQuery.status = Status.SUCCESS
-            return registerBlock
-        } catch (modbusException: ModbusException) {
-            modbusQuery.status = Status.ERROR
-            throw modbusException
-        }
-        finally {
-            val stop = TimeSource.Monotonic.markNow()
-            modbusQuery.duration = stop - start
+            return calculateModbusQueries(allFields, maxAge)
+                .map { fetch(it) }
+                .flatten()
+                .toList()
         }
     }
 
@@ -187,14 +112,58 @@ open class ModbusBlockFetcher(
     fun update(maxAge: Long = 0): List<ModbusQuery> {
         synchronized(this) {
             val fetched = mutableListOf<ModbusQuery>()
-            for (fetchBatch in calculateModbusQueries(maxAge)) {
-                fetched.addAll(fetch(fetchBatch))
+            for (modbusQuery in calculateModbusQueries(maxAge)) {
+                fetched.addAll(fetch(modbusQuery))
             }
             return fetched
         }
     }
 
-    private fun ModbusBlock<*,*,*>.mergeFetched(fetchedModbusBlock: ModbusBlock<*,*,*> ) {
+    private fun ModbusDevice.getDiscretes(modbusQuery: ModbusQuery): DiscreteBlock {
+        val start = TimeSource.Monotonic.markNow()
+        try {
+            val discreteBlock = this.getDiscretes(modbusQuery.start, modbusQuery.count)
+            modbusQuery.status = Status.SUCCESS
+            if (discreteBlock.values.any { it.isReadError() }) {
+                modbusQuery.status = Status.ERROR
+            }
+            return discreteBlock
+        } catch (modbusException: ModbusException) {
+            modbusQuery.status = Status.ERROR
+            throw modbusException
+        }
+        finally {
+            val stop = TimeSource.Monotonic.markNow()
+            modbusQuery.duration = stop - start
+        }
+    }
+
+    private fun ModbusDevice.getRegisters(modbusQuery: ModbusQuery): RegisterBlock {
+        val start = TimeSource.Monotonic.markNow()
+        try {
+            val registerBlock = this.getRegisters(modbusQuery.start, modbusQuery.count)
+            modbusQuery.status = Status.SUCCESS
+            if (registerBlock.values.any { it.isReadError() }) {
+                modbusQuery.status = Status.ERROR
+            }
+            return registerBlock
+        } catch (modbusException: ModbusException) {
+            modbusQuery.status = Status.ERROR
+            throw modbusException
+        }
+        finally {
+            val stop = TimeSource.Monotonic.markNow()
+            modbusQuery.duration = stop - start
+        }
+    }
+
+    private fun ModbusDevice.executeQuery(modbusQuery: ModbusQuery): ModbusBlock<out ModbusBlock<*,*,*>,out ModbusValue<*,*>,*> =
+        when(modbusQuery.type) {
+            DISCRETE -> getDiscretes(modbusQuery)
+            REGISTER -> getRegisters(modbusQuery)
+        }
+
+    private fun ModbusBlock<out ModbusBlock<*,*,*>,out ModbusValue<*,*>,*>.mergeFetched(fetchedModbusBlock: ModbusBlock<*,out ModbusValue<*,*>,*> ) {
         when (this) {
             is DiscreteBlock if fetchedModbusBlock is DiscreteBlock -> merge(fetchedModbusBlock)
             is RegisterBlock if fetchedModbusBlock is RegisterBlock -> merge(fetchedModbusBlock)
@@ -202,91 +171,70 @@ open class ModbusBlockFetcher(
         }
     }
 
-    private fun fetch(modbusQuery: ModbusQuery): List<ModbusQuery> {
-        val fetched = mutableListOf<ModbusQuery>()
+    internal fun fetch(modbusQuery: ModbusQuery): List<ModbusQuery> {
+        val fetchedQueries = mutableListOf<ModbusQuery>()
         try {
-            val fetchedModbusBlock =
-                when(modbusQuery.type) {
-                    DISCRETE -> modbusDevice.getDiscretes(modbusQuery)
-                    REGISTER -> modbusDevice.getRegisters(modbusQuery)
+            val fetchedModbusBlock = modbusDevice.executeQuery(modbusQuery)
+            fetchedQueries.add(modbusQuery)
+
+            when(modbusQuery.status) {
+                Status.NOT_FETCHED ->
+                    throw ModbusApiException("This should not happen. After fetching a modbus query it is still not fetched??")
+
+                Status.SUCCESS -> {
+                    // Store the result
+                    schemaDevice
+                        .getModbusBlock(fetchedModbusBlock.addressClass)
+                        .mergeFetched(fetchedModbusBlock)
                 }
-            fetched.add(modbusQuery)
-            val existingModbusBlock = schemaDevice.getModbusBlock(fetchedModbusBlock.addressClass)
-            existingModbusBlock.mergeFetched(fetchedModbusBlock)
-            if (fetchedModbusBlock.values.any { it.isReadError() }) {
-                modbusQuery.status = Status.ERROR
-                if (modbusQuery is MergedModbusQuery) {
-                    // If we have a merged fetch then we retry on the individuals.
-                    for (fetchPart in modbusQuery.modbusQueries) {
-                        fetched.addAll(fetch(fetchPart))
-                    }
 
-                    // If only trying to fetch the requested parts we would skip the registers
-                    // of any intermediate Fields ... that have just been wiped.
-
-                    // We get the blocks this batch touches.
-                    val blocks = modbusQuery.fields.map { it.block }.distinct()
-
-                    // We get ALL fields that have registers in the current batch range
-                    // and update them one by one. Regardless if they are needed.
-                    // This way we can permanently mark the bad ones and avoid them in all future calls
-                    blocks
-                        .map { it.fields }
-                        .flatten()
-                        .filter { !modbusQuery.fields.contains(it) }
-                        .filter { it.requiredAddresses.overlaps(modbusQuery.start, modbusQuery.count) }
-                        .forEach { fetched.addAll(it.update()) }
-
-                    // At this point we have fetched all fields defined as use values which are part of this error query.
-                    // If there is a hole (i.e. no field defined for an address) this is now still a soft read error.
-                    // We now try to fetch each of those to contiguous blocks to make them either a value or a hard error
-                    // This is needed for later queries to be optimized better.
-                    val holes = mutableListOf<ModbusValue<*,*>>()
-                    for (index in 0 until modbusQuery.count) {
-                        val modbusValue = existingModbusBlock[modbusQuery.start.increment(index)]
-                        // Checking known hard read errors is useless, only soft read errors
-                        if (modbusValue.isReadError() && !modbusValue.hardReadError) {
-                            holes.add(modbusValue)
+                Status.ERROR -> {
+                    when (modbusQuery) {
+                        is HoleModbusQuery -> {
+                            // If this was a 'hole' query we store them as soft errors
+                            // This will avoid them until we explicitly ask for a field in them
+                            schemaDevice
+                                .getModbusBlock(fetchedModbusBlock.addressClass)
+                                .mergeFetched(fetchedModbusBlock)
                         }
-                    }
-                    // We must recombine the holes into blocks because reading 'half' of an (undefined) logical value
-                    // may result in a needless read error.
-                    // We can combine everything we find because we know all fit into a single modbus query.
-                    if (holes.isNotEmpty()) {
-                        val holeQueries = mutableListOf<ModbusQuery>()
-                        var previousHole = holes[0]
-                        var holeQuery = ModbusQuery(previousHole.address, 1)
-                        for (holeIndex in 1 until holes.size) {
-                            val hole = holes[holeIndex]
-                            if (previousHole.address.increment(1) == hole.address) {
-                                // Extend current query
-                                holeQuery.count++
+
+                        is MergedModbusQuery -> {
+                            // If we have a merged fetch then we can retry on the individuals.
+                            val retries = retryFetchOfFailedMergedModbusQuery(modbusQuery)
+                            if (retries.isEmpty()) {
+                                // No retries were done so we simply store the error result
+
+                                // If this was a 'hole' query we store them as soft errors
+                                // This will avoid them until we explicitly ask for a field in them
+                                fetchedModbusBlock.values.forEach{ it.setHardReadError() }
+                                schemaDevice
+                                    .getModbusBlock(fetchedModbusBlock.addressClass)
+                                    .mergeFetched(fetchedModbusBlock)
                             } else {
-                                // Keep the current query and create a new one for this hole
-                                holeQueries.add(holeQuery)
-                                holeQuery = ModbusQuery(hole.address, 1)
+                                fetchedQueries.addAll(retries)
                             }
-                            previousHole = hole
+                            return fetchedQueries
                         }
-                        holeQueries.add(holeQuery)
 
-                        // Now do the queries
-                        for (holeQuery in holeQueries) {
-                            fetched.addAll(fetch(holeQuery))
+                        else -> {
+                            // If we DO NOT have a merged fetch then it is simply an error situation.
+//                    println("-----READ ERROR getting $modbusQuery ; Fields are marked as DEAD")
+                            fetchedModbusBlock.values.forEach { it.setHardReadError() }
+                            schemaDevice
+                                .getModbusBlock(fetchedModbusBlock.addressClass)
+                                .mergeFetched(fetchedModbusBlock)
                         }
                     }
-
-                    return fetched
-                } else {
-//                    println("-----READ ERROR getting $fetchBatch ; Fields are marked as DEAD")
-                    fetchedModbusBlock.values.forEach { it.setHardReadError() }
-                    existingModbusBlock.mergeFetched(fetchedModbusBlock)
                 }
             }
         } catch (me: ModbusException) {
             LOG.error("Got ModbusException on {} --> {}", modbusQuery, me)
         }
-        return listOf(modbusQuery)
+        return fetchedQueries
+    }
+
+    internal open fun retryFetchOfFailedMergedModbusQuery(modbusQuery: MergedModbusQuery): List<ModbusQuery> {
+        throw ModbusApiException("If you create MergedModbusQuery instances then you must implement this also.")
     }
 
     /**
@@ -294,44 +242,72 @@ open class ModbusBlockFetcher(
      * @param maxAge The maximum age (in milliseconds) of the data for it to need an update.
      * @return The list of address ranges that must be retrieved (Sorted by the start address)
      */
-    open fun calculateModbusQueries(maxAge: Long): List<ModbusQuery> {
-        val now = System.currentTimeMillis()
+    fun calculateModbusQueries(maxAge: Long): List<ModbusQuery> {
+        return calculateModbusQueries(
+            schemaDevice.neededFields(),
+            maxAge,
+        )
+    }
 
-        val fieldsThatMustBeUpdated: MutableList<Field> = ArrayList()
-
+    /**
+     * Determine which sets of registers need to be retrieved again for the provided fields.
+     * @param fields The list of fields that must be updated
+     * @param maxAge The maximum age (in milliseconds) of the data for it to need an update.
+     * @return The list of address ranges that must be retrieved (Sorted by the start address)
+     */
+    open fun calculateModbusQueries(
+        fields: List<Field>,
+        maxAge: Long,
+    ): List<ModbusQuery> {
         // First we determine which of the fields need to be updated
-        for (field in schemaDevice.neededFields()) {
-            require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
+        val fieldsThatMustBeUpdated = allFieldsThatMustBeUpdated(fields, maxAge)
 
-            // If at least one of the needed addresses links to a 'too old' value
-            // the entire set for the field needs to be retrieved again.
-            if (field
-                .requiredAddresses
-                .map { schemaDevice.getModbusBlock(it.addressClass)[it] }
-                .firstOrNull { it.needsToBeUpdated(now, maxAge) }
-                != null
-            ) {
-                fieldsThatMustBeUpdated.add(field)
-            }
-        }
-
+        // Get the reverse mapping for all fetch group to the contained addresses
         val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
 
-        // For each fetchGroup that needs to be updated we create a single batch
-        val fetchBatchesMap: MutableMap<String, ModbusQuery> = TreeMap()
+        // For each fetchGroup that needs to be updated we create a single modbus query
+        val modbusQueryMap: MutableMap<String, ModbusQuery> = mutableMapOf()
         for (field in fieldsThatMustBeUpdated) {
-            var fetchBatch = fetchBatchesMap[field.fetchGroup]
-            if (fetchBatch != null) {
-                fetchBatch.fields.add(field)
+            var modbusQuery = modbusQueryMap[field.fetchGroup]
+            if (modbusQuery != null) {
+                modbusQuery.addField(field)
                 continue  // Already have this one
             }
             val addresses: List<Address> = fetchGroupToAddresses[field.fetchGroup]!!
-            fetchBatch = ModbusQuery(addresses[0], addresses.size)
-            fetchBatch.fields.add(field)
-            fetchBatchesMap[field.fetchGroup] = fetchBatch
+            modbusQuery = ModbusQuery(addresses[0], addresses.size)
+            modbusQuery.addField(field)
+            modbusQueryMap[field.fetchGroup] = modbusQuery
         }
 
-        return fetchBatchesMap.values.sorted().toList()
+        return modbusQueryMap.values.sorted().toList()
+    }
+
+    /**
+     * Determine from the list of provided Fields which of these need to be updated given the max age.
+     */
+    private fun allFieldsThatMustBeUpdated(
+        fields: List<Field>,
+        maxAge: Long,
+    ): List<Field> {
+        val now = System.currentTimeMillis()
+        return fields
+            .flatMap { field ->
+                require(field.initialized) { "You cannot fetch the registers for a Field if the field has not yet been initialized. (Field ID=${field.id})" }
+
+                // If at least one of the needed addresses links to a 'too old' value
+                // the entire set for the field needs to be retrieved again.
+                if (field
+                        .requiredAddresses
+                        .map { schemaDevice.getModbusBlock(it.addressClass)[it] }
+                        .firstOrNull { it.needsToBeUpdated(now, maxAge) }
+                    != null
+                ) {
+                    listOf(field)
+                } else {
+                    listOf()
+                }
+            }
+            .toList()
     }
 
     companion object {

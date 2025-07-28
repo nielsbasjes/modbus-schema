@@ -39,6 +39,13 @@ abstract class ModbusDevice : AutoCloseable {
             field = value
         }
 
+     /**
+     * The maximum number of modbus discretes that can be requested PER call.
+     * Some devices do not allow the normal max of 2000.
+     */
+    val maxDiscretesPerModbusRequest: Int
+        get() = maxRegistersPerModbusRequest * 16
+
     /**
      * Retrieve a block of 16 bit registers (Input Registers and Holding Registers).
      *

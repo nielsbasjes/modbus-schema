@@ -16,21 +16,38 @@
  */
 package nl.basjes.modbus.schema.utils
 
+import nl.basjes.modbus.schema.fetcher.HoleModbusQuery
+import nl.basjes.modbus.schema.fetcher.MergedModbusQuery
 import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import kotlin.time.DurationUnit
 
 fun List<ModbusQuery>.toTable(): String {
     val table = StringTable()
-    table.withHeaders("Type", "Start Address", "Count", "Status", "Duration (ms)", "Block", "Fields")
-    this.forEach { fetch ->
+    table.withHeaders("Class name", "Type", "Start Address", "Count", "Status", "Duration (ms)", "Block", "Fields")
+
+    /**
+     * In addition to the requested field ids also return the requested holes.
+     */
+    fun ModbusQuery.tableFields(): List<String> {
+        if (this is HoleModbusQuery) {
+            return listOf("<Hole ${start}#${count}>")
+        }
+        if (this is MergedModbusQuery) {
+            return modbusQueries.map { it.tableFields() }.flatten()
+        }
+        return fields.map { it.id }
+    }
+
+    this.forEach { modbusQuery ->
         table.addRow(
-            fetch.type.name,
-            fetch.start.toCleanFormat(),
-            fetch.count.toString(),
-            fetch.status.toString(),
-            (fetch.duration?.toLong(DurationUnit.MILLISECONDS)?: "NOT retrieved").toString() ,
-            fetch.fields.firstOrNull()?.block?.id ?: "<No Fields>",
-            fetch.fields.joinToString(", ") { it.id }
+            modbusQuery.javaClass.simpleName,
+            modbusQuery.type.name,
+            modbusQuery.start.toCleanFormat(),
+            modbusQuery.count.toString(),
+            modbusQuery.status.toString(),
+            (modbusQuery.duration?.toLong(DurationUnit.MILLISECONDS)?: "NOT retrieved").toString() ,
+            modbusQuery.fields.firstOrNull()?.block?.id ?: "<No Fields>",
+            modbusQuery.tableFields().joinToString(", ")
         )
     }
     return table.toString()
