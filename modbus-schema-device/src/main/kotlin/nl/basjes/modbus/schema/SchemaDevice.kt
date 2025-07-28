@@ -116,6 +116,7 @@ constructor(
     /**
      * In some templates it is convenient to have the length of the longest block id.
      */
+    @Suppress("unused") // Used in templates
     val maxBlockIdLength get() = mutableBlocksMap.keys.maxOfOrNull { it.length } ?: 0
 
     /** If a field was added or removed this should trigger updates and reinitializations in other parts */
@@ -204,8 +205,10 @@ constructor(
         clearModbusBlocks()
         this.modbusDevice = modbusDevice
         modbusDevice.maxRegistersPerModbusRequest = maxRegistersPerModbusRequest
-        this.modbusBlockFetcher = OptimizingModbusBlockFetcher(this, modbusDevice)
-        (this.modbusBlockFetcher as OptimizingModbusBlockFetcher).allowedGapReadSize = allowedGapReadSize
+
+        val optimizingFetcher = OptimizingModbusBlockFetcher(this, modbusDevice)
+        optimizingFetcher.allowedGapReadSize = allowedGapReadSize
+        this.modbusBlockFetcher = optimizingFetcher
         return this
     }
 
@@ -348,18 +351,7 @@ constructor(
         return allTestResults
     }
 
-    override fun toString(): String = toTable(false, true)
-
-    fun resolveAllImmutableFields() {
-        val immutableFields =
-            blocks
-                .flatMap { block -> block.fields }
-                .filter { it.isImmutable }
-                .toList()
-        immutableFields.forEach { it.need() }
-        update()
-        immutableFields.forEach { it.unNeed() }
-    }
+    override fun toString(): String = toTable(onlyUseFullFields = false, includeRawDataAndMappings = true)
 
     companion object {
         @JvmStatic
