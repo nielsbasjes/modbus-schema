@@ -35,10 +35,10 @@ fun main() {
         ModbusDevicePlc4j(connectionString).use {
             sunnyBoy36.connect(it)
 
-            sunnyBoy36.model_1.need()
+            sunnyBoy36.model1.need()
             sunnyBoy36.update(1000L)
-            println("MN=${sunnyBoy36.model_1.mn}")
-            println("MD=${sunnyBoy36.model_1.md}")
+            println("MN=${sunnyBoy36.model1.mn}")
+            println("MD=${sunnyBoy36.model1.md}")
         }
     } catch (e: ModbusException) {
         throw RuntimeException(e)

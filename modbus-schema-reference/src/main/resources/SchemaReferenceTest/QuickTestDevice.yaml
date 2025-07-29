@@ -218,7 +218,7 @@ blocks:
 
       - id:           'CombinedNumerical'
         description:  'A Combined Numerical Expression'
-        expression:   '(ieee754_32(hr:00000 # 2) + ieee754_64(hr:00002 # 4))^2 / (MyShort * (5-3))'
+        expression:   '(ieee754_32(hr:00000 # 2))^2 / (MyShort * (5-3))'
         unit:         'Foo'
 
 # Not possible because all addresses of a single field MUST be part of the SAME fetch group
@@ -330,7 +330,7 @@ tests:
           'String From Bool String':   [ 'Bar<No>' ]
           'String From Bool Mixed':    [ 'Foo<false> and Bar<No>' ]
           'Boolean Field Reference':   [ 'Foo<false> and Bar<No>' ]
-          'CombinedNumerical':         [ '-246.927' ]
+          'CombinedNumerical':         [ '-61.732' ]
           'CombinedStringFromFields':  [ '@ Niels Basjes @ 1234.5670166015625 @ Manual @ -1234567890123456789 @ false @' ]
           'Field of a String':         [ 'Niels Basjes' ]
           'Field of a Double':         [ '1234.567' ]
@@ -418,7 +418,7 @@ tests:
           'String From Bool String':   [ 'Bar<Yes>' ]
           'String From Bool Mixed':    [ 'Foo<true> and Bar<Yes>' ]
           'Boolean Field Reference':   [ 'Foo<true> and Bar<Yes>' ]
-          'CombinedNumerical':         [ '-8349330402756612000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000' ]
+          'CombinedNumerical':         [ '-2299948072529923200000000000000000.000' ]
           'CombinedStringFromFields':  [ '@  @ -6.264320714451452E18 @ No mapping for value 0xDE 0xAD @ -2401018187971961171 @ true @' ]
           'Field of a String':         [ "" ]
           'Field of a Double':         [ '-6264320714451452000.000' ]

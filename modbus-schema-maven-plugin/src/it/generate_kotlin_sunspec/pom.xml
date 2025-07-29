@@ -91,7 +91,7 @@
         <artifactId>modbus-schema-maven-plugin</artifactId>
         <version>${modbus-schema.version}</version>
         <configuration>
-          <modbusSchemaFile>SunSpecSunnyBoy36.yaml</modbusSchemaFile>
+          <modbusSchemaFile>SunSpec2025.yaml</modbusSchemaFile>
           <packageName>nl.example.sunspec</packageName>
           <className>SunnyBoy36</className>
           <language>kotlin</language>
