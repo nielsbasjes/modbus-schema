@@ -42,8 +42,8 @@ open class ModbusBlockFetcher(
     protected val modbusDevice: ModbusDevice,
 ) {
 
-    private fun calculateFetchGroupToAddressesMapping(): Map<String, MutableList<Address>> {
-        val fetchGroupToAddresses: MutableMap<String, MutableList<Address>> = TreeMap()
+     private fun calculateFetchGroupToAddressesMapping(): Map<String, Set<Address>> {
+        val fetchGroupToAddresses: MutableMap<String, MutableSet<Address>> = TreeMap()
 
         // We register all fields in the schemaDevice with the right fetch group as dictated in the Field.
         for (block in schemaDevice.blocks) {
@@ -61,7 +61,7 @@ open class ModbusBlockFetcher(
                 }
 
                 fetchGroupToAddresses
-                    .computeIfAbsent(fieldFetchGroup) { ArrayList() }
+                    .computeIfAbsent(fieldFetchGroup) { mutableSetOf() }
                     .addAll(requiredAddresses)
             }
         }
@@ -265,21 +265,46 @@ open class ModbusBlockFetcher(
         // Get the reverse mapping for all fetch group to the contained addresses
         val fetchGroupToAddresses = calculateFetchGroupToAddressesMapping()
 
+        // Because some fields (= different fetch groups) can use the same addresses we reverse the map
+        val addressToFetchGroups = fetchGroupToAddresses
+            .toList()
+            .flatMap { it.second.map { address -> address to it.first } }
+            .groupBy { it.first }
+            .mapValues { entry -> entry.value.map { it.second } }
+
         // For each fetchGroup that needs to be updated we create a single modbus query
         val modbusQueryMap: MutableMap<String, ModbusQuery> = mutableMapOf()
         for (field in fieldsThatMustBeUpdated) {
-            var modbusQuery = modbusQueryMap[field.fetchGroup]
-            if (modbusQuery != null) {
-                modbusQuery.addField(field)
-                continue  // Already have this one
+            // The addresses needed by the Field
+            val addresses: Set<Address> = fetchGroupToAddresses[field.fetchGroup]
+                ?: throw ModbusApiException("This should not be possible.")
+
+            // Do we already have a query for any of these addresses?
+            val modbusQueries = addresses
+                .mapNotNull { addressToFetchGroups[it] }.flatten()
+                .mapNotNull { modbusQueryMap[it] }.distinct()
+
+            require(modbusQueries.size <= 1) {
+                throw ModbusApiException("Having multiple fields that use partially overlapping Modbus values is not allowed.\n" +
+                "Field: (${field.id} ; ${field.requiredAddresses} ; ${field.fetchGroup}) --> ${addresses} -> ${modbusQueries}")
             }
-            val addresses: List<Address> = fetchGroupToAddresses[field.fetchGroup]!!
-            modbusQuery = ModbusQuery(addresses[0], addresses.size)
-            modbusQuery.addField(field)
-            modbusQueryMap[field.fetchGroup] = modbusQuery
+
+            if (modbusQueries.isEmpty()) {
+                val modbusQuery = ModbusQuery(addresses.minOf { it }, addresses.size)
+                modbusQuery.addField(field)
+                modbusQueryMap[field.fetchGroup] = modbusQuery
+            } else {
+                val modbusQuery = modbusQueries.first()
+                require(modbusQuery.start == addresses.first() && modbusQuery.count == addresses.size) {
+                    throw ModbusApiException("Having multiple fields that use partially overlapping Modbus values is not allowed..\n" +
+                        "Field: (${field.id} ; ${field.requiredAddresses} ; ${field.fetchGroup}) --> ${addresses} -> ${modbusQueries}")
+                }
+
+                modbusQuery.addField(field)
+            }
         }
 
-        return modbusQueryMap.values.sorted().toList()
+        return modbusQueryMap.values.distinct().sorted()
     }
 
     /**

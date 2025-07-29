@@ -47,16 +47,6 @@ internal class TestReadErrorWithHoleSituation {
         return modbusDevice
     }
 
-    fun List<ModbusQuery>.hasQuery(address: String, count: Int, status: ModbusQuery.Status, vararg fields: Field) {
-        val modbusQuery = ModbusQuery(Address.of(address), count)
-        modbusQuery.status = status
-        fields.forEach { modbusQuery.addField(it) }
-        require(this.contains(modbusQuery)) {
-            "ModbusQuery not found: $modbusQuery"
-        }
-    }
-
-
     @Test
     fun verifySingleHole() {
         val modbusDevice = createTestModbusDevice()
@@ -292,3 +282,13 @@ internal class TestReadErrorWithHoleSituation {
     }
 
 }
+
+fun List<ModbusQuery>.hasQuery(address: String, count: Int, status: ModbusQuery.Status, vararg fields: Field) {
+    val modbusQuery = ModbusQuery(Address.of(address), count)
+    modbusQuery.status = status
+    fields.forEach { modbusQuery.addField(it) }
+    require(this.contains(modbusQuery)) {
+        "ModbusQuery not found: $modbusQuery"
+    }
+}
+

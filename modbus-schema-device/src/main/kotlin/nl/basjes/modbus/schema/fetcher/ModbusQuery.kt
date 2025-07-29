@@ -18,6 +18,10 @@
 package nl.basjes.modbus.schema.fetcher
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.AddressClass.Type.DISCRETE
+import nl.basjes.modbus.device.api.AddressClass.Type.REGISTER
+import nl.basjes.modbus.device.api.MODBUS_MAX_DISCRETES_PER_REQUEST
+import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
 import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.schema.Field
 import java.util.Objects
@@ -27,6 +31,14 @@ open class ModbusQuery(
     val start: Address,
     var count: Int,
 ) : Comparable<ModbusQuery> {
+    init {
+        require(count > 0) { "A Modbus query MUST be at least 1 discrete/register" }
+        when (start.addressClass.type) {
+            DISCRETE -> require(count <= MODBUS_MAX_DISCRETES_PER_REQUEST) { "A Modbus query MUST be at most $MODBUS_MAX_DISCRETES_PER_REQUEST discretes" }
+            REGISTER -> require(count <= MODBUS_MAX_REGISTERS_PER_REQUEST) { "A Modbus query MUST be at most $MODBUS_MAX_REGISTERS_PER_REQUEST registers" }
+        }
+    }
+
     /**
      * The number of milliseconds the actual fetch took.
      * NULL if not fetched yet.
@@ -67,7 +79,10 @@ open class ModbusQuery(
         if (other !is ModbusQuery) {
             return false
         }
-        return count == other.count && start == other.start && status == other.status && fields == other.fields
+        return  count == other.count &&
+                start == other.start &&
+                status == other.status &&
+                fields.sorted() == other.fields.sorted()
     }
 
     override fun hashCode(): Int = Objects.hash(start, count, status, fields)

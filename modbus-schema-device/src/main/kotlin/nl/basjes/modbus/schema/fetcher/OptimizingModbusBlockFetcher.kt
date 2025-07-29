@@ -140,7 +140,6 @@ class OptimizingModbusBlockFetcher(
                 .flatMap { it.fields }
                 .flatMap { it.requiredAddresses }
                 .map { it.addressClass }
-                .sorted()
                 .distinct()
 
         val readErrorAddresses =
@@ -150,7 +149,7 @@ class OptimizingModbusBlockFetcher(
                 .map { it.address }
                 .toList()
 
-        val modbusQueryIterator = providedModbusQueries.iterator()
+        val modbusQueryIterator = providedModbusQueries.sorted().iterator()
 
         if (!modbusQueryIterator.hasNext()) {
             // No input --> no output
@@ -226,10 +225,7 @@ class OptimizingModbusBlockFetcher(
             }
         }
 
-        // Before we return the results we unmerge the ones that are too small because that would increase the number of requests
-        return result.flatMap {
-            if (it !is MergedModbusQuery || it.modbusQueries.size > 2) listOf(it) else it.modbusQueries
-        }
+        return result
     }
 
 }
