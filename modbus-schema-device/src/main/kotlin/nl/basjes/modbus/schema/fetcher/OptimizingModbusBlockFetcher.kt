@@ -186,6 +186,12 @@ class OptimizingModbusBlockFetcher(
                     AddressClass.Type.REGISTER -> maxRegistersPerModbusRequest
                 }
 
+            val maxGapSize =
+                when (nextModbusQuery.type) {
+                    AddressClass.Type.DISCRETE -> allowedGapReadSize * 16 // FIXME: Should make this cleaner
+                    AddressClass.Type.REGISTER -> allowedGapReadSize
+                }
+
             if (nextInput.start == firstAfterNextQuery) {
                 // Clean append without gaps
                 if (nextModbusQuery.count + nextInput.count <= maxCountPerRequest) {
@@ -206,7 +212,7 @@ class OptimizingModbusBlockFetcher(
             val nextInputStart = nextInput.start.physicalAddress
             val gapSize = nextInputStart - (nextBatchStart + nextModbusQuery.count)
             val mergedCount = nextInputStart + nextInput.count - nextBatchStart
-            if (gapSize <= allowedGapReadSize && // Do NOT jump more than N registers
+            if (gapSize <= maxGapSize && // Do NOT jump more than N registers
                 mergedCount <= maxCountPerRequest &&
                 !readErrorAddresses.overlaps(nextModbusQuery.start, mergedCount) // Do NOT try to read read errors
             ) {
