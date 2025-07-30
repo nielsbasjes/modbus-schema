@@ -27,7 +27,7 @@ import nl.basjes.modbus.schema.Field
 import java.util.Objects
 import kotlin.time.Duration
 
-open class ModbusQuery(
+open class  ModbusQuery(
     val start: Address,
     var count: Int,
 ) : Comparable<ModbusQuery> {
@@ -63,6 +63,9 @@ open class ModbusQuery(
     }
 
     val type = start.addressClass.type
+
+    val addresses
+        get() = (0 until count ) .map { start.increment(it) }.toList()
 
     override fun compareTo(other: ModbusQuery): Int {
         val addressCompare = start.compareTo(other.start)

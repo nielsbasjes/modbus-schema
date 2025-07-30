@@ -109,12 +109,14 @@ class OptimizingModbusBlockFetcher(
 
         while (modbusQueryIterator.hasNext()) {
             nextInput = modbusQueryIterator.next()
-            nextModbusQuery.count += nextInput.count
-            nextModbusQuery.add(nextInput)
             if (isFull(nextModbusQuery)) {
                 nextModbusQuery = MergedModbusQuery(nextInput.start, nextInput.count)
+                nextModbusQuery.add(nextInput)
                 result.add(nextModbusQuery)
+                continue
             }
+            nextModbusQuery.count += nextInput.count
+            nextModbusQuery.add(nextInput)
         }
 
         // Before we return the results we unmerge the ones that are too small because that would increase the number of requests
