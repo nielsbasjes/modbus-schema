@@ -170,10 +170,10 @@ internal class TestScenarioExpressionParser {
 
         // Explicit range mixing formats
         // Note the seemingly missing "125" --> The old formats at the end are 1 off !
-        assertEqualExpression("int64(coil:123             , c:124  , 0x00126 , 0x000127)", "int64(c:00123 # 4)")
-        assertEqualExpression("int64(discrete-input:123   , di:124 , 1x00126 , 1x000127)", "int64(di:00123 # 4)")
-        assertEqualExpression("int64(input-register:123   , ir:124 , 3x00126 , 3x000127)", "int64(ir:00123 # 4)")
-        assertEqualExpression("int64(holding-register:123 , hr:124 , 4x00126 , 4x000127)", "int64(hr:00123 # 4)")
+        assertEqualExpression("int64(coil:123             , c:124  , 0x00126 , 00127)", "int64(c:00123 # 4)")
+        assertEqualExpression("int64(discrete-input:123   , di:124 , 1x00126 , 10127)", "int64(di:00123 # 4)")
+        assertEqualExpression("int64(input-register:123   , ir:124 , 3x00126 , 30127)", "int64(ir:00123 # 4)")
+        assertEqualExpression("int64(holding-register:123 , hr:124 , 4x00126 , 40127)", "int64(hr:00123 # 4)")
 
         // Note the seemingly missing "125" --> The old formats at the end are 1 off !
         assertEqualExpression("int64(coil:123             .. 0x000127)", "int64(c:00123 # 4)")
