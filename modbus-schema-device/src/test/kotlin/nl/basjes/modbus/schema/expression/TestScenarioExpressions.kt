@@ -69,11 +69,6 @@ class TestScenarioExpressions {
         name: String,
     ): Field? = schemaDevice.getBlock("Block")!!.getField(name)
 
-    // TODO: Boolean --> Coils and Direct Inputs
-    //    private void verify(String bytes, String expression, Boolean expected) throws ModbusException {
-    //        SchemaDevice schemaDevice = buildVerifier(bytes, new TestField("test", expression, BOOLEAN));
-    //        assertEquals(expected, getField(schemaDevice, "test")  .getLongValue());
-    //    }
     @Throws(ModbusException::class)
     private fun verify(
         expression: String,
