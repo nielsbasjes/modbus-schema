@@ -51,7 +51,7 @@
     <dependency>
       <groupId>com.charleskorn.kaml</groupId>
       <artifactId>kaml-jvm</artifactId>
-      <version>0.91.0</version>
+      <version>0.92.0</version>
     </dependency>
 
     <dependency>
