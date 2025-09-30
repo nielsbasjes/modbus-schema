@@ -57,7 +57,7 @@
 
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
-    <exec-maven-plugin.version>3.5.1</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.6.0</exec-maven-plugin.version>
 
     <kotlin.code.style>official</kotlin.code.style>
     <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
