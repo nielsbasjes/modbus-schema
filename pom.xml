@@ -35,7 +35,7 @@
     <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
     <project.build.outputTimestamp>2025-07-30T11:20:11Z</project.build.outputTimestamp>
 
-    <java.version>11</java.version>
+    <java.version>17</java.version>
     <kotlin.version>2.2.20</kotlin.version>
 
     <!-- Tell IntelliJ which JDK to use -->
