@@ -43,7 +43,7 @@
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <!--    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>-->
 
-    <apache-rat-plugin.version>0.16.1</apache-rat-plugin.version>
+    <apache-rat-plugin.version>0.17</apache-rat-plugin.version>
     <maven-artifact-plugin.version>3.6.1</maven-artifact-plugin.version>
     <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
@@ -57,11 +57,11 @@
 
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
-    <exec-maven-plugin.version>3.6.1</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.6.2</exec-maven-plugin.version>
 
     <kotlin.code.style>official</kotlin.code.style>
     <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
-    <dokka-maven-plugin.version>2.0.0</dokka-maven-plugin.version>
+    <dokka-maven-plugin.version>2.1.0</dokka-maven-plugin.version>
 
     <junit5.version>6.0.0</junit5.version>
 
