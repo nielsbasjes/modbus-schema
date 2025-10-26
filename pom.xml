@@ -398,38 +398,38 @@
         <configuration>
           <consoleOutput>true</consoleOutput>
           <excludeSubProjects>false</excludeSubProjects>
-          <excludes>
+          <inputExcludes>
             <!-- Build config files -->
-            <exclude>.mvn/jvm.config</exclude>
+            <inputExclude>.mvn/jvm.config</inputExclude>
             <!-- Version control files -->
-            <exclude>**/.git/**</exclude>
-            <exclude>**/.gitignore</exclude>
-            <exclude>**/.gitmodules</exclude>
+            <inputExclude>**/.git/**</inputExclude>
+            <inputExclude>**/.gitignore</inputExclude>
+            <inputExclude>**/.gitmodules</inputExclude>
             <!-- IDE settings and files -->
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/.settings/**</exclude>
-            <exclude>**/.idea/**</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>**/.run/**</exclude>
-            <exclude>**/*.patch</exclude>
-            <exclude>**/*.diff</exclude>
+            <inputExclude>**/.classpath</inputExclude>
+            <inputExclude>**/.project</inputExclude>
+            <inputExclude>**/.settings/**</inputExclude>
+            <inputExclude>**/.idea/**</inputExclude>
+            <inputExclude>**/*.iml</inputExclude>
+            <inputExclude>**/.run/**</inputExclude>
+            <inputExclude>**/*.patch</inputExclude>
+            <inputExclude>**/*.diff</inputExclude>
             <!-- Files that cannot be 'polluted' -->
-            <exclude>docs/CNAME</exclude>
-            <exclude>.git-hooks/commit-msg.d/sailr.*</exclude>
-            <exclude>.github/**</exclude>
-            <exclude>**/*.json</exclude>
-            <exclude>**/*.ndjson</exclude>
+            <inputExclude>docs/CNAME</inputExclude>
+            <inputExclude>.git-hooks/commit-msg.d/sailr.*</inputExclude>
+            <inputExclude>.github/**</inputExclude>
+            <inputExclude>**/*.json</inputExclude>
+            <inputExclude>**/*.ndjson</inputExclude>
             <!-- Files generated during build and/or development -->
-            <exclude>**/target/**</exclude>
-            <exclude>**/gen/**</exclude>
-            <exclude>**/dependency-reduced-pom.xml</exclude>
+            <inputExclude>**/target/**</inputExclude>
+            <inputExclude>**/gen/**</inputExclude>
+            <inputExclude>**/dependency-reduced-pom.xml</inputExclude>
             <!-- Test scripts -->
-            <exclude>*.sh</exclude>
-            <exclude>**/_*/**</exclude>
-            <exclude>**/*_/**</exclude>
-            <exclude>**/gitignore-reader/src/test/resources/**</exclude>
-          </excludes>
+            <inputExclude>*.sh</inputExclude>
+            <inputExclude>**/_*/**</inputExclude>
+            <inputExclude>**/*_/**</inputExclude>
+            <inputExclude>**/gitignore-reader/src/test/resources/**</inputExclude>
+          </inputExcludes>
         </configuration>
       </plugin>
 
