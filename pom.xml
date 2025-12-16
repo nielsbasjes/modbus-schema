@@ -67,7 +67,7 @@
 
     <antlr.version>4.13.2</antlr.version>
 
-    <log4j.version>2.25.2</log4j.version>
+    <log4j.version>2.25.3</log4j.version>
 
     <git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
     <version.copyright>Copyright (C) 2019-2025 Niels Basjes</version.copyright>
