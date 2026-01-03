@@ -40,7 +40,7 @@
 
     <modbus-schema.version>@project.version@</modbus-schema.version>
     <kotlin.version>@kotlin.version@</kotlin.version>
-    <junit5.version>@junit5.version@</junit5.version>
+    <junit.version>@junit.version@</junit.version>
     <log4j.version>@log4j.version@</log4j.version>
   </properties>
 
