@@ -85,10 +85,6 @@ class Generator(val log: Log) {
         }
         val schemaDevice = schemaStream.toSchemaDevice()
 
-        requireNotNull(schemaDevice) {
-            throw MojoExecutionException("Could not open the specified modbusSchemaFile does not exist $modbusSchemaFile")
-        }
-
         require(!packageName.isNullOrBlank()) { throw MojoExecutionException("packageName is mandatory") }
         require(!className.isNullOrBlank()) { throw MojoExecutionException("className is mandatory") }
         require(packageName.matches("[a-zA-Z][a-zA-Z0-9.]+".toRegex())) { throw MojoExecutionException("Invalid packageName was provided.") }

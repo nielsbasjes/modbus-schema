@@ -286,7 +286,7 @@ open class ModbusBlockFetcher(
 
             require(modbusQueries.size <= 1) {
                 throw ModbusApiException("Having multiple fields that use partially overlapping Modbus values is not allowed.\n" +
-                "Field: (${field.id} ; ${field.requiredAddresses} ; ${field.fetchGroup}) --> ${addresses} -> ${modbusQueries}")
+                "Field: (${field.id} ; ${field.requiredAddresses} ; ${field.fetchGroup}) --> $addresses -> $modbusQueries")
             }
 
             if (modbusQueries.isEmpty()) {
@@ -297,7 +297,7 @@ open class ModbusBlockFetcher(
                 val modbusQuery = modbusQueries.first()
                 require(modbusQuery.start == addresses.first() && modbusQuery.count == addresses.size) {
                     throw ModbusApiException("Having multiple fields that use partially overlapping Modbus values is not allowed..\n" +
-                        "Field: (${field.id} ; ${field.requiredAddresses} ; ${field.fetchGroup}) --> ${addresses} -> ${modbusQueries}")
+                        "Field: (${field.id} ; ${field.requiredAddresses} ; ${field.fetchGroup}) --> $addresses -> $modbusQueries")
                 }
 
                 modbusQuery.addField(field)
