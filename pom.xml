@@ -63,7 +63,7 @@
     <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
     <dokka-maven-plugin.version>2.1.0</dokka-maven-plugin.version>
 
-    <junit5.version>6.0.2</junit5.version>
+    <junit5.version>6.0.3</junit5.version>
 
     <antlr.version>4.13.2</antlr.version>
 
