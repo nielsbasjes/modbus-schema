@@ -55,34 +55,36 @@ class TestJavaUsage {
     }
 
     String schema =
-        "# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json\n" +
-        "description: 'Demo based on a SunSpec device schema'\n" +
-        "schemaFeatureLevel: 2\n" +
-        "\n" +
-        "blocks:\n" +
-        "  - id: 'Block 1'\n" +
-        "    description: 'The first block'\n" +
-        "    fields:\n" +
-        "      - id: 'Name'\n" +
-        "        description: 'The name Field'\n" +
-        "        #        immutable: true                  # If a field NEVER changes value then set this to true\n" +
-        "        #        system: true                     # If a field is not a user level usable value set this to true (for example a scaling factor)\n" +
-        "        expression: 'utf8(hr:0 # 12)'\n" +
-        "\n" +
-        "tests:\n" +
-        "  - id: 'Just to demo the test capability'\n" +
-        "    input:\n" +
-        "      - firstAddress: 'hr:0'\n" +
-        "        rawValues: |2-\n" +
-        "          # --------------------------------------\n" +
-        "          # The name is here\n" +
-        "          4e69 656c 7320 4261 736a 6573 0000 0000 0000 0000 \n" +
-        "          0000 0000\n" +
-        "\n" +
-        "    blocks:\n" +
-        "      - id:          'Block 1'\n" +
-        "        expected:\n" +
-        "          'Name':        [ 'Niels Basjes' ]\n";
+        """
+        # $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
+        description: 'Demo schema'
+        schemaFeatureLevel: 2
+
+        blocks:
+          - id: 'Block 1'
+            description: 'The first block'
+            fields:
+              - id: 'Name'
+                description: 'The name Field'
+                # immutable: true                  # If a field NEVER changes value then set this to true
+                # system: true                     # If a field is not a user level usable value set this to true (for example a scaling factor)
+                expression: 'utf8(hr:0 # 12)'
+
+        tests:
+          - id: 'Just to demo the test capability'
+            input:
+              - firstAddress: 'hr:0'
+                rawValues: |2-
+                  # --------------------------------------
+                  # The name is here
+                  4e69 656c 7320 4261 736a 6573 0000 0000 0000 0000
+                  0000 0000
+
+            blocks:
+              - id:          'Block 1'
+                expected:
+                  'Name':        [ 'Niels Basjes' ]
+        """;
 
     @Test
     void testLoad3() throws IOException, ModbusException {
