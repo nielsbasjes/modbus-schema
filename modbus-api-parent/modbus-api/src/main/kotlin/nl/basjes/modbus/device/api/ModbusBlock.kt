@@ -253,6 +253,39 @@ sealed class ModbusBlock<BLOCK: ModbusBlock<BLOCK, VALUE, TYPE>, VALUE: ModbusVa
         return sb.toString()
     }
 
+    /**
+     * In some cases (like when writing to a text format) it makes sense to have a single ModbusBlock
+     * with large ranges of null values be split into multiple ModbusBlocks with only small ranges of
+     * null values.
+     */
+    open fun splitToSmallGapsModbusBlocks(maxNullSize: Int = 256): List<BLOCK> {
+        val result: MutableList<BLOCK> = mutableListOf()
+        var block = newBlock(addressClass)
+        result.add(block)
+        if (!modbusValues.isEmpty()) {
+            // We walk over all available NON-null values
+            // If we see a gap that is too large we start a new BLOCK
+            val nonNullModbusValues = TreeMap<Address, VALUE>()
+            nonNullModbusValues.putAll(modbusValues.filterValues { it.hasValue() }.toMutableMap())
+
+            var expectedNextAddress: Address = nonNullModbusValues.firstKey() // The address we expect of the next entry
+            for (value in nonNullModbusValues.values) {
+                if (value.address != expectedNextAddress) {
+                    val gapSize = value.address.physicalAddress - expectedNextAddress.physicalAddress
+                    if (gapSize > maxNullSize) {
+                        // Gap is too big --> Create the next Block
+                        block = newBlock(addressClass)
+                        result.add(block)
+                    }
+                }
+                block[value.address] = value
+                expectedNextAddress = value.address.increment()
+            }
+        }
+        return result
+    }
+
+
     abstract fun asString(): String
 
     fun asString(multiLine: Boolean): String {

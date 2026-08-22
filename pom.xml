@@ -420,6 +420,8 @@
             <inputExclude>.github/**</inputExclude>
             <inputExclude>**/*.json</inputExclude>
             <inputExclude>**/*.ndjson</inputExclude>
+            <inputExclude>/modbus-schema-device/src/test/resources/TestSchemas/SDM230-full.yaml</inputExclude>
+            <inputExclude>/modbus-schema-device/src/test/resources/TestSchemas/SDM230-reduced.yaml</inputExclude>
             <!-- Files generated during build and/or development -->
             <inputExclude>**/target/**</inputExclude>
             <inputExclude>**/gen/**</inputExclude>

@@ -176,7 +176,7 @@ fun TestScenario.toSchema(): SchemaTest {
     val testBlocks: MutableList<SchemaTestBlock> = mutableListOf()
 
     for (modbusBlock in modbusBlocks) {
-        testRawValues.add(modbusBlock.toSchema())
+        testRawValues.addAll(modbusBlock.toSchema())
     }
 
     for (expectedBlock in expectedBlocks) {
@@ -191,11 +191,13 @@ fun TestScenario.toSchema(): SchemaTest {
     )
 }
 
-fun ModbusBlock<*,*,*>.toSchema(): SchemaTestRawValues {
-    return SchemaTestRawValues(
-        firstAddress?.toCleanFormat() ?: "Empty",
-        this.toMultiLineString(),
-    )
+fun ModbusBlock<*,*,*>.toSchema(): List<SchemaTestRawValues> {
+    return splitToSmallGapsModbusBlocks().map {
+        SchemaTestRawValues(
+            it.firstAddress?.toCleanFormat() ?: "Empty",
+            it.toMultiLineString(),
+        )
+    }
 }
 
 fun ExpectedBlock.toSchema(): SchemaTestBlock =
@@ -347,7 +349,8 @@ data class SchemaTestBlock(
  * Reformat the ModbusSchema yaml to look better and align the various parts to be better readable
  */
 fun String.reformatModbusSchemaYaml(): String {
-    return (this + "\n")
+    return (
+        $$"# $schema: https://modbus.basjes.nl/v2/ModbusSchema.json\n\n$$this\n")
         .replace(Regex("(\n +- id:)"), "\n$1         ")
 //        .replace(Regex("(\n +description:)"), "$1") // No replace needed
         .replace(Regex("(\n +immutable:)"), "$1  ")
@@ -432,29 +435,54 @@ fun String.reformatModbusSchemaYaml(): String {
 
 
         // Ok, this is nasty
-        .replace(Regex("('[^']':) \\["),     "$1                         [")
-        .replace(Regex("('[^']{2}':) \\["),  "$1                        [")
-        .replace(Regex("('[^']{3}':) \\["),  "$1                       [")
-        .replace(Regex("('[^']{4}':) \\["),  "$1                      [")
-        .replace(Regex("('[^']{5}':) \\["),  "$1                     [")
-        .replace(Regex("('[^']{6}':) \\["),  "$1                    [")
-        .replace(Regex("('[^']{7}':) \\["),  "$1                   [")
-        .replace(Regex("('[^']{8}':) \\["),  "$1                  [")
-        .replace(Regex("('[^']{9}':) \\["),  "$1                 [")
-        .replace(Regex("('[^']{10}':) \\["), "$1                [")
-        .replace(Regex("('[^']{11}':) \\["), "$1               [")
-        .replace(Regex("('[^']{12}':) \\["), "$1              [")
-        .replace(Regex("('[^']{13}':) \\["), "$1             [")
-        .replace(Regex("('[^']{14}':) \\["), "$1            [")
-        .replace(Regex("('[^']{15}':) \\["), "$1           [")
-        .replace(Regex("('[^']{16}':) \\["), "$1          [")
-        .replace(Regex("('[^']{17}':) \\["), "$1         [")
-        .replace(Regex("('[^']{18}':) \\["), "$1        [")
-        .replace(Regex("('[^']{19}':) \\["), "$1       [")
-        .replace(Regex("('[^']{20}':) \\["), "$1      [")
-        .replace(Regex("('[^']{21}':) \\["), "$1     [")
-        .replace(Regex("('[^']{22}':) \\["), "$1    [")
-        .replace(Regex("('[^']{23}':) \\["), "$1   [")
-        .replace(Regex("('[^']{24}':) \\["), "$1  [")
-        .replace(Regex("('[^']{25}':) \\["), "$1 [")
+        .replace(Regex("('[^']':) \\["),     "$1                                                  [")
+        .replace(Regex("('[^']{2}':) \\["),  "$1                                                 [")
+        .replace(Regex("('[^']{3}':) \\["),  "$1                                                [")
+        .replace(Regex("('[^']{4}':) \\["),  "$1                                               [")
+        .replace(Regex("('[^']{5}':) \\["),  "$1                                              [")
+        .replace(Regex("('[^']{6}':) \\["),  "$1                                             [")
+        .replace(Regex("('[^']{7}':) \\["),  "$1                                            [")
+        .replace(Regex("('[^']{8}':) \\["),  "$1                                           [")
+        .replace(Regex("('[^']{9}':) \\["),  "$1                                          [")
+        .replace(Regex("('[^']{10}':) \\["), "$1                                         [")
+        .replace(Regex("('[^']{11}':) \\["), "$1                                        [")
+        .replace(Regex("('[^']{12}':) \\["), "$1                                       [")
+        .replace(Regex("('[^']{13}':) \\["), "$1                                      [")
+        .replace(Regex("('[^']{14}':) \\["), "$1                                     [")
+        .replace(Regex("('[^']{15}':) \\["), "$1                                    [")
+        .replace(Regex("('[^']{16}':) \\["), "$1                                   [")
+        .replace(Regex("('[^']{17}':) \\["), "$1                                  [")
+        .replace(Regex("('[^']{18}':) \\["), "$1                                 [")
+        .replace(Regex("('[^']{19}':) \\["), "$1                                [")
+        .replace(Regex("('[^']{20}':) \\["), "$1                               [")
+        .replace(Regex("('[^']{21}':) \\["), "$1                              [")
+        .replace(Regex("('[^']{22}':) \\["), "$1                             [")
+        .replace(Regex("('[^']{23}':) \\["), "$1                            [")
+        .replace(Regex("('[^']{24}':) \\["), "$1                           [")
+        .replace(Regex("('[^']{25}':) \\["), "$1                          [")
+        .replace(Regex("('[^']{26}':) \\["), "$1                         [")
+        .replace(Regex("('[^']{27}':) \\["), "$1                        [")
+        .replace(Regex("('[^']{28}':) \\["), "$1                       [")
+        .replace(Regex("('[^']{29}':) \\["), "$1                      [")
+        .replace(Regex("('[^']{30}':) \\["), "$1                     [")
+        .replace(Regex("('[^']{31}':) \\["), "$1                    [")
+        .replace(Regex("('[^']{32}':) \\["), "$1                   [")
+        .replace(Regex("('[^']{33}':) \\["), "$1                  [")
+        .replace(Regex("('[^']{34}':) \\["), "$1                 [")
+        .replace(Regex("('[^']{35}':) \\["), "$1                [")
+        .replace(Regex("('[^']{36}':) \\["), "$1               [")
+        .replace(Regex("('[^']{37}':) \\["), "$1              [")
+        .replace(Regex("('[^']{38}':) \\["), "$1             [")
+        .replace(Regex("('[^']{39}':) \\["), "$1            [")
+        .replace(Regex("('[^']{40}':) \\["), "$1           [")
+        .replace(Regex("('[^']{41}':) \\["), "$1          [")
+        .replace(Regex("('[^']{42}':) \\["), "$1         [")
+        .replace(Regex("('[^']{43}':) \\["), "$1        [")
+        .replace(Regex("('[^']{44}':) \\["), "$1       [")
+        .replace(Regex("('[^']{45}':) \\["), "$1      [")
+        .replace(Regex("('[^']{46}':) \\["), "$1     [")
+        .replace(Regex("('[^']{47}':) \\["), "$1    [")
+        .replace(Regex("('[^']{48}':) \\["), "$1   [")
+        .replace(Regex("('[^']{49}':) \\["), "$1  [")
+        .replace(Regex("('[^']{50}':) \\["), "$1 [")
 }

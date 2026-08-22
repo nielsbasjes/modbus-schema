@@ -204,13 +204,15 @@ class TestLoader {
             """.trimIndent()
 
         val expected =
-            """
-            - id:          'Model 130'
-              expected:
-                'ID':                        [ '130' ]
-                'L':                         [ '60' ]
-                'Curve0_CrvNam':             [ '' ]
-                'Curve0_ReadOnly':           [ 'READWRITE' ]
+            $$"""
+                # $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
+
+                - id:          'Model 130'
+                  expected:
+                    'ID':                                                 [ '130' ]
+                    'L':                                                  [ '60' ]
+                    'Curve0_CrvNam':                                      [ '' ]
+                    'Curve0_ReadOnly':                                    [ 'READWRITE' ]
 
             """.trimIndent()
 
