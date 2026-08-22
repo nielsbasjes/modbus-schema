@@ -416,6 +416,24 @@ class TestScenarioExpressions {
         )
     }
 
+
+    @Test
+    fun testStringUtf8InvalidBytes() {
+        // These bytes cannot appear in ANY valid UTF-8 encoded character
+        val invalidBytes = listOf(
+            "C0", "C1",
+            "F5", "F6", "F7", "F8", "F9", "FA", "FB", "FC", "FD", "FE", "FF",
+        )
+        invalidBytes.forEach {
+            invalid ->
+            verify(
+                "4E69 656C 73${invalid}",
+                "utf8(hr:0#3)",
+                "Niels",
+            )
+        }
+    }
+
     @Test
     fun testStringConcat() {
         // CONCAT BRACEOPEN string ( COMMA string )* BRACECLOSE
