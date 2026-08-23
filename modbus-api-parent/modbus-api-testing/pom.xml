@@ -40,6 +40,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.ghgande</groupId>
+      <artifactId>j2mod</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>nl.basjes.modbus</groupId>
       <artifactId>modbus-api</artifactId>
       <version>${project.version}</version>

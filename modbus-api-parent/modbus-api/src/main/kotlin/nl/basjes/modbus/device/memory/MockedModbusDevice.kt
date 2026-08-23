@@ -68,7 +68,7 @@ open class MockedModbusDevice : ModbusDevice() {
 
         }
 
-    fun addDiscretes(
+     open fun addDiscretes(
         discreteValue: DiscreteValue,
     ) {
         val addressClass = discreteValue.address.addressClass
@@ -77,7 +77,7 @@ open class MockedModbusDevice : ModbusDevice() {
             .put(discreteValue)
     }
 
-    fun addDiscretes(
+    open fun addDiscretes(
         discreteBlock: DiscreteBlock,
     ) {
         val addressClass = discreteBlock.addressClass
@@ -144,7 +144,7 @@ open class MockedModbusDevice : ModbusDevice() {
         return discretes
     }
 
-    fun addRegister(
+    open fun addRegister(
         registerValue: RegisterValue,
     ) {
         val addressClass = registerValue.address.addressClass
@@ -153,7 +153,7 @@ open class MockedModbusDevice : ModbusDevice() {
             .put(registerValue)
     }
 
-    fun addRegisters(
+    open fun addRegisters(
         registerBlock: RegisterBlock,
     ) {
         val addressClass = registerBlock.addressClass

@@ -71,18 +71,20 @@ class TestScenario(
      * NOTE: The previously cached modbus values in the provided SchemaDevice are WIPED!
      * @return The results object
      */
-    fun verify(schemaDevice: SchemaDevice): TestScenarioResults {
+    fun verify(schemaDevice: SchemaDevice, useCurrentlyLoadedModbusValues: Boolean = false): TestScenarioResults {
         val testResults: MutableMap<String, MutableMap<String, TestResult>> = mutableMapOf()
 
-        // First we set all the TEST registers in the schema device
-        loadTestModbusValues(schemaDevice)
+        if (!useCurrentlyLoadedModbusValues) {
+            // First we set all the TEST registers in the schema device
+            loadTestModbusValues(schemaDevice)
+        }
 
         // Then for each block as defined in the test scenario
         for (expectedBlock in expectedBlocks) {
             val blockId = expectedBlock.blockId
             val block = schemaDevice.getBlock(blockId)
             requireNotNull(block) {
-                "There are expectations for the blockid \"${expectedBlock.blockId}\" in the test \"${name}\" which does not exist."
+                "There are expectations for the blockId \"${expectedBlock.blockId}\" in the test \"${name}\" which does not exist."
             }
             testResults[blockId] = mutableMapOf()
             val blockTestResult = testResults[blockId]!!
@@ -138,7 +140,7 @@ class TestScenario(
 open class TestScenarioResults(
     val testName: String,
     val schemaDevice: SchemaDevice,
-    val testResults: MutableMap<String, MutableMap<String, SchemaDevice.TestResult>>,
+    val testResults: MutableMap<String, MutableMap<String, TestResult>>,
 ) {
 
     val allPassed: Boolean
@@ -182,6 +184,23 @@ open class TestScenarioResults(
         }
         return stringTable.toString()
     }
+
+    /**
+     * Logs all the results
+     * @return true if all passed, false if one or more failed.
+     */
+    fun logResults(onlyFailed: Boolean = true): Boolean {
+        if (allPassed) {
+            LOG.info("[PASS] Schema test \"${testName}\"")
+            if (!onlyFailed) {
+                LOG.info("\n${toTable()}")
+            }
+        } else {
+            LOG.error("[FAIL] Schema test \"${testName}\":")
+            LOG.error("Failed fields:\n${toTable(!onlyFailed)}")
+        }
+        return allPassed
+    }
 }
 
 class TestScenarioResultsList : ArrayList<TestScenarioResults>() {
@@ -192,12 +211,7 @@ class TestScenarioResultsList : ArrayList<TestScenarioResults>() {
     fun logResults(): Boolean {
         var success = true
         for (result in this) {
-            if (result.allPassed) {
-                LOG.info("[PASS] Schema test \"${result.testName}\"")
-//                LOG.info("\n${result.toTable()}")
-            } else {
-                LOG.error("[FAIL] Schema test \"${result.testName}\":")
-                LOG.error("Failed fields:\n${result.toTable(true)}")
+            if (!result.logResults()) {
                 success = false
             }
         }
