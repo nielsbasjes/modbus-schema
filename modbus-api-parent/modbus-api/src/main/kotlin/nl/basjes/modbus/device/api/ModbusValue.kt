@@ -130,7 +130,7 @@ sealed class ModbusValue<VALUE : ModbusValue<VALUE, TYPE>, TYPE>(
         private set
 
     /**
-     * If a value has a comment this can be used when converting it to a String (in yaml for example)
+     * If a value has a comment this can be used when converting it to a String (in YAML for example)
      */
     var comment: String? = null
 

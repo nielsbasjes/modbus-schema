@@ -72,7 +72,7 @@ object DoubleToString {
     }
 
     fun of(value: Double): String {
-        // Float (IEEE 754 64 bits) has 15 to 17 significant decimal digits precision.
+        // Float (IEEE 754 64 bits) has 15 to 17 significant decimal digits' precision.
         // https://en.wikipedia.org/wiki/Double-precision_floating-point_format
         val maxDigits: Long = 10
         return of(value, maxDigits)

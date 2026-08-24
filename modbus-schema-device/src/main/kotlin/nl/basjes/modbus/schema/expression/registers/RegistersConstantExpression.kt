@@ -24,7 +24,7 @@ import nl.basjes.modbus.schema.utils.ByteConversions.bytesToHexStringList
 import nl.basjes.modbus.schema.utils.ByteConversions.bytesToTwoByteHexStringList
 
 /*
- * An constant byte array value (i.e. Raw Register values)
+ * A constant byte array value (i.e. Raw Register values)
  */
 open class RegistersConstantExpression(
     val value: String,

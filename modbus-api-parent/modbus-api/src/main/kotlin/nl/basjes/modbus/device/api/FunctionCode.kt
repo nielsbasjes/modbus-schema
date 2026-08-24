@@ -34,7 +34,7 @@ enum class FunctionCode(
      * If writable then true if this one is for writing multiple.
      */
     private val forWritingMultiple: Boolean,
-    /** The java code name of this enum which can be used for code generation  */
+    /** The Java code name of this enum which can be used for code generation  */
     val enumName: String,
     /** A human-readable name for the FunctionCode  */
     val readableName: String,

@@ -31,7 +31,7 @@ enum class AddressClass(
     val registerNumberOffset: Int,
     /** A human-readable name  */
     val readableId: String,
-    /** The java code name of this enum which can be used for code generation  */
+    /** The Java code name of this enum which can be used for code generation  */
     val enumName: String,
     /** The additional labels on which the instance must also be returned.  */
     val shortLabel: String,
