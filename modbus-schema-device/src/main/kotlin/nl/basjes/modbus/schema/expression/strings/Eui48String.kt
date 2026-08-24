@@ -23,7 +23,6 @@ import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 import nl.basjes.modbus.schema.utils.ByteConversions
-import java.util.Arrays
 
 class Eui48String(
     private val registers: RegistersExpression,
@@ -59,7 +58,7 @@ class Eui48String(
             return null // Not implemented
         }
         if (bytes.size > 3 * BYTES_PER_REGISTER) {
-            bytes = Arrays.copyOfRange(bytes, bytes.size - (3 * BYTES_PER_REGISTER), bytes.size)
+            bytes = bytes.copyOfRange(bytes.size - (3 * BYTES_PER_REGISTER), bytes.size)
         }
         if (isNotImplemented(bytes)) {
             return null // Not implemented

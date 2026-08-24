@@ -65,11 +65,7 @@ sealed class ModbusExpression(
 
     private val isSortedList
         get() =
-            if (problems.isEmpty()) {
-                addresses == ArrayList(TreeSet(addresses))
-            } else {
-                false
-            }
+            problems.isEmpty() && addresses == ArrayList(TreeSet(addresses))
 
     protected val addressClass: AddressClass
         get() = addresses[0].addressClass

@@ -58,47 +58,47 @@ fun String.toSchemaDevice(): SchemaDevice {
             "used runtime does not support (max = ${schemaDevice.schemaFeatureLevel})"
     }
 
-    for (schemaBlock in parsedSchema.blocks) {
+    for ((blockId, blockDescription, fields) in parsedSchema.blocks) {
         val block =
             Block(
                 schemaDevice    = schemaDevice,
-                id              = schemaBlock.id,
-                description     = schemaBlock.description,
+                id              = blockId,
+                description     = blockDescription,
             )
-        for (schemaField in schemaBlock.fields) {
+        for ((fieldId, fieldDescription, immutable, system, expression, unit) in fields) {
             Field(
                 block           = block,
-                id              = schemaField.id,
-                description     = schemaField.description,
-                expression      = schemaField.expression,
-                unit            = schemaField.unit,
-                immutable       = schemaField.immutable,
-                system          = schemaField.system,
+                id              = fieldId,
+                description     = fieldDescription,
+                expression      = expression,
+                unit            = unit,
+                immutable       = immutable,
+                system          = system,
             )
         }
     }
 
-    for (schemaTest in parsedSchema.tests) {
-        val testScenario = TestScenario(schemaTest.id, schemaTest.description)
+    for ((testId, testDescription, testInput, testBlocks) in parsedSchema.tests) {
+        val testScenario = TestScenario(testId, testDescription)
         schemaDevice.addTestScenario(testScenario)
 
-        for (input in schemaTest.input) {
-            val address = input.firstAddress.asAddress()
+        for ((firstAddress, rawValues) in testInput) {
+            val address = firstAddress.asAddress()
             when(address.addressClass.type) {
                 AddressClass.Type.DISCRETE -> {
-                    val discreteBlock = input.rawValues.toDiscreteBlock(address)
+                    val discreteBlock = rawValues.toDiscreteBlock(address)
                     testScenario.addModbusBlock(discreteBlock)
                 }
                 AddressClass.Type.REGISTER -> {
-                    val registerBlock = input.rawValues.toRegisterBlock(address)
+                    val registerBlock = rawValues.toRegisterBlock(address)
                     testScenario.addModbusBlock(registerBlock)
                 }
             }
         }
 
-        for (testBlock in schemaTest.blocks) {
-            val expectedBlock = ExpectedBlock(testBlock.id)
-            testBlock.expected.forEach { (field, value) -> expectedBlock.addExpectation(field, value) }
+        for ((testBlockId, expected) in testBlocks) {
+            val expectedBlock = ExpectedBlock(testBlockId)
+            expected.forEach { (field, value) -> expectedBlock.addExpectation(field, value) }
             testScenario.addExpectedBlock(expectedBlock)
         }
     }
@@ -346,7 +346,7 @@ data class SchemaTestBlock(
 }
 
 /**
- * Reformat the ModbusSchema yaml to look better and align the various parts to be better readable
+ * Reformat the ModbusSchema YAML to look better and align the various parts to be better readable
  */
 fun String.reformatModbusSchemaYaml(): String {
     return (

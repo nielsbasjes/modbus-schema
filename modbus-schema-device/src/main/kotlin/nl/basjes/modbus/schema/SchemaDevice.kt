@@ -216,7 +216,7 @@ constructor(
      * @return A list of all currently known fields
      */
     val fields: List<Field>
-        get() = blocks.map { it.fields }.flatten()
+        get() = blocks.flatMap { it.fields }
 
     /**
      * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds

@@ -43,9 +43,7 @@ class BooleanField(
             return false
         }
 
-        val expression = field.parsedExpression
-
-        when (expression) {
+        when (val expression = field.parsedExpression) {
             is BooleanExpression -> {
                 fieldExpression = expression
                 return true

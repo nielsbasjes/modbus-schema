@@ -297,14 +297,8 @@ class Field(
      */
     val valueEpochMs: Long?
         get() {
-            val parsedExpression = parsedExpression
-            if (parsedExpression == null) {
-                return null
-            }
-            val addressClass = addressClass
-            if (addressClass == null) {
-                return null
-            }
+            val parsedExpression = parsedExpression ?: return null
+            val addressClass     = addressClass     ?: return null
             val registerValues =
                 block.schemaDevice.getModbusBlock(addressClass).get(parsedExpression.requiredMutableAddresses)
             val timestamps = registerValues.mapNotNull { it.timestamp }
@@ -333,7 +327,7 @@ class Field(
         return registerValues.filter { it.isReadError() }.map { it.address }.toList()
     }
 
-    fun isUsingReadErrorRegisters() = !usedReadErrorAddresses().isEmpty()
+    fun isUsingReadErrorRegisters() = usedReadErrorAddresses().isNotEmpty()
 
     fun usedHardReadErrorAddresses(): List<Address> {
         val addressClass = addressClass ?: return emptyList()
@@ -341,7 +335,7 @@ class Field(
         return registerValues.filter { it.hardReadError }.map { it.address }.toList()
     }
 
-    fun isUsingHardReadErrorRegisters() = !usedHardReadErrorAddresses().isEmpty()
+    fun isUsingHardReadErrorRegisters() = usedHardReadErrorAddresses().isNotEmpty()
 
     /**
      * Directly update this field.

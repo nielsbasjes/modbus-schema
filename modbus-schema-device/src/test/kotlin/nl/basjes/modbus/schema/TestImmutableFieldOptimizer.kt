@@ -20,14 +20,12 @@ import nl.basjes.modbus.schema.expression.Expression
 import org.slf4j.LoggerFactory
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 class TestImmutableFieldOptimizer {
 
     private val log = LoggerFactory.getLogger(TestImmutableFieldOptimizer::class.java)
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun buildImmutableFields() {
         val modbusDevice = createTestModbusDevice()

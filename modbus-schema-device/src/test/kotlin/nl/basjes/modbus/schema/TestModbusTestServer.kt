@@ -19,10 +19,8 @@ package nl.basjes.modbus.schema
 import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
 import nl.basjes.modbus.device.j2mod.ModbusDeviceJ2Mod
 import nl.basjes.modbus.device.test.ModbusTestServer
-import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import nl.basjes.modbus.schema.fetcher.ModbusQuery.Status.ERROR
 import nl.basjes.modbus.schema.fetcher.ModbusQuery.Status.SUCCESS
-import nl.basjes.modbus.schema.test.TestScenarioResultsList
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.InputStream
@@ -53,8 +51,6 @@ class TestModbusTestServer {
         log.info("Schema: Loading schema")
         val schemaDevice =
             "src/test/resources/TestSchemas/ThermiaGenesis101213.yaml".readFileNameToString().toSchemaDevice()
-
-        val allTestScenarioResults = TestScenarioResultsList()
 
         val modbusHost = "localhost"
         val modbusUnit = 1

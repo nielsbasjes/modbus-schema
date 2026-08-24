@@ -48,8 +48,8 @@ class TestRequestRemerging {
         mergeQueries.forEach { println("OUT: $it --> ${it.addresses.sorted()}") }
         println("-------")
 
-        val inAddresses  = modbusQuery.modbusQueries.map { it.addresses }.flatten().sorted()
-        val outAddresses = mergeQueries.map { it.addresses }.flatten().sorted()
+        val inAddresses  = modbusQuery.modbusQueries.flatMap { it.addresses }.sorted()
+        val outAddresses = mergeQueries.flatMap { it.addresses }.sorted()
         println(inAddresses)
         println(outAddresses)
 

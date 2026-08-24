@@ -30,7 +30,7 @@ abstract class ModbusDevice : AutoCloseable {
      */
     var maxRegistersPerModbusRequest: Int = MODBUS_MAX_REGISTERS_PER_REQUEST
         set(value) {
-            if (value < 1 || value > MODBUS_MAX_REGISTERS_PER_REQUEST) {
+            if (value !in 1..MODBUS_MAX_REGISTERS_PER_REQUEST) {
                 throw ModbusException(
                     "The maxRegistersPerModbusRequest must be between 1 and $MODBUS_MAX_REGISTERS_PER_REQUEST" +
                         " (was set to $value).",

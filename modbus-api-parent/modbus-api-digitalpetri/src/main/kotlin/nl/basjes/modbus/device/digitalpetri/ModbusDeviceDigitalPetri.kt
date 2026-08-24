@@ -52,7 +52,7 @@ class ModbusDeviceDigitalPetri(
 
         // https://ipc2u.com/articles/knowledge-base/modbus-rtu-made-simple-with-detailed-descriptions-and-examples
         // SlaveID is the address of the device, it can take a value from 0 to 247, addresses from 248 to 255 are reserved.
-        require(!(unitId < 0 || unitId > 247)) { "The unitId is outside the allowed range [0-247]: $unitId" }
+        require(unitId in 0..247) { "The unitId is outside the allowed range [0-247]: $unitId" }
     }
 
     override fun close() {

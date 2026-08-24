@@ -76,18 +76,18 @@ class OptimizingModbusBlockFetcher(
 
         if (modbusQuery.modbusQueries.size < 4 ) {
             // Such a small list we just try all individually and not optimize
-            return modbusQuery.modbusQueries.map { fetch(it) }.flatten()
+            return modbusQuery.modbusQueries.flatMap { fetch(it) }
         }
 
         // ALGORITHM 1: REMERGE BY NUMBER OF REGISTERS
 //        return splitMergedModbusRequest(modbusQuery)
 //            { it.count >= (modbusQuery.count / 2) }
-//            .map { fetch(it) }.flatten()
+//            .flatMap { fetch(it) }
 
         // ALGORITHM 2: REMERGE BY NUMBER OF UNDERLYING REQUESTS
         return splitMergedModbusRequest(modbusQuery)
             { it.modbusQueries.size > (modbusQuery.modbusQueries.size / 2) }
-            .map { fetch(it) }.flatten()
+            .flatMap { fetch(it) }
     }
 
     /**

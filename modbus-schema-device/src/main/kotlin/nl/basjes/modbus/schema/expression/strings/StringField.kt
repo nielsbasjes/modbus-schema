@@ -45,9 +45,7 @@ class StringField(
             return false
         }
 
-        val expression = field.parsedExpression
-
-        when (expression) {
+        when (val expression = field.parsedExpression) {
             is StringExpression -> {
                 fieldExpression = expression
                 return true

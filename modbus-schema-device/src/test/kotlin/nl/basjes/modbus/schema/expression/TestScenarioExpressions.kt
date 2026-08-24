@@ -56,8 +56,8 @@ class TestScenarioExpressions {
 
         val schemaDevice = SchemaDevice("Device")
         val block = Block(schemaDevice, "Block")
-        for (field in fields) {
-            Field(block = block, id = field.name, expression = field.expression)
+        for ((name, expression) in fields) {
+            Field(block = block, id = name, expression = expression)
         }
         schemaDevice.initialize()
         schemaDevice.connectBase(modbusDevice)

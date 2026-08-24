@@ -60,8 +60,7 @@ internal class TestScenarioRegisterBlockFetcher {
         val fetcher = ModbusBlockFetcher(schemaDevice, modbusDevice)
 
         schemaDevice.blocks
-            .map(Block::fields)
-            .flatten()
+            .flatMap(Block::fields)
             .forEach { field: Field ->
                 val parsedExpression = field.parsedExpression
                 assertNotNull(parsedExpression)

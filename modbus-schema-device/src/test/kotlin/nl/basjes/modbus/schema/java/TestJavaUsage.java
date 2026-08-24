@@ -48,13 +48,13 @@ class TestJavaUsage {
     }
 
     @Test
-    void testLoad2() throws IOException, ModbusException {
+    void testLoad2() throws ModbusException {
         SchemaDevice schemaDevice = YamlLoaderKt.toSchemaDevice(new File("src/test/resources/TestSchemas/SunSpec2025.yaml"));
         TestScenarioResultsList testScenarioResults = schemaDevice.verifyProvidedTests();
         assertTrue(testScenarioResults.getAllPassed());
     }
 
-    String schema =
+    final String schema =
         """
         # $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
         description: 'Demo schema'
@@ -87,7 +87,7 @@ class TestJavaUsage {
         """;
 
     @Test
-    void testLoad3() throws IOException, ModbusException {
+    void testLoad3() throws ModbusException {
         SchemaDevice schemaDevice = YamlLoaderKt.toSchemaDevice(schema);
 
         Block block = schemaDevice.getBlock("Block 1");

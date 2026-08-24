@@ -36,7 +36,7 @@ class Address(
         get() = physicalAddress + addressClass.registerNumberOffset
 
     init {
-        require(!(physicalAddress < 0 || physicalAddress > 0xFFFF)) {
+        require(physicalAddress in 0..0xFFFF) {
             "Invalid Modbus register address specified for ${addressClass.longLabel}: $physicalAddress"
         }
     }
@@ -180,7 +180,7 @@ fun String.asAddress(): Address = Address.of(this)
 
 private fun addressFrom(registerTag: Int): Pair<AddressClass, Int> {
     // Modicon notation: MUST be positive and at most 5 digits (it is impossible to handle the 6 digit format)
-    if (registerTag < 0 || registerTag > 99999) {
+    if (registerTag !in 0..99999) {
         throw IllegalArgumentException("Unable to parse the provided register tag \"$registerTag\".")
     }
 

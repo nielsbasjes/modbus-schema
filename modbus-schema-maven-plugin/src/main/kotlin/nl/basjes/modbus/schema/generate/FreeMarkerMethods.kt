@@ -63,7 +63,6 @@ import nl.basjes.modbus.schema.expression.strings.StringFromNumber
 import nl.basjes.modbus.schema.expression.strings.UTF8String
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
-import kotlin.reflect.KClass
 
 
 val expressionMappings =
@@ -172,7 +171,7 @@ class EscapeStringForJava : BaseSingleStringMethod() {
                 '\b' -> sb.append("\\b")
                 '\u000C' -> sb.append("\\f") // form feed
                 else -> {
-                    if (char < ' ' || char > '~') {
+                    if (char !in ' '..'~') {
                         sb.append(String.format("\\u%04x", char.code))
                     } else {
                         sb.append(char)

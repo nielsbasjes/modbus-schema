@@ -97,8 +97,7 @@ open class ModbusBlockFetcher(
             val allFields = listOf(field, *field.requiredFields.toTypedArray()).sorted().distinct().toList()
 
             return calculateModbusQueries(allFields, maxAge)
-                .map { fetch(it) }
-                .flatten()
+                .flatMap { fetch(it) }
                 .toList()
         }
     }

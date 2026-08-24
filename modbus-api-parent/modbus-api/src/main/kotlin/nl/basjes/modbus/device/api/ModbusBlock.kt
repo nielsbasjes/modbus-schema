@@ -205,7 +205,7 @@ sealed class ModbusBlock<BLOCK: ModbusBlock<BLOCK, VALUE, TYPE>, VALUE: ModbusVa
     }
 
     fun getValue(address: Address): TYPE? {
-        val modbusValue = modbusValues.get(address) ?: return null
+        val modbusValue = modbusValues[address] ?: return null
         return modbusValue.value
     }
 

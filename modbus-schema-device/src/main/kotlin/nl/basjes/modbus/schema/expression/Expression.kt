@@ -31,10 +31,7 @@ interface Expression {
      * @return true if success, false means it must be retried.
      */
     fun initialize(containingField: Field): Boolean {
-        if (subExpressions.isEmpty()) {
-            return true
-        }
-        return subExpressions.all { it.initialize(containingField) }
+        return subExpressions.isEmpty() || subExpressions.all { it.initialize(containingField) }
     }
 
     val subExpressions: List<Expression>

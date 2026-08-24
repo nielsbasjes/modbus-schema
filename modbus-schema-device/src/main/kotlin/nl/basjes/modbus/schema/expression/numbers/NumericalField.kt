@@ -44,9 +44,7 @@ class NumericalField(
             return false
         }
 
-        val expression = field.parsedExpression
-
-        when (expression) {
+        when (val expression = field.parsedExpression) {
             is NumericalExpression -> {
                 fieldExpression = expression
                 return true

@@ -33,7 +33,7 @@ fun List<ModbusQuery>.toTable(): String {
             return listOf("<Hole ${start}#${count}>")
         }
         if (this is MergedModbusQuery) {
-            return modbusQueries.map { it.tableFields() }.flatten()
+            return modbusQueries.flatMap { it.tableFields() }
         }
         return fields.map { it.id }
     }
