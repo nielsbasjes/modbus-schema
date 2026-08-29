@@ -24,6 +24,7 @@ import nl.basjes.modbus.device.api.FunctionCode.READ_DISCRETE_INPUT
 import nl.basjes.modbus.device.api.FunctionCode.READ_HOLDING_REGISTERS
 import nl.basjes.modbus.device.api.FunctionCode.READ_INPUT_REGISTERS
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
@@ -170,4 +171,9 @@ class ModbusDevicePlc4j(
             }
         }
     }
+}
+
+fun ModbusDeviceTcpConfig.toModbusDevicePlc4j(): ModbusDevicePlc4j {
+    val connectString = "modbus-tcp:tcp://$hostname:$port?default-unit-identifier=$unitId"
+    return ModbusDevicePlc4j(connectString)
 }

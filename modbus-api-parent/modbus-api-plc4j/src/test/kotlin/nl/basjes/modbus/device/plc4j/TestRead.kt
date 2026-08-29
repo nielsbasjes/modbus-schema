@@ -16,6 +16,7 @@
  */
 package nl.basjes.modbus.device.plc4j
 
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.test.ModbusDeviceTester
 import org.apache.logging.log4j.LogManager
@@ -26,9 +27,7 @@ private val log = LogManager.getLogger(TestRead::class.java)
 
 internal class TestRead {
     val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
-        val connectString = "modbus-tcp:tcp://$modbusHost:$modbusPort?default-unit-identifier=$modbusUnit"
-        log.info("Creating ModbusDevicePlc4j(\"${connectString}\")")
-        ModbusDevicePlc4j(connectString)
+        ModbusDeviceTcpConfig(modbusHost, modbusPort, modbusUnit).toModbusDevicePlc4j()
     }
 
     @Ignore("Reading discretes is not yet supported")

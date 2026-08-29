@@ -61,7 +61,7 @@
     <dependency>
       <groupId>com.digitalpetri.modbus</groupId>
       <artifactId>modbus-tcp</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>

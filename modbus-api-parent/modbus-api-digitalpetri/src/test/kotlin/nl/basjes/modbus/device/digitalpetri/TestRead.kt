@@ -16,9 +16,7 @@
  */
 package nl.basjes.modbus.device.digitalpetri
 
-import com.digitalpetri.modbus.client.ModbusTcpClient
-import com.digitalpetri.modbus.tcp.client.NettyClientTransportConfig
-import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.test.ModbusDeviceTester
 import kotlin.test.Ignore
@@ -27,13 +25,7 @@ import kotlin.test.Test
 internal class TestRead {
 
     val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
-        val configBuilder = NettyClientTransportConfig.Builder()
-        configBuilder.hostname  = modbusHost
-        configBuilder.port = modbusPort
-        val transport = NettyTcpClientTransport(configBuilder.build())
-        val client = ModbusTcpClient.create(transport)
-        client.connect()
-        ModbusDeviceDigitalPetri(client, modbusUnit)
+        ModbusDeviceTcpConfig(modbusHost, modbusPort, modbusUnit).toModbusDeviceDigitalPetri()
     }
 
     @Ignore("Reading discretes is not yet supported")

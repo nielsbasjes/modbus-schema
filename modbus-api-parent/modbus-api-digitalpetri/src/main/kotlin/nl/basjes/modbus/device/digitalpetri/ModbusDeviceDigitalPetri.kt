@@ -17,8 +17,11 @@
 package nl.basjes.modbus.device.digitalpetri
 
 import com.digitalpetri.modbus.client.ModbusClient
+import com.digitalpetri.modbus.client.ModbusTcpClient
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest
 import com.digitalpetri.modbus.pdu.ReadInputRegistersRequest
+import com.digitalpetri.modbus.tcp.client.NettyClientTransportConfig
+import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.FunctionCode.Companion.forReading
 import nl.basjes.modbus.device.api.FunctionCode.READ_COIL
@@ -26,6 +29,7 @@ import nl.basjes.modbus.device.api.FunctionCode.READ_DISCRETE_INPUT
 import nl.basjes.modbus.device.api.FunctionCode.READ_HOLDING_REGISTERS
 import nl.basjes.modbus.device.api.FunctionCode.READ_INPUT_REGISTERS
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
@@ -150,5 +154,25 @@ class ModbusDeviceDigitalPetri(
             loopRegisterAddress = loopRegisterAddress.increment(1)
         }
         return result
+    }
+}
+
+fun ModbusDeviceTcpConfig.toModbusDeviceDigitalPetri(): ModbusDeviceDigitalPetri {
+    val configBuilder = NettyClientTransportConfig.Builder()
+    configBuilder.hostname  = hostname
+    configBuilder.port = port
+
+    val transport = NettyTcpClientTransport(configBuilder.build())
+    val client = ModbusTcpClient.create(transport)
+
+    try {
+        print("Connecting...")
+        client.connect()
+        println(" done")
+
+        return ModbusDeviceDigitalPetri(client, unitId)
+    } catch (e: Exception) {
+        println(" FAILED")
+        throw ModbusException("Unable to connect to the master", e)
     }
 }

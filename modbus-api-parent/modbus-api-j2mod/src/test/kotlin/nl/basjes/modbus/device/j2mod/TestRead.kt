@@ -16,16 +16,14 @@
  */
 package nl.basjes.modbus.device.j2mod
 
-import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.test.ModbusDeviceTester
 import kotlin.test.Test
 
 internal class TestRead {
     val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
-        val modbusMaster = ModbusTCPMaster(modbusHost, modbusPort)
-        modbusMaster.connect()
-        ModbusDeviceJ2Mod(modbusMaster, modbusUnit)
+        ModbusDeviceTcpConfig(modbusHost, modbusPort, modbusUnit).toModbusDeviceJ2Mod()
     }
 
     @Test

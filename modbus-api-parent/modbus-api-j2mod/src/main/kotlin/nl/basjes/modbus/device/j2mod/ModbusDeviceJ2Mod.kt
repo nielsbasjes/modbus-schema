@@ -18,6 +18,7 @@ package nl.basjes.modbus.device.j2mod
 
 import com.ghgande.j2mod.modbus.ModbusSlaveException
 import com.ghgande.j2mod.modbus.facade.AbstractModbusMaster
+import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
 import com.ghgande.j2mod.modbus.procimg.InputRegister
 import com.ghgande.j2mod.modbus.procimg.Register
 import com.ghgande.j2mod.modbus.util.BitVector
@@ -30,6 +31,7 @@ import nl.basjes.modbus.device.api.FunctionCode.READ_DISCRETE_INPUT
 import nl.basjes.modbus.device.api.FunctionCode.READ_HOLDING_REGISTERS
 import nl.basjes.modbus.device.api.FunctionCode.READ_INPUT_REGISTERS
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
@@ -195,4 +197,16 @@ class ModbusDeviceJ2Mod(
         return result
     }
 
+}
+
+fun ModbusDeviceTcpConfig.toModbusDeviceJ2Mod(): ModbusDeviceJ2Mod {
+    val master: AbstractModbusMaster = ModbusTCPMaster(hostname, port)
+    try {
+        print("Connecting...")
+        master.connect()
+        println(" done")
+        return ModbusDeviceJ2Mod(master, unitId)
+    } catch (e: Exception) {
+        throw ModbusException("Unable to connect to the master", e)
+    }
 }
