@@ -63,7 +63,7 @@ class ModbusDevicePlc4j(
 
     init {
         try {
-            connection = PlcDriverManager.getDefault().connectionManager.getConnection(connectionString)
+            connection = PlcDriverManager.getDefault().connectionFactory.getConnection(connectionString)
         } catch (e: PlcConnectionException) {
             throw ModbusException("Unable to connect to the master", e)
         }
@@ -145,6 +145,8 @@ class ModbusDevicePlc4j(
                     PlcResponseCode.REMOTE_ERROR,
                     PlcResponseCode.UNSUPPORTED,
                     PlcResponseCode.RESPONSE_PENDING,
+                    PlcResponseCode.OUT_OF_RANGE,
+                    PlcResponseCode.NOT_READY,
                     -> {
                         return createReadErrorRegisterBlock(firstRegister, count)
                     }
