@@ -16,30 +16,40 @@
  */
 package nl.basjes.modbus.device.j2mod
 
-import com.ghgande.j2mod.modbus.facade.AbstractModbusMaster
 import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
-import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
-import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.testcases.sunspec.SUNSPEC_STANDARD_UNITID
-import nl.basjes.modbus.device.testcases.sunspec.SunSpecBasicsPrinter
-import kotlin.test.Ignore
+import nl.basjes.modbus.device.test.ModbusDeviceTester
 import kotlin.test.Test
 
-@Ignore("Requires real device")
 internal class TestRead {
+    val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
+        val modbusMaster = ModbusTCPMaster(modbusHost, modbusPort)
+        modbusMaster.connect()
+        ModbusDeviceJ2Mod(modbusMaster, modbusUnit)
+    }
+
     @Test
     @Throws(ModbusException::class)
-    fun readSunSpecHeader() {
-        val master: AbstractModbusMaster = ModbusTCPMaster("sunspec.iot.basjes.nl", MODBUS_STANDARD_TCP_PORT)
-        try {
-            master.connect()
-            val modbusDevice: ModbusDevice = ModbusDeviceJ2Mod(master, SUNSPEC_STANDARD_UNITID)
-            SunSpecBasicsPrinter(modbusDevice).print()
-        } catch (e: Exception) {
-            throw ModbusException("Unable to connect to the master", e)
-        } finally {
-            master.disconnect()
-        }
+    fun readCoils() {
+        deviceTester.testCoils()
     }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readDiscreteInputs() {
+        deviceTester.testDiscreteInputs()
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readInputRegisters() {
+        deviceTester.testInputRegisters()
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readHoldingRegisters() {
+        deviceTester.testHoldingRegisters()
+    }
+
 }

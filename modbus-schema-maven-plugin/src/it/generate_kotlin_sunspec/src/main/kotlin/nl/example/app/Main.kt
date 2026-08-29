@@ -27,7 +27,7 @@ fun main() {
     val hostname = "sunspec.iot.basjes.nl"
 
     val connectionString =
-        "modbus-tcp:tcp://$hostname:$MODBUS_STANDARD_TCP_PORT?unit-identifier=$SUNSPEC_STANDARD_UNITID"
+        "modbus-tcp:tcp://$hostname:$MODBUS_STANDARD_TCP_PORT?default-unit-identifier=$SUNSPEC_STANDARD_UNITID"
 
     try {
         val sunnyBoy36 = SunnyBoy36()

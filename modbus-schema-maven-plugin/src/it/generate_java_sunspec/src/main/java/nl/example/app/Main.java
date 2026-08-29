@@ -32,7 +32,7 @@ public class Main {
         String hostname = "sunspec.iot.basjes.nl";
 
         String connectionString =
-            "modbus-tcp:tcp://"+hostname+":"+MODBUS_STANDARD_TCP_PORT+"?unit-identifier="+SUNSPEC_STANDARD_UNITID;
+            "modbus-tcp:tcp://"+hostname+":"+MODBUS_STANDARD_TCP_PORT+"?default-unit-identifier="+SUNSPEC_STANDARD_UNITID;
 
         try(ModbusDevice modbusDevice = new ModbusDevicePlc4j(connectionString)) {
             SunnyBoy36 sunnyBoy36 = new SunnyBoy36();

@@ -36,7 +36,7 @@ import nl.basjes.modbus.device.memory.MockedModbusDevice
 import java.net.ServerSocket
 
 private const val DEFAULT_UNIT_ID = 1
-private const val THREAD_POOL_SIZE = 2
+private const val THREAD_POOL_SIZE = 4
 
 /**
  * A small in-process Modbus TCP server for integration tests.
@@ -47,7 +47,7 @@ private const val THREAD_POOL_SIZE = 2
  * allocated ephemeral TCP port.
  */
 class ModbusTestServer(
-    private val unitId: Int = DEFAULT_UNIT_ID,
+    val unitId: Int = DEFAULT_UNIT_ID,
 ) : MockedModbusDevice() {
 
     /**

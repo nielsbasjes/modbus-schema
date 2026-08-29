@@ -53,6 +53,22 @@ class RegisterBlock(
             "Starting at " + it.toCleanFormat() + ": [ " + toHexString() + " ]"
         } ?: "Empty RegisterBlock"
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is RegisterBlock) return false
+        if (addressClass != other.addressClass) return false
+        if (firstAddress != other.firstAddress) return false
+        return asString() == other.asString()
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + addressClass.hashCode()
+        result = 31 * result + firstAddress.hashCode()
+        result = 31 * result + asString().hashCode()
+        return result
+    }
+
 }
 
 // ------------------------------------------
@@ -88,6 +104,22 @@ class DiscreteBlock(
         firstAddress?.let {
             "Starting at " + it.toCleanFormat() + ": [ " + toBitString() + " ]"
         } ?: "Empty DiscreteBlock"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DiscreteBlock) return false
+        if (addressClass != other.addressClass) return false
+        if (firstAddress != other.firstAddress) return false
+        return asString() == other.asString()
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + addressClass.hashCode()
+        result = 31 * result + firstAddress.hashCode()
+        result = 31 * result + asString().hashCode()
+        return result
+    }
 
 }
 

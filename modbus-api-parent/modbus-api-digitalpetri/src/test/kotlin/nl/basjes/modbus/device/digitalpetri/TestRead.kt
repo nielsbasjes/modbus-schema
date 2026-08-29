@@ -19,35 +19,47 @@ package nl.basjes.modbus.device.digitalpetri
 import com.digitalpetri.modbus.client.ModbusTcpClient
 import com.digitalpetri.modbus.tcp.client.NettyClientTransportConfig
 import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport
-import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
-import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.testcases.sunspec.SUNSPEC_STANDARD_UNITID
-import nl.basjes.modbus.device.testcases.sunspec.SunSpecBasicsPrinter
+import nl.basjes.modbus.device.test.ModbusDeviceTester
 import kotlin.test.Ignore
 import kotlin.test.Test
 
-@Ignore("Requires real device")
 internal class TestRead {
+
+    val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
+        val configBuilder = NettyClientTransportConfig.Builder()
+        configBuilder.hostname  = modbusHost
+        configBuilder.port = modbusPort
+        val transport = NettyTcpClientTransport(configBuilder.build())
+        val client = ModbusTcpClient.create(transport)
+        client.connect()
+        ModbusDeviceDigitalPetri(client, modbusUnit)
+    }
+
+    @Ignore("Reading discretes is not yet supported")
     @Test
     @Throws(ModbusException::class)
-    fun readSunSpecHeader() {
-        val configBuilder = NettyClientTransportConfig.Builder()
-        configBuilder.hostname  = "sunspec.iot.basjes.nl"
-        configBuilder.port = MODBUS_STANDARD_TCP_PORT
-
-        val transport = NettyTcpClientTransport(configBuilder.build())
-
-        val client = ModbusTcpClient.create(transport)
-
-        try {
-            client.connect()
-            val modbusDevice: ModbusDevice = ModbusDeviceDigitalPetri(client, SUNSPEC_STANDARD_UNITID)
-            SunSpecBasicsPrinter(modbusDevice).print()
-        } catch (e: Exception) {
-            throw ModbusException("Unable to connect to the master", e)
-        } finally {
-            client.disconnect()
-        }
+    fun readCoils() {
+        deviceTester.testCoils()
     }
+
+    @Ignore("Reading discretes is not yet supported")
+    @Test
+    @Throws(ModbusException::class)
+    fun readDiscreteInputs() {
+        deviceTester.testDiscreteInputs()
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readInputRegisters() {
+        deviceTester.testInputRegisters()
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readHoldingRegisters() {
+        deviceTester.testHoldingRegisters()
+    }
+
 }

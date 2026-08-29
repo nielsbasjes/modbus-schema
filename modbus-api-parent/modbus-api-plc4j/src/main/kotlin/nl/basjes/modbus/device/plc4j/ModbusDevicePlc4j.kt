@@ -124,18 +124,22 @@ class ModbusDevicePlc4j(
                 // Many devices have a bad clock.
                 val now = System.currentTimeMillis()
 
-                when (response.getResponseCode("F")) {
+                when (val plcResponseCode = response.getResponseCode("F")) {
                     PlcResponseCode.OK,
                     -> {
                         // We're cool
                     }
 
-                    PlcResponseCode.NOT_FOUND,
-                    PlcResponseCode.ACCESS_DENIED,
                     PlcResponseCode.INVALID_ADDRESS,
                     PlcResponseCode.INVALID_DATATYPE,
                     PlcResponseCode.INVALID_DATA,
                     PlcResponseCode.INTERNAL_ERROR,
+                    -> {
+                        throw ModbusException("Modbus request failed with $plcResponseCode")
+                    }
+
+                    PlcResponseCode.NOT_FOUND,
+                    PlcResponseCode.ACCESS_DENIED,
                     PlcResponseCode.REMOTE_BUSY,
                     PlcResponseCode.REMOTE_ERROR,
                     PlcResponseCode.UNSUPPORTED,

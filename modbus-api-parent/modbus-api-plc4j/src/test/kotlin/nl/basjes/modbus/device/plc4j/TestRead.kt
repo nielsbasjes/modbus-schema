@@ -16,25 +16,45 @@
  */
 package nl.basjes.modbus.device.plc4j
 
-import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.testcases.sunspec.SUNSPEC_STANDARD_UNITID
-import nl.basjes.modbus.device.testcases.sunspec.SunSpecBasicsPrinter
+import nl.basjes.modbus.device.test.ModbusDeviceTester
+import org.apache.logging.log4j.LogManager
 import kotlin.test.Ignore
 import kotlin.test.Test
 
-@Ignore("Requires real device")
+private val log = LogManager.getLogger(TestRead::class.java)
+
 internal class TestRead {
+    val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
+        val connectString = "modbus-tcp:tcp://$modbusHost:$modbusPort?default-unit-identifier=$modbusUnit"
+        log.info("Creating ModbusDevicePlc4j(\"${connectString}\")")
+        ModbusDevicePlc4j(connectString)
+    }
+
+    @Ignore("Reading discretes is not yet supported")
     @Test
     @Throws(ModbusException::class)
-    fun readSunSpecHeader() {
-        val hostname = "sunspec.iot.basjes.nl"
-
-        val connectionString =
-            "modbus-tcp:tcp://$hostname:$MODBUS_STANDARD_TCP_PORT?unit-identifier=$SUNSPEC_STANDARD_UNITID"
-
-        ModbusDevicePlc4j(connectionString).use { modbusDevice ->
-            SunSpecBasicsPrinter(modbusDevice).print()
-        }
+    fun readCoils() {
+        deviceTester.testCoils()
     }
+
+    @Ignore("Reading discretes is not yet supported")
+    @Test
+    @Throws(ModbusException::class)
+    fun readDiscreteInputs() {
+        deviceTester.testDiscreteInputs()
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readInputRegisters() {
+        deviceTester.testInputRegisters()
+    }
+
+    @Test
+    @Throws(ModbusException::class)
+    fun readHoldingRegisters() {
+        deviceTester.testHoldingRegisters()
+    }
+
 }
