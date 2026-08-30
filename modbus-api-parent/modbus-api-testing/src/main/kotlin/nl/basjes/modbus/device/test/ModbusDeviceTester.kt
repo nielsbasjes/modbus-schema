@@ -40,7 +40,7 @@ class ModbusDeviceTester(
 
     private fun createRegisterBlock(addressClass: AddressClass): RegisterBlock {
         val input = RegisterBlock(addressClass)
-        (1..100).forEach {
+        (0..99).forEach {
             val address = Address.of(addressClass, it)
             val value = RegisterValue(address)
             value.setValue(it.toShort())
@@ -49,12 +49,24 @@ class ModbusDeviceTester(
         return input
     }
 
+
+    // This bit pattern makes several types of alignment issues visible (off by 1, off by 2, etc.).
+    val bitPattern = listOf(
+        true,
+        false,
+        true,  true,
+        false, false,
+        true,  true,  true,
+        false, false, false,
+        true,  true,  true,  true,
+        false, false, false, false,
+    )
     private fun createDiscretesBlock(addressClass: AddressClass): DiscreteBlock {
         val input = DiscreteBlock(addressClass)
-        (1..100).forEach {
+        (0..99).forEach {
             val address = Address.of(addressClass, it)
             val value = DiscreteValue(address)
-            value.setValue(it % 2 == 0)
+            value.setValue(bitPattern[it % bitPattern.size])
             input.put(value)
         }
         return input
@@ -90,38 +102,78 @@ class ModbusDeviceTester(
     private fun testModbusRetrieval(inputBlock: ModbusBlock<*,*,*>, blockRetriever: (modbusDevice: ModbusDevice, firstAddress: Address, size: Int) -> ModbusBlock<*,*,*>,
     ) {
         try {
-            log.info("Modbus Test server: Starting")
-            ModbusTestServer(42).use { testServer ->
-                log.info("Modbus Test server: Running on localhost port ${testServer.port} with unitId ${testServer.unitId}")
+            log.info("Modbus Test slave: Starting")
+            ModbusTestServer(42).use { testSlave ->
+                log.info("Modbus Test slave: Running on localhost port ${testSlave.port} with unitId ${testSlave.unitId}")
                 try {
-                    log.info("Modbus Client: Creating")
-                    modbusDeviceCreator("localhost", testServer.port, testServer.unitId)
+                    log.info("ModbusDevice master: Creating")
+                    modbusDeviceCreator("localhost", testSlave.port, testSlave.unitId)
                         .use { modbusDevice ->
                             requireNotNull(modbusDevice)
-                            log.info("Modbus Client: Created")
-                            testServer.loadModbusBlocks(listOf(inputBlock))
+                            log.info("ModbusDevice master: Created ({})", modbusDevice.javaClass.simpleName)
+
+                            log.info("Modbus Test slave: Loading data")
+                            testSlave.loadModbusBlocks(listOf(inputBlock))
 
                             val firstAddress =
                                 inputBlock.firstAddress ?: throw IllegalStateException("First address not set")
                             val size = inputBlock.size
-                            log.info("Modbus Client: Retrieving block {}#{}", firstAddress, size)
                             try {
-                                val retrievedBlock = blockRetriever(modbusDevice, firstAddress, size)
-                                log.info("Modbus Client: Retrieved block: {}", retrievedBlock)
-                                assertEquals(inputBlock, retrievedBlock)
+                                log.info("ModbusDevice master: Trying block: {}#{}", firstAddress, size)
+                                var retrievedBlock = blockRetriever(modbusDevice, firstAddress, size)
+                                assertBlock(inputBlock, retrievedBlock, firstAddress, size)
+
+                                (1..10).forEach { size ->
+                                    log.info("ModbusDevice master: Trying blocks of {} registers.", size)
+                                    (0 until inputBlock.size-size).forEach {
+                                    val address = firstAddress + it
+                                        retrievedBlock = blockRetriever(modbusDevice, address, size)
+                                        assertBlock(inputBlock, retrievedBlock, address, size)
+                                    }
+                                }
+
                             } catch (e: ModbusException) {
-                                log.fatal("Modbus Client: Failed with: " + e.message, e)
+                                log.fatal("ModbusDevice master: Failed with: " + e.message, e)
                                 throw e
                             }
                         }
                 } finally {
-                    log.info("Modbus Client: Stopped")
+                    log.info("ModbusDevice master: Stopped")
                 }
             }
         }
         finally {
-            log.info("Modbus Test server: Stopped")
+            log.info("Modbus Test slave: Stopped")
         }
     }
 
+
+    private fun assertBlock(expectedBlock: ModbusBlock<*,*,*>, actualBlock: ModbusBlock<*,*,*>, address: Address, size: Int) {
+        assertEquals(size, actualBlock.size, "Actual block has the wrong size")
+        if (expectedBlock.size == size) {
+            assertEquals(
+                expectedBlock, actualBlock,
+                """
+                    Retrieved $address#$size and got mismatch:
+                    - expectedBlock  = $expectedBlock
+                    - retrievedBlock = $actualBlock
+                """.trimIndent()
+            )
+            return
+        }
+        (0 until size).forEach { offset ->
+            val checkAddress = address + offset
+            assertEquals(
+                expectedBlock[checkAddress], actualBlock[checkAddress],
+                """
+                    Retrieved $address#$size and got mismatch:
+                    - expectedBlock [$checkAddress] = ${expectedBlock[checkAddress]}
+                    - retrievedBlock[$checkAddress] = ${actualBlock[checkAddress]}
+
+                    => expectedBlock  = $expectedBlock
+                    => retrievedBlock = $actualBlock
+                """.trimIndent()
+            )
+        }
+    }
 }

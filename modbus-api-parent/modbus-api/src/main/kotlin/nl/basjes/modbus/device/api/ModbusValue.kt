@@ -249,9 +249,7 @@ sealed class ModbusValue<VALUE : ModbusValue<VALUE, TYPE>, TYPE>(
         @Suppress("ktlint:standard:indent")
         return  immutable       == other.immutable &&
                 value           == other.value &&
-                fetchTimestamp  == other.fetchTimestamp &&
-                address         == other.address &&
-                fetchGroup      == other.fetchGroup
+                address         == other.address
     }
 
     override fun hashCode(): Int {
