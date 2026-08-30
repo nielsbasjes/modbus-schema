@@ -97,13 +97,12 @@ class ModbusDevicePlc4j(
             -> {
                 val builder = connection.readRequestBuilder()
 
-                // This is REALLY fragile ! If you add the correct type (like WORD) you only get a single value.
                 val fieldTag =
                     String.format(
-                        "%s:%05d[%d]",
+                        "%s:%05d[0..%d]:WORD",
                         getAddressClassTag(firstRegister.addressClass),
                         firstRegister.registerNumber,
-                        count,
+                        count - 1,
                     )
                 builder.addTag("F", ModbusTag.of(fieldTag))
 
