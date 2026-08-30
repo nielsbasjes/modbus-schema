@@ -100,6 +100,9 @@ class Address(
     @JvmOverloads
     fun increment(step: Int = 1): Address = Address(addressClass, physicalAddress + step)
 
+    operator fun plus(increment: Int): Address = increment(increment)
+    operator fun minus(decrement: Int): Address = increment(-1*decrement)
+
     /**
      * @param address The address to compare to
      * @return The "Increment" difference to get from this Address to the provided Address. Returns null if not the same address class
@@ -110,6 +113,7 @@ class Address(
         }
         return address.physicalAddress - physicalAddress
     }
+    operator fun minus(address: Address): Int? = distance(address)
 
     /**
      * @return The stored address as cleanly parsable format without the "off by one" problem.
