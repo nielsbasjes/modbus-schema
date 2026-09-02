@@ -16,12 +16,13 @@
  */
 package nl.basjes.modbus.schema.expression.registers
 
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.hexStringToBytes
+import nl.basjes.modbus.device.utils.toHexStringList
+import nl.basjes.modbus.device.utils.toSeparatedTwoByteHexString
+import nl.basjes.modbus.device.utils.toTwoByteHexStringList
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.utils.ByteConversions
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToHexStringList
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToTwoByteHexStringList
 
 /*
  * A constant byte array value (i.e. Raw Register values)
@@ -30,7 +31,7 @@ open class RegistersConstantExpression(
     val value: String,
 ) : RegistersExpression {
 
-    private val theBytes: ByteArray = ByteConversions.hexStringToBytes(value)
+    private val theBytes: ByteArray = hexStringToBytes(value)
 
     override val returnedAddresses: Int
         get() = theBytes.size / BYTES_PER_REGISTER
@@ -39,7 +40,7 @@ open class RegistersConstantExpression(
 
     override val problems: List<Problem> = listOf()
 
-    override fun toString(): String = "\"0x" + ByteConversions.bytesToSeparatedTwoByteHexString(theBytes, " 0x") + '"'
+    override fun toString(): String = "\"0x" + theBytes.toSeparatedTwoByteHexString(" 0x") + '"'
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray = theBytes
 
@@ -47,11 +48,11 @@ open class RegistersConstantExpression(
      * @return The bytes as a list of HEX ascii Strings (1 byte each)
      */
     @Suppress("unused") // Used by code generating templates
-    val asByteHexStrings: List<String> = bytesToHexStringList(theBytes)
+    val asByteHexStrings: List<String> = theBytes.toHexStringList()
 
     /**
      * @return The registers as a list of HEX ascii Strings (2 bytes each)
      */
     @Suppress("unused") // Used by code generating templates
-    val asRegisterHexStrings: List<String> = bytesToTwoByteHexStringList(theBytes)
+    val asRegisterHexStrings: List<String> = theBytes.toTwoByteHexStringList()
 }

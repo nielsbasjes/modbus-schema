@@ -16,15 +16,16 @@
  */
 package nl.basjes.modbus.schema.expression.numbers
 
+import nl.basjes.modbus.device.utils.BITS64_IN_REGISTERS
+import nl.basjes.modbus.device.utils.LONG_BYTES
+import nl.basjes.modbus.device.utils.toLong
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.LONG_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IntegerUnsigned64(
     private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerUnsigned("uint64", LONG_BYTES, registersExpression, notImplemented) {
+) : IntegerUnsigned("uint64", BITS64_IN_REGISTERS, registersExpression, notImplemented) {
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
         // TODO: Java does not have UNsigned 64 bit long ...
@@ -36,6 +37,6 @@ class IntegerUnsigned64(
             // The highest bit was set --> So we have a numerical overflow because Java cannot handle UNSIGNED 64-bit numbers.
             return null
         }
-        return ByteConversions.bytesToLong(bytes)
+        return bytes.toLong()
     }
 }

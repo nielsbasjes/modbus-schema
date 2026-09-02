@@ -17,37 +17,20 @@
 package nl.basjes.modbus.device.j2mod
 
 import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
-import nl.basjes.modbus.device.exception.ModbusException
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingDeviceReadCoils
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingDiscreteInputs
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingHoldingRegisters
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingInputRegisters
 import nl.basjes.modbus.device.test.ModbusDeviceTester
-import kotlin.test.Test
 
-internal class TestRead {
+internal class TestRead:
+    ModbusDeviceTestReadingDeviceReadCoils,
+    ModbusDeviceTestReadingDiscreteInputs,
+    ModbusDeviceTestReadingInputRegisters,
+    ModbusDeviceTestReadingHoldingRegisters {
     val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
         ModbusDeviceTcpConfig(modbusHost, modbusPort, modbusUnit).toModbusDeviceJ2Mod()
     }
 
-    @Test
-    @Throws(ModbusException::class)
-    fun readCoils() {
-        deviceTester.testCoils()
-    }
-
-    @Test
-    @Throws(ModbusException::class)
-    fun readDiscreteInputs() {
-        deviceTester.testDiscreteInputs()
-    }
-
-    @Test
-    @Throws(ModbusException::class)
-    fun readInputRegisters() {
-        deviceTester.testInputRegisters()
-    }
-
-    @Test
-    @Throws(ModbusException::class)
-    fun readHoldingRegisters() {
-        deviceTester.testHoldingRegisters()
-    }
-
+    override fun deviceTester(): ModbusDeviceTester = deviceTester
 }

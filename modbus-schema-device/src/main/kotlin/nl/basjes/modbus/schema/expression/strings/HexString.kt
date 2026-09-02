@@ -17,11 +17,11 @@
 package nl.basjes.modbus.schema.expression.strings
 
 import nl.basjes.modbus.device.exception.ModbusException
+import nl.basjes.modbus.device.utils.toHexString0x
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class HexString(
     private val registers: RegistersExpression,
@@ -45,5 +45,5 @@ class HexString(
 
     @Throws(ModbusException::class)
     override fun getValue(schemaDevice: SchemaDevice): String? =
-        registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToHexString(it) }
+        registers.getByteArray(schemaDevice)?.toHexString0x()
 }

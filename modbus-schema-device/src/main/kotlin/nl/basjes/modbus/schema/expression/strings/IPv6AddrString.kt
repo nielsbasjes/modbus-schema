@@ -16,12 +16,12 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
+import nl.basjes.modbus.device.utils.toSeparatedTwoByteHexString
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 const val IPV6ADDR_REGISTERS = 8
 
@@ -58,6 +58,6 @@ class IPv6AddrString(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        return ByteConversions.bytesToSeparatedTwoByteHexString(bytes, ":")
+        return bytes.toSeparatedTwoByteHexString(":")
     }
 }

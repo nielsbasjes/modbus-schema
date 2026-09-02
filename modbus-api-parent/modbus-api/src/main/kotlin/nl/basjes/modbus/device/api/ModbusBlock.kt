@@ -18,7 +18,11 @@ package nl.basjes.modbus.device.api
 
 import nl.basjes.modbus.device.exception.ModbusApiException
 import nl.basjes.modbus.device.exception.ModbusIllegalAddressClassException
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
 import java.util.TreeMap
+
+private const val MOST_SIG_BYTE = 0xFF00.toShort()
+private const val LEAST_SIG_BYTE = 0x00FF.toShort()
 
 class RegisterBlock(
     /** The AddressClass of ALL addresses in this RegisterBlock */
@@ -46,7 +50,31 @@ class RegisterBlock(
      */
     fun toHexString(): String = toHexList().joinToString(separator = " ")
 
-    override fun asString() = toHexString()
+    /**
+     * @return The list of bytes value or null in case of problems
+     */
+    fun getByteArray(addresses: List<Address>): ByteArray? {
+        val bytes = ByteArray(addresses.size * BYTES_PER_REGISTER)
+        var nextByteIndex = 0
+        for (address in addresses) {
+            val value = getValue(address) ?: return null
+            val msb = (0xFF and ((value.toInt() and MOST_SIG_BYTE.toInt()) shr 8)).toByte()
+            val lsb = (0xFF and (value.toInt() and LEAST_SIG_BYTE.toInt())).toByte()
+            bytes[nextByteIndex++] = msb
+            bytes[nextByteIndex++] = lsb
+        }
+        return bytes
+    }
+
+    /**
+     * @param address The first Address to return
+     * @param nrOfRegisters The total number of registers to return
+     * @return The list of bytes value or null in case of problems
+     */
+    fun getByteArray(address: Address, nrOfRegisters: Int): ByteArray? =
+        getByteArray((0 until nrOfRegisters).map { address + it }.toList())
+
+        override fun asString() = toHexString()
 
     override fun toString(): String =
         firstAddress?.let {
@@ -157,6 +185,21 @@ sealed class ModbusBlock<BLOCK: ModbusBlock<BLOCK, VALUE, TYPE>, VALUE: ModbusVa
 
     operator fun set(
         address: Address,
+        value: TYPE?,
+    ) {
+        if (modbusValues[address] != null && value != null) {
+            setValue(address, value, System.currentTimeMillis()) // Assuming 'now' as the timestamp
+        } else {
+            val modbusValue: VALUE = newValue(address)
+            if (value != null) {
+                modbusValue.setValue(value)
+            }
+            modbusValues[address] = modbusValue
+        }
+    }
+
+    operator fun set(
+        address: Address,
         modbusValue: VALUE,
     ) {
         if (modbusValues[address] != null && modbusValue.hasValue()) {
@@ -164,7 +207,6 @@ sealed class ModbusBlock<BLOCK: ModbusBlock<BLOCK, VALUE, TYPE>, VALUE: ModbusVa
         } else {
             modbusValues[address] = modbusValue
         }
-        modbusValues.keys
     }
 
     val firstAddress: Address?

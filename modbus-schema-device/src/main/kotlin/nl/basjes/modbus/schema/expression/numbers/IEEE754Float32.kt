@@ -16,15 +16,18 @@
  */
 package nl.basjes.modbus.schema.expression.numbers
 
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.FLOAT_BYTES
+import nl.basjes.modbus.device.utils.FLOAT_REGISTERS
+import nl.basjes.modbus.device.utils.toFloat
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
+
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.FLOAT_BYTES
+
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IEEE754Float32(
     private val byteArray: RegistersExpression,
@@ -51,10 +54,8 @@ class IEEE754Float32(
                 "ieee754_32",
                 super<NumericalExpression>.problems,
                 super<NotImplemented>.problems,
-                checkFatal(
-                    byteArray.returnedAddresses ==
-                        FLOAT_BYTES / BYTES_PER_REGISTER,
-                    "Wrong number of registers: Got ${byteArray.returnedAddresses}, need ${FLOAT_BYTES / BYTES_PER_REGISTER}",
+                checkFatal(byteArray.returnedAddresses == FLOAT_REGISTERS,
+                    "Wrong number of registers: Got ${byteArray.returnedAddresses}, need $FLOAT_REGISTERS",
                 ),
             )
 
@@ -65,6 +66,6 @@ class IEEE754Float32(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        return byteArray.getByteArray(schemaDevice)?.let { ByteConversions.bytesToFloat(it) }?.toDouble()
+        return bytes.toFloat().toDouble()
     }
 }

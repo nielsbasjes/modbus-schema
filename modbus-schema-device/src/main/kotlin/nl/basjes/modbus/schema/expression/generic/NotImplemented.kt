@@ -15,9 +15,13 @@
  */
 package nl.basjes.modbus.schema.expression.generic
 
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.allAreOfSize
+import nl.basjes.modbus.device.utils.arrayOfByteArraysContains
+import nl.basjes.modbus.device.utils.hexStringToBytes
+import nl.basjes.modbus.device.utils.toSeparatedTwoByteHexString
+import nl.basjes.modbus.device.utils.toTwoByteHexStringList
 import nl.basjes.modbus.schema.expression.Expression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 abstract class NotImplemented(
     private val expectedRegisters: Int,
@@ -30,16 +34,16 @@ abstract class NotImplemented(
         return " ; " + notImplementedStrings.joinToString(separator = " ; ")
     }
 
-    private val notImplementedBytes: Array<ByteArray> = ByteConversions.hexStringToBytes(notImplementedStrings)
+    private val notImplementedBytes: Array<ByteArray> = hexStringToBytes(notImplementedStrings)
     private val notImplementedStrings: MutableList<String> = mutableListOf()
     val notImplemented: MutableList<List<String>> = mutableListOf()
 
     init {
         for (notImplementedByte in notImplementedBytes) {
             this.notImplementedStrings.add(
-                "0x" + ByteConversions.bytesToSeparatedTwoByteHexString(notImplementedByte, " 0x"),
+                "0x" + notImplementedByte.toSeparatedTwoByteHexString(" 0x"),
             )
-            this.notImplemented.add(ByteConversions.bytesToTwoByteHexStringList(notImplementedByte))
+            this.notImplemented.add(notImplementedByte.toTwoByteHexStringList())
         }
     }
 
@@ -53,7 +57,7 @@ abstract class NotImplemented(
                 ),
             )
 
-    fun isValidNotImplemented(byteCount: Int): Boolean = ByteConversions.allAreOfSize(notImplementedBytes, byteCount)
+    fun isValidNotImplemented(byteCount: Int): Boolean = allAreOfSize(notImplementedBytes, byteCount)
 
-    fun isNotImplemented(bytes: ByteArray): Boolean = ByteConversions.arrayOfByteArraysContains(notImplementedBytes, bytes)
+    fun isNotImplemented(bytes: ByteArray): Boolean = arrayOfByteArraysContains(notImplementedBytes, bytes)
 }

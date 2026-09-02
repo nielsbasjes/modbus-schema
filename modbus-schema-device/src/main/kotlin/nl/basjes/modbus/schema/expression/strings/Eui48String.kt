@@ -16,13 +16,17 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
+import nl.basjes.modbus.device.utils.BITS48_IN_BYTES
+import nl.basjes.modbus.device.utils.BITS48_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BITS64_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.toSeparatedHexString
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
+
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class Eui48String(
     private val registers: RegistersExpression,
@@ -43,7 +47,7 @@ class Eui48String(
                 "enum",
                 // Only sizes 3 and 4 are allowed
                 checkFatal(
-                    listOf(3, 4).contains(registers.returnedAddresses),
+                    listOf(BITS48_IN_REGISTERS, BITS64_IN_REGISTERS).contains(registers.returnedAddresses),
                     "Must have 3 or 4 registers (got ${registers.returnedAddresses})",
                 ),
                 super<StringExpression>.problems,
@@ -57,12 +61,13 @@ class Eui48String(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        if (bytes.size > 3 * BYTES_PER_REGISTER) {
-            bytes = bytes.copyOfRange(bytes.size - (3 * BYTES_PER_REGISTER), bytes.size)
+        // If it is more than 48 bits then we only examine the last 48 bits in the ByteArray
+        if (bytes.size > BITS48_IN_BYTES) {
+            bytes = bytes.copyOfRange(bytes.size - BITS48_IN_BYTES, bytes.size)
         }
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        return ByteConversions.bytesToSeparatedHexString(bytes, ":")
+        return bytes.toSeparatedHexString(":")
     }
 }

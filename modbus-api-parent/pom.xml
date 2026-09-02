@@ -19,9 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-  <groupId>nl.basjes.modbus</groupId>
-  <artifactId>modbus-schema-parent</artifactId>
-  <version>0.15.1-SNAPSHOT</version>
+    <groupId>nl.basjes.modbus</groupId>
+    <artifactId>modbus-schema-parent</artifactId>
+    <version>0.15.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>modbus-api-parent</artifactId>

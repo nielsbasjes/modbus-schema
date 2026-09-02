@@ -16,9 +16,10 @@
  */
 package nl.basjes.modbus.schema.expression.numbers
 
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
+
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
@@ -26,10 +27,10 @@ import nl.basjes.modbus.schema.expression.registers.RegistersExpression
 
 abstract class IntegerSigned(
     private val name: String,
-    private val bytesPerValue: Int,
+    private val registersPerValue: Int,
     private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : NotImplemented(bytesPerValue / BYTES_PER_REGISTER, notImplemented),
+) : NotImplemented(registersPerValue, notImplemented),
     NumericalExpression {
 
     override fun toString(): String = "$name(" + registersExpression + super<NotImplemented>.toString() + ")"
@@ -49,8 +50,8 @@ abstract class IntegerSigned(
                 super<NumericalExpression>.problems,
                 super<NotImplemented>.problems,
                 checkFatal(
-                    registersExpression.returnedAddresses == bytesPerValue / BYTES_PER_REGISTER,
-                    "Wrong number of registers: Got ${registersExpression.returnedAddresses}, need ${bytesPerValue / BYTES_PER_REGISTER}",
+                    registersExpression.returnedAddresses == registersPerValue,
+                    "Wrong number of registers: Got ${registersExpression.returnedAddresses}, need $registersPerValue",
                 ),
             )
 

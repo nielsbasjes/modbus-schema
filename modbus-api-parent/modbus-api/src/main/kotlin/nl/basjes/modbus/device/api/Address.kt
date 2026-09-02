@@ -102,6 +102,8 @@ class Address(
 
     operator fun plus(increment: Int): Address = increment(increment)
     operator fun minus(decrement: Int): Address = increment(-1*decrement)
+    operator fun inc(): Address = increment(1)
+    operator fun dec(): Address = increment(-1)
 
     /**
      * @param address The address to compare to

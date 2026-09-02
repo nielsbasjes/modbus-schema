@@ -103,7 +103,7 @@ class ModbusDeviceTester(
     ) {
         try {
             log.info("Modbus Test slave: Starting")
-            ModbusTestServer(42).use { testSlave ->
+            ModbusTestSlave(42).use { testSlave ->
                 log.info("Modbus Test slave: Running on localhost port ${testSlave.port} with unitId ${testSlave.unitId}")
                 try {
                     log.info("ModbusDevice master: Creating")

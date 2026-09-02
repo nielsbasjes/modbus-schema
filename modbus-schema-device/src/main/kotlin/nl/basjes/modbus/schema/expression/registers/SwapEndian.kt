@@ -17,10 +17,11 @@
 package nl.basjes.modbus.schema.expression.registers
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.utils.toByteArray
+import nl.basjes.modbus.device.utils.toShort
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class SwapEndian(
     val registers: RegistersExpression,
@@ -52,9 +53,9 @@ class SwapEndian(
 
     override fun getByteArray(schemaDevice: SchemaDevice): ByteArray? {
         val input = registers.getByteArray(schemaDevice) ?: return null
-        val inputShort = ByteConversions.bytesToShort(input)
+        val inputShort = input.toShort()
         val result = reverseBits(inputShort)
-        return ByteConversions.shortToBytes(result)
+        return result.toByteArray()
     }
 
     private fun reverseBits(value: Short): Short {

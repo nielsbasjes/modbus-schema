@@ -18,7 +18,7 @@ package nl.basjes.modbus.schema
 
 import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
 import nl.basjes.modbus.device.j2mod.ModbusDeviceJ2Mod
-import nl.basjes.modbus.device.test.ModbusTestServer
+import nl.basjes.modbus.device.test.ModbusTestSlave
 import nl.basjes.modbus.schema.fetcher.ModbusQuery.Status.ERROR
 import nl.basjes.modbus.schema.fetcher.ModbusQuery.Status.SUCCESS
 import org.slf4j.LoggerFactory
@@ -28,9 +28,9 @@ import java.lang.Thread.sleep
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class TestModbusTestServer {
+class TestModbusTestSlave {
 
-    private val log = LoggerFactory.getLogger(TestModbusTestServer::class.java)
+    private val log = LoggerFactory.getLogger(TestModbusTestSlave::class.java)
 
     fun String.openAsStream(): InputStream {
         val fileStream = ClassLoader.getSystemClassLoader().getResourceAsStream(this)
@@ -58,7 +58,7 @@ class TestModbusTestServer {
             log.info("------------------------------------------")
             // We create a test server and load all the raw blocks from the testcase in there
             log.info("Creating Modbus TCP server")
-            val testServer = ModbusTestServer(modbusUnit)
+            val testServer = ModbusTestSlave(modbusUnit)
 
             log.info("Loading registers and discretes for test scenario {}.", testScenario.name)
             testServer.loadModbusBlocks(testScenario.modbusBlocks)

@@ -16,12 +16,15 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
+import nl.basjes.modbus.device.utils.BITS32_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BITS64_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.LONG_BYTES
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 import java.util.BitSet
 
 class BitsetStringList(
@@ -50,11 +53,7 @@ class BitsetStringList(
             combine(
                 "bitset",
                 checkFatal(registers.returnedAddresses > 0, "No registers"),
-                checkFatal(
-                    registers.returnedAddresses <=
-                        nl.basjes.modbus.schema.expression.LONG_BYTES / nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER,
-                    "Too many registers",
-                ),
+                checkFatal(registers.returnedAddresses <= BITS64_IN_REGISTERS, "Too many registers"),
                 super<StringListExpression>.problems,
                 super<NotImplemented>.problems,
             )
@@ -66,7 +65,7 @@ class BitsetStringList(
         if (bytes == null || bytes.isEmpty() || isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        ByteConversions.reverse(bytes)
+        bytes.reverse()
         val bitSet = BitSet.valueOf(bytes)
 
         val result: MutableList<String> = ArrayList()

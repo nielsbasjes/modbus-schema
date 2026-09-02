@@ -17,43 +17,18 @@
 package nl.basjes.modbus.device.plc4j
 
 import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
-import nl.basjes.modbus.device.exception.ModbusException
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingHoldingRegisters
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingInputRegisters
 import nl.basjes.modbus.device.test.ModbusDeviceTester
-import org.apache.logging.log4j.LogManager
-import kotlin.test.Ignore
-import kotlin.test.Test
 
-private val log = LogManager.getLogger(TestRead::class.java)
-
-internal class TestRead {
+internal class TestRead :
+//    ModbusDeviceTestReadingDeviceReadCoils,   TODO: Implement Discretes
+//    ModbusDeviceTestReadingDiscreteInputs,   TODO: Implement Discretes
+    ModbusDeviceTestReadingInputRegisters,
+    ModbusDeviceTestReadingHoldingRegisters {
     val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
         ModbusDeviceTcpConfig(modbusHost, modbusPort, modbusUnit).toModbusDevicePlc4j()
     }
 
-    @Ignore("Reading discretes is not yet supported")
-    @Test
-    @Throws(ModbusException::class)
-    fun readCoils() {
-        deviceTester.testCoils()
-    }
-
-    @Ignore("Reading discretes is not yet supported")
-    @Test
-    @Throws(ModbusException::class)
-    fun readDiscreteInputs() {
-        deviceTester.testDiscreteInputs()
-    }
-
-    @Test
-    @Throws(ModbusException::class)
-    fun readInputRegisters() {
-        deviceTester.testInputRegisters()
-    }
-
-    @Test
-    @Throws(ModbusException::class)
-    fun readHoldingRegisters() {
-        deviceTester.testHoldingRegisters()
-    }
-
+    override fun deviceTester(): ModbusDeviceTester = deviceTester
 }

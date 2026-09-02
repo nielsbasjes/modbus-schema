@@ -16,11 +16,11 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
+import nl.basjes.modbus.device.utils.toUtf8String
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class UTF8String(
     private val registers: RegistersExpression,
@@ -43,5 +43,5 @@ class UTF8String(
     override fun getModbusValues(schemaDevice: SchemaDevice) = registers.getModbusValues(schemaDevice)
 
     override fun getValue(schemaDevice: SchemaDevice): String? =
-        registers.getByteArray(schemaDevice)?.let { ByteConversions.bytesToString(it) }
+        registers.getByteArray(schemaDevice)?.toUtf8String()
 }

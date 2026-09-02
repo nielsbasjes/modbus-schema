@@ -21,11 +21,7 @@ import nl.basjes.modbus.device.api.ModbusValue
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-
-private const val MOST_SIG_BYTE = 0xFF00.toShort()
-private const val LEAST_SIG_BYTE = 0x00FF.toShort()
 
 /*
  * An Expression for which the result is a byte array of raw register values
@@ -41,16 +37,7 @@ class RegistersModbusExpression(
         require(registerBlock is RegisterBlock) {
             "This should occur: doing getByteArray() on address $addresses (not registers)."
         }
-        val bytes = ByteArray(addresses.size * BYTES_PER_REGISTER)
-        var nextByteIndex = 0
-        for (address in addresses) {
-            val value = registerBlock.getValue(address) ?: return null
-            val msb = (0xFF and ((value.toInt() and MOST_SIG_BYTE.toInt()) shr 8)).toByte()
-            val lsb = (0xFF and (value.toInt() and LEAST_SIG_BYTE.toInt())).toByte()
-            bytes[nextByteIndex++] = msb
-            bytes[nextByteIndex++] = lsb
-        }
-        return bytes
+        return registerBlock.getByteArray(addresses)
     }
 
     override fun getModbusValues(schemaDevice: SchemaDevice): List<ModbusValue<*,*>> {

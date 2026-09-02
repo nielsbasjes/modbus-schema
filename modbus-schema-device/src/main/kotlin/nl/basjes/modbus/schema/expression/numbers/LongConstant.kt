@@ -27,7 +27,7 @@ open class LongConstant(
     override fun toString(): String = value.toString()
 
     override var isImmutable: Boolean = true
-        set(unused) {
+        set(_) {
             field = true // Refusing to change the value
         }
 

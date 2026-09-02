@@ -16,15 +16,16 @@
  */
 package nl.basjes.modbus.schema.expression.numbers
 
+import nl.basjes.modbus.device.utils.BITS16_IN_REGISTERS
+import nl.basjes.modbus.device.utils.SHORT_BYTES
+import nl.basjes.modbus.device.utils.toLong
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.SHORT_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IntegerUnsigned16(
     private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerUnsigned("uint16", SHORT_BYTES, registersExpression, notImplemented) {
+) : IntegerUnsigned("uint16", BITS16_IN_REGISTERS, registersExpression, notImplemented) {
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
         val bytes = registersExpression.getByteArray(schemaDevice) ?: return null
@@ -42,6 +43,6 @@ class IntegerUnsigned16(
                 bytes[0],
                 bytes[1],
             )
-        return ByteConversions.bytesToLong(longBytes)
+        return longBytes.toLong()
     }
 }

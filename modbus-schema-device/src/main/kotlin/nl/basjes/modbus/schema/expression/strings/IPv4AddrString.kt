@@ -16,12 +16,12 @@
  */
 package nl.basjes.modbus.schema.expression.strings
 
+import nl.basjes.modbus.device.utils.toSeparatedUnsignedIntegerString
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 const val IPV4ADDR_REGISTERS = 2
 
@@ -46,6 +46,7 @@ class IPv4AddrString(
                     registers.returnedAddresses == IPV4ADDR_REGISTERS,
                     "Must have $IPV4ADDR_REGISTERS registers (got ${registers.returnedAddresses})",
                 ),
+                registers.problems,
                 super<StringExpression>.problems,
                 super<NotImplemented>.problems,
             )
@@ -57,6 +58,6 @@ class IPv4AddrString(
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        return ByteConversions.bytesToSeparatedUnsignedIntegerString(bytes, ".")
+        return bytes.toSeparatedUnsignedIntegerString(".")
     }
 }

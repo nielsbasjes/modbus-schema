@@ -16,22 +16,24 @@
  */
 package nl.basjes.modbus.schema.expression.numbers
 
+import nl.basjes.modbus.device.utils.BITS16_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BITS32_IN_REGISTERS
+import nl.basjes.modbus.device.utils.INTEGER_BYTES
+import nl.basjes.modbus.device.utils.toInteger
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.INTEGER_BYTES
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 
 class IntegerSigned32(
     private val registersExpression: RegistersExpression,
     notImplemented: List<String>,
-) : IntegerSigned("int32", INTEGER_BYTES, registersExpression, notImplemented) {
+) : IntegerSigned("int32", BITS32_IN_REGISTERS, registersExpression, notImplemented) {
 
     override fun getValueAsLong(schemaDevice: SchemaDevice): Long? {
         val bytes = registersExpression.getByteArray(schemaDevice) ?: return null
         if (isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        return ByteConversions.bytesToInteger(bytes).toLong()
+        return bytes.toInteger().toLong()
     }
 
 }

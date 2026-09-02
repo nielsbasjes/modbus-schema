@@ -17,19 +17,20 @@
 package nl.basjes.modbus.schema.expression.strings
 
 import nl.basjes.modbus.device.exception.ModbusException
+import nl.basjes.modbus.device.utils.BITS64_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.INTEGER_BYTES
+import nl.basjes.modbus.device.utils.LONG_BYTES
+import nl.basjes.modbus.device.utils.SHORT_BYTES
+import nl.basjes.modbus.device.utils.toHexString0x
+import nl.basjes.modbus.device.utils.toInteger
+import nl.basjes.modbus.device.utils.toLong
+import nl.basjes.modbus.device.utils.toShort
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.INTEGER_BYTES
-import nl.basjes.modbus.schema.expression.LONG_BYTES
-import nl.basjes.modbus.schema.expression.SHORT_BYTES
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToInteger
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToLong
-import nl.basjes.modbus.schema.utils.ByteConversions.bytesToShort
 
 class EnumString(
     private val registers: RegistersExpression,
@@ -53,7 +54,7 @@ class EnumString(
             combine(
                 "enum",
                 checkFatal(registers.returnedAddresses > 0, "No registers"),
-                checkFatal(registers.returnedAddresses <= LONG_BYTES / BYTES_PER_REGISTER, "Too many registers"),
+                checkFatal(registers.returnedAddresses <= BITS64_IN_REGISTERS, "Too many registers"),
                 super<StringExpression>.problems,
                 super<NotImplemented>.problems,
             )
@@ -68,14 +69,14 @@ class EnumString(
         }
         val value =
             when (bytes.size) {
-                SHORT_BYTES -> bytesToShort(bytes).toLong()
-                INTEGER_BYTES -> bytesToInteger(bytes).toLong()
-                LONG_BYTES -> bytesToLong(bytes)
+                SHORT_BYTES ->      bytes.toShort().toLong()
+                INTEGER_BYTES ->    bytes.toInteger().toLong()
+                LONG_BYTES ->       bytes.toLong()
                 else -> null
             }
         var mappedValue = mappings[value]
         if (mappedValue == null) {
-            mappedValue = "No mapping for value " + ByteConversions.bytesToHexString(bytes)
+            mappedValue = "No mapping for value " + bytes.toHexString0x()
         }
         return mappedValue
     }

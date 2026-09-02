@@ -16,15 +16,16 @@
  */
 package nl.basjes.modbus.schema.expression.booleans
 
+import nl.basjes.modbus.device.utils.BITS64_IN_REGISTERS
+import nl.basjes.modbus.device.utils.BITS_PER_REGISTER
+import nl.basjes.modbus.device.utils.BYTES_PER_REGISTER
+import nl.basjes.modbus.device.utils.LONG_BYTES
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.expression.BYTES_PER_REGISTER
 import nl.basjes.modbus.schema.expression.Expression
 import nl.basjes.modbus.schema.expression.Expression.Problem
-import nl.basjes.modbus.schema.expression.LONG_BYTES
 import nl.basjes.modbus.schema.expression.generic.NotImplemented
 import nl.basjes.modbus.schema.expression.registers.RegistersExpression
-import nl.basjes.modbus.schema.utils.ByteConversions
 import java.util.BitSet
 
 class BooleanBitset(
@@ -54,18 +55,10 @@ class BooleanBitset(
             combine(
                 "bitsetbit",
                 checkFatal(addresses.returnedAddresses > 0, "No registers"),
-                checkFatal(
-                    addresses.returnedAddresses <=
-                        LONG_BYTES / BYTES_PER_REGISTER,
-                    "Too many registers",
-                ),
-                checkFatal(
-                    bitNr >= 0,
-                    "Negative bitNr requested",
-                ),
-                checkFatal(
-                    bitNr < addresses.returnedAddresses * BYTES_PER_REGISTER * 8,
-                    "The requested bitNr $bitNr is larger than the maximum of ${(addresses.returnedAddresses * BYTES_PER_REGISTER * 8) - 1 }",
+                checkFatal(addresses.returnedAddresses <= BITS64_IN_REGISTERS, "Too many registers"),
+                checkFatal(bitNr >= 0,"Negative bitNr requested"),
+                checkFatal(bitNr < addresses.returnedAddresses * BITS_PER_REGISTER,
+                    "The requested bitNr $bitNr is larger than the maximum of ${(addresses.returnedAddresses * BITS_PER_REGISTER) - 1 }",
                 ),
                 super<BooleanExpression>.problems,
                 super<NotImplemented>.problems,
@@ -78,7 +71,7 @@ class BooleanBitset(
         if (bytes == null || bytes.isEmpty() || isNotImplemented(bytes)) {
             return null // Not implemented
         }
-        ByteConversions.reverse(bytes)
+        bytes.reverse()
         val bitSet = BitSet.valueOf(bytes)
         return bitSet[bitNr]
     }
