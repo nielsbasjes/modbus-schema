@@ -24,8 +24,10 @@ import com.charleskorn.kaml.YamlMultiLineStringStyle
 import com.charleskorn.kaml.YamlSingleLineStringStyle
 import kotlinx.serialization.Serializable
 import nl.basjes.modbus.device.api.AddressClass
+import nl.basjes.modbus.device.api.DiscreteBlock
 import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
 import nl.basjes.modbus.device.api.ModbusBlock
+import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.asAddress
 import nl.basjes.modbus.device.api.toDiscreteBlock
 import nl.basjes.modbus.device.api.toRegisterBlock
@@ -192,10 +194,23 @@ fun TestScenario.toSchema(): SchemaTest {
 }
 
 fun ModbusBlock<*,*,*>.toSchema(): List<SchemaTestRawValues> {
-    return splitToSmallGapsModbusBlocks().map {
+    return splitToSmallGapsModbusBlocks().mapNotNull {
+        if (it.isEmpty()) {
+            return@mapNotNull null
+        }
+        var rawInputValues = it.toMultiLineString()
+        // If a test has NO input registers (which is weird)
+        // then the resulting YAML will be invalid because the rawValues will be empty.
+        // In that case we inject a fake 'error' value to make the YAML valid.
+        if (rawInputValues.isBlank()) {
+            rawInputValues = when(this) {
+                is DiscreteBlock -> "-"
+                is RegisterBlock -> "----"
+            }
+        }
         SchemaTestRawValues(
             it.firstAddress?.toCleanFormat() ?: "Empty",
-            it.toMultiLineString(),
+            rawInputValues,
         )
     }
 }

@@ -178,6 +178,8 @@ sealed class ModbusBlock<BLOCK: ModbusBlock<BLOCK, VALUE, TYPE>, VALUE: ModbusVa
         modbusValues.values.forEach { it.clear() }
     }
 
+    fun isEmpty(): Boolean = modbusValues.isEmpty()
+
     operator fun get(address: Address): VALUE {
         assertAddressClass(address.addressClass)
         return modbusValues.computeIfAbsent(address) { newValue(address) }
@@ -342,18 +344,21 @@ sealed class ModbusBlock<BLOCK: ModbusBlock<BLOCK, VALUE, TYPE>, VALUE: ModbusVa
             val nonNullModbusValues = TreeMap<Address, VALUE>()
             nonNullModbusValues.putAll(modbusValues.filterValues { it.hasValue() }.toMutableMap())
 
-            var expectedNextAddress: Address = nonNullModbusValues.firstKey() // The address we expect of the next entry
-            for (value in nonNullModbusValues.values) {
-                if (value.address != expectedNextAddress) {
-                    val gapSize = value.address.physicalAddress - expectedNextAddress.physicalAddress
-                    if (gapSize > maxNullSize) {
-                        // Gap is too big --> Create the next Block
-                        block = newBlock(addressClass)
-                        result.add(block)
+            if (nonNullModbusValues.isNotEmpty()) {
+                var expectedNextAddress: Address =
+                    nonNullModbusValues.firstKey() // The address we expect of the next entry
+                for (value in nonNullModbusValues.values) {
+                    if (value.address != expectedNextAddress) {
+                        val gapSize = value.address.physicalAddress - expectedNextAddress.physicalAddress
+                        if (gapSize > maxNullSize) {
+                            // Gap is too big --> Create the next Block
+                            block = newBlock(addressClass)
+                            result.add(block)
+                        }
                     }
+                    block[value.address] = value
+                    expectedNextAddress = value.address.increment()
                 }
-                block[value.address] = value
-                expectedNextAddress = value.address.increment()
             }
         }
         return result

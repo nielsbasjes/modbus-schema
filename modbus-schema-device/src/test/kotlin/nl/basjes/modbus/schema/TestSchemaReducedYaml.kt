@@ -58,4 +58,45 @@ class TestSchemaReducedYaml {
         assertTrue(results.allPassed)
     }
 
+    @Test
+    fun `Verify YAML With only errors`() {
+        val schema = $$"""
+            # $schema: https://modbus.basjes.nl/v2/ModbusSchema.json
+            description: 'The schema of the test device'
+            schemaFeatureLevel: 2
+
+            blocks:
+              - id:          'Values'
+                description: 'All the values in this fake device'
+
+                fields:
+                  - id:          'Something'
+                    description: 'Something'
+                    expression:  'int32(ir:0000#2)'
+
+            tests:
+              - id:          'Test'
+                description: 'Test'
+                input:
+                  - firstAddress: 'ir:00000'
+
+                    # ONLY ERROR VALUES !!!
+                    rawValues: |-
+                      ---- ----
+
+                blocks:
+                  - id:          'Values'
+                    expected:
+                      'Something':  [ ]
+        """.trimIndent()
+
+        val schemaDevice = schema.toSchemaDevice()
+        assertTrue(schemaDevice.initializeAndVerify())
+
+        println(schemaDevice.toTable())
+        println(schemaDevice.toYaml())
+
+        assertTrue(schemaDevice.toYaml().toSchemaDevice().initializeAndVerify())
+    }
+
 }
