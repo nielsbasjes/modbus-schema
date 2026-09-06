@@ -47,11 +47,12 @@
       <artifactId>log4j-api</artifactId>
     </dependency>
 
-    <!-- https://github.com/charleskorn/kaml -->
+    <!-- https://github.com/charleskorn/kaml : kaml is no longer maintained -->
+    <!-- https://github.com/Heapy/kotaml -->
     <dependency>
-      <groupId>com.charleskorn.kaml</groupId>
-      <artifactId>kaml-jvm</artifactId>
-      <version>0.104.0</version>
+      <groupId>io.heapy.kotaml</groupId>
+      <artifactId>kotaml-jvm</artifactId>
+      <version>0.110.0</version>
     </dependency>
 
     <dependency>
