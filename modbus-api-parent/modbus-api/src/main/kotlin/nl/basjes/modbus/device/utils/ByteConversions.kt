@@ -17,6 +17,7 @@
 package nl.basjes.modbus.device.utils
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.DiscreteBlock
 import nl.basjes.modbus.device.api.RegisterBlock
 import java.nio.charset.StandardCharsets
 import kotlin.math.min
@@ -494,6 +495,12 @@ fun Int     .toRegisters(startingAddress: Address): RegisterBlock = toByteArray(
 fun Long    .toRegisters(startingAddress: Address): RegisterBlock = toByteArray().toRegisters(startingAddress)
 fun Float   .toRegisters(startingAddress: Address): RegisterBlock = toByteArray().toRegisters(startingAddress)
 fun Double  .toRegisters(startingAddress: Address): RegisterBlock = toByteArray().toRegisters(startingAddress)
+
+fun Boolean .toDiscretes(address: Address): DiscreteBlock {
+    val block = DiscreteBlock(address.addressClass)
+    block[address] = this
+    return block
+}
 
 fun RegisterBlock.getShort   (startingAddress: Address): Short  ? = getByteArray(startingAddress, SHORT_REGISTERS   )?.toShort  ()
 fun RegisterBlock.getInteger (startingAddress: Address): Int    ? = getByteArray(startingAddress, INTEGER_REGISTERS )?.toInteger()
