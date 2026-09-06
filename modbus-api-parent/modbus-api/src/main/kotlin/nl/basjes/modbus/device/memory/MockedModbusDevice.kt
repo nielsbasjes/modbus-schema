@@ -43,6 +43,9 @@ open class MockedModbusDevice : ModbusDevice() {
 
     var logRequests = false
 
+    // No real device, no networking, so always connected
+    override fun isConnected(): Boolean = true
+
     override fun close() {
         // Nothing to do here
     }

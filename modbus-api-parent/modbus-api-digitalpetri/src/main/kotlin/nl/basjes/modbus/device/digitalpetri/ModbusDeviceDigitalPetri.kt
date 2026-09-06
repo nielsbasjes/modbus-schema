@@ -59,6 +59,8 @@ class ModbusDeviceDigitalPetri(
         require(unitId in 0..247) { "The unitId is outside the allowed range [0-247]: $unitId" }
     }
 
+    override fun isConnected(): Boolean = client.isConnected
+
     override fun close() {
         client.disconnect()
     }

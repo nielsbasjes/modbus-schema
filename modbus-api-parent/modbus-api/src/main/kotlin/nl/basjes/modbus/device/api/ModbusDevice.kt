@@ -74,6 +74,11 @@ abstract class ModbusDevice : AutoCloseable {
         throw ModbusApiException("Not yet implemented")
     }
 
+    /**
+     * @return The connection with the slave device is operational
+     */
+    abstract fun isConnected(): Boolean
+
     // Explicitly override with a more restricted kind of exception because of
     // https://bugs.openjdk.org/browse/JDK-8155591
     @Throws(ModbusException::class)

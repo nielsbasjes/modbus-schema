@@ -52,6 +52,8 @@ class ModbusDevicePlc4j(
 ) : ModbusDevice() {
     private val connection: PlcConnection
 
+    override fun isConnected(): Boolean = connection.isConnected
+
     @Throws(ModbusException::class)
     override fun close() {
         try {
