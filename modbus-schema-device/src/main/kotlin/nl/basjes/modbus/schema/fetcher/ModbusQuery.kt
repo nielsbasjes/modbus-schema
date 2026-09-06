@@ -91,7 +91,7 @@ open class  ModbusQuery(
     override fun hashCode(): Int = Objects.hash(start, count, status, fields)
 
     override fun toString(): String =
-        "ModbusQuery { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }})"
+        "ModbusQuery { $start # $count } (Fields: ${fields.joinToString(", ") { it.block.id + "[" + it.id + "]" }}) -> $status"
 }
 
 /**
@@ -127,6 +127,6 @@ class HoleModbusQuery(
     }
 
     override fun toString(): String =
-        "ModbusQuery { $start # $count } (HOLE: No fields!)"
+        "ModbusQuery { $start # $count } (HOLE: No fields!) -> $status"
 
 }
