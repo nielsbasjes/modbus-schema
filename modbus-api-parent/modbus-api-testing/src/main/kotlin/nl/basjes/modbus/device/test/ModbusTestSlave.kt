@@ -30,6 +30,7 @@ import nl.basjes.modbus.device.api.AddressClass.INPUT_REGISTER
 import nl.basjes.modbus.device.api.DiscreteBlock
 import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.ModbusBlock
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.memory.MockedModbusDevice
@@ -63,6 +64,7 @@ class ModbusTestSlave(
     private val processImage: SimpleProcessImage
 
     init {
+        println("Starting test slave")
         require(unitId in 0..255) {
             "Invalid Modbus unit ID: $unitId"
         }
@@ -76,7 +78,13 @@ class ModbusTestSlave(
 
         slave.addProcessImage(unitId, processImage)
         slave.open()
+        println("Started test slave at port $port and unitId $unitId")
     }
+
+    /**
+     * The config needed to connect to this slave.
+     */
+    val tcpConfig = ModbusDeviceTcpConfig("localhost", port, unitId)
 
     fun loadModbusBlocks(modbusBlocks: List<ModbusBlock<*,*,*>>) {
         modbusBlocks.forEach {
