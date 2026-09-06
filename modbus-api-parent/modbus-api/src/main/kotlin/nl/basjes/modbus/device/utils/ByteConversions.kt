@@ -502,6 +502,45 @@ fun Boolean .toDiscretes(address: Address): DiscreteBlock {
     return block
 }
 
+fun ByteArray.toBooleanListLSBFirst(limit: Int = -1): List<Boolean> {
+    val result = mutableListOf<Boolean>()
+    if (limit == 0) {
+        return result
+    }
+
+    for (byte in this) {
+        val value = byte.toInt() and 0xFF
+
+        for (bitIndex in 0.. 7) {
+            result.add(((value shr bitIndex) and 1) == 1)
+            if (limit > 0 && result.size >= limit) {
+                return result
+            }
+        }
+    }
+    return result
+}
+
+fun ByteArray.toBooleanListMSBFirst(limit: Int = -1): List<Boolean> {
+    val result = mutableListOf<Boolean>()
+    if (limit == 0) {
+        return result
+    }
+
+    for (byte in this) {
+        val value = byte.toInt() and 0xFF
+
+        for (bitIndex in 7 downTo 0) {
+            result.add(((value shr bitIndex) and 1) == 1)
+            if (limit > 0 && result.size >= limit) {
+                return result
+            }
+        }
+    }
+    return result
+}
+
+
 fun RegisterBlock.getShort   (startingAddress: Address): Short  ? = getByteArray(startingAddress, SHORT_REGISTERS   )?.toShort  ()
 fun RegisterBlock.getInteger (startingAddress: Address): Int    ? = getByteArray(startingAddress, INTEGER_REGISTERS )?.toInteger()
 fun RegisterBlock.getLong    (startingAddress: Address): Long   ? = getByteArray(startingAddress, LONG_REGISTERS    )?.toLong   ()

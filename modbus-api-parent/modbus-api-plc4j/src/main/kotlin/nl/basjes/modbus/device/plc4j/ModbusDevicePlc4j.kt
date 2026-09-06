@@ -18,6 +18,8 @@ package nl.basjes.modbus.device.plc4j
 
 import nl.basjes.modbus.device.api.Address
 import nl.basjes.modbus.device.api.AddressClass
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.FunctionCode.Companion.forReading
 import nl.basjes.modbus.device.api.FunctionCode.READ_COIL
 import nl.basjes.modbus.device.api.FunctionCode.READ_DISCRETE_INPUT
@@ -29,6 +31,7 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
+import nl.basjes.modbus.device.exception.createReadErrorDiscreteBlock
 import nl.basjes.modbus.device.exception.createReadErrorRegisterBlock
 import org.apache.plc4x.java.api.PlcConnection
 import org.apache.plc4x.java.api.PlcDriverManager
@@ -65,7 +68,7 @@ class ModbusDevicePlc4j(
 
     init {
         try {
-            connection = PlcDriverManager.getDefault().connectionManager.getConnection(connectionString)
+            connection = PlcDriverManager.getDefault().connectionFactory.getConnection(connectionString)
         } catch (e: PlcConnectionException) {
             throw ModbusException("Unable to connect to the master", e)
         }
@@ -82,83 +85,87 @@ class ModbusDevicePlc4j(
 
     private fun getAddressClassTag(addressClass: AddressClass): String = addressClass.longLabel
 
+
+    /**
+     * Get the response.
+     * @return null in case of error, a usable PlcReadResponse otherwise
+     */
+    private fun getResponse(fieldTag: String): PlcReadResponse? {
+        val builder = connection.readRequestBuilder()
+
+        builder.addTag("F", ModbusTag.of(fieldTag))
+
+        val asyncResponse = builder.build().execute()
+
+        // Wait for completion
+        val response: PlcReadResponse
+        try {
+            response = asyncResponse[2, TimeUnit.SECONDS]
+        } catch (e: InterruptedException) {
+            throw RuntimeException(e)
+        } catch (e: ExecutionException) {
+            throw RuntimeException(e)
+        } catch (e: TimeoutException) {
+            throw RuntimeException(e)
+        }
+
+        when (val plcResponseCode = response.getResponseCode("F")) {
+            PlcResponseCode.OK,
+                -> {
+                // We're cool
+            }
+
+            PlcResponseCode.INVALID_ADDRESS,
+            PlcResponseCode.INVALID_DATATYPE,
+            PlcResponseCode.INVALID_DATA,
+            PlcResponseCode.INTERNAL_ERROR,
+                -> {
+                throw ModbusException("Modbus request failed with $plcResponseCode")
+            }
+
+            PlcResponseCode.NOT_FOUND,
+            PlcResponseCode.ACCESS_DENIED,
+            PlcResponseCode.REMOTE_BUSY,
+            PlcResponseCode.REMOTE_ERROR,
+            PlcResponseCode.UNSUPPORTED,
+            PlcResponseCode.RESPONSE_PENDING,
+            PlcResponseCode.OUT_OF_RANGE,
+            PlcResponseCode.NOT_READY,
+                -> {
+                return null
+            }
+        }
+        return response
+    }
+
     @Throws(ModbusException::class)
     override fun getRegisters(
         firstRegister: Address,
         count: Int,
     ): RegisterBlock {
         when (val functionCode = forReading(firstRegister.addressClass)) {
-            READ_COIL,
-            READ_DISCRETE_INPUT,
-            -> {
-                throw NotYetImplementedException("Reading a " + firstRegister.addressClass + " has not yet been implemented")
-            }
-
             READ_HOLDING_REGISTERS,
-            READ_INPUT_REGISTERS,
-            -> {
-                val builder = connection.readRequestBuilder()
-
-                // This is REALLY fragile ! If you add the correct type (like WORD) you only get a single value.
+            READ_INPUT_REGISTERS -> {
                 val fieldTag =
                     String.format(
-                        "%s:%05d[%d]",
+                        "%s:%05d[0..%d]:WORD",
                         getAddressClassTag(firstRegister.addressClass),
                         firstRegister.registerNumber,
-                        count,
+                        count - 1,
                     )
-                builder.addTag("F", ModbusTag.of(fieldTag))
 
-                val asyncResponse = builder.build().execute()
-
-                // Wait for completion
-                val response: PlcReadResponse
-                try {
-                    response = asyncResponse[2, TimeUnit.SECONDS]
-                } catch (e: InterruptedException) {
-                    throw RuntimeException(e)
-                } catch (e: ExecutionException) {
-                    throw RuntimeException(e)
-                } catch (e: TimeoutException) {
-                    throw RuntimeException(e)
-                }
+                val response = getResponse(fieldTag)
+                    ?: return createReadErrorRegisterBlock(firstRegister, count)
 
                 // Record all received values under the current timestamp.
                 // Many devices have a bad clock.
                 val now = System.currentTimeMillis()
 
-                when (val plcResponseCode = response.getResponseCode("F")) {
-                    PlcResponseCode.OK,
-                    -> {
-                        // We're cool
-                    }
-
-                    PlcResponseCode.INVALID_ADDRESS,
-                    PlcResponseCode.INVALID_DATATYPE,
-                    PlcResponseCode.INVALID_DATA,
-                    PlcResponseCode.INTERNAL_ERROR,
-                    -> {
-                        throw ModbusException("Modbus request failed with $plcResponseCode")
-                    }
-
-                    PlcResponseCode.NOT_FOUND,
-                    PlcResponseCode.ACCESS_DENIED,
-                    PlcResponseCode.REMOTE_BUSY,
-                    PlcResponseCode.REMOTE_ERROR,
-                    PlcResponseCode.UNSUPPORTED,
-                    PlcResponseCode.RESPONSE_PENDING,
-                    -> {
-                        return createReadErrorRegisterBlock(firstRegister, count)
-                    }
-                }
-
-                var address = firstRegister
-                val result = RegisterBlock(address.addressClass)
+                val result = RegisterBlock(firstRegister.addressClass)
                 try {
                     val allShorts = response.getAllIntegers("F")
-                    for (value in allShorts) {
-                        result[address] = RegisterValue(address).setValue(value.toShort(), now)
-                        address = address.increment(1)
+                    allShorts.forEachIndexed { index, value ->
+                        result.put(RegisterValue(firstRegister+index).setValue(value.toShort(), now))
                     }
                 } catch (e: PlcRuntimeException) {
                     throw ModbusException("Got a PlcRuntimeException (" + e.message + ") on " + fieldTag, e)
@@ -166,9 +173,66 @@ class ModbusDevicePlc4j(
                 return result
             }
 
+            READ_COIL,
+            READ_DISCRETE_INPUT -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstRegister.addressClass} cannot be retrieved using getRegisters",
+                )
+            }
+
             else -> {
                 throw NotYetImplementedException(
-                    "The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented",
+                    "The function code $functionCode has not been implemented",
+                )
+            }
+        }
+    }
+
+    @Throws(ModbusException::class)
+    override fun getDiscretes(
+        firstDiscrete: Address,
+        count: Int,
+    ): DiscreteBlock {
+        when (val functionCode = forReading(firstDiscrete.addressClass)) {
+            READ_COIL,
+            READ_DISCRETE_INPUT -> {
+                val fieldTag =
+                    String.format(
+                        "%s:%05d[0..%d]:BOOL",
+                        getAddressClassTag(firstDiscrete.addressClass),
+                        firstDiscrete.registerNumber,
+                        count - 1,
+                    )
+
+                val response = getResponse(fieldTag)
+                    ?: return createReadErrorDiscreteBlock(firstDiscrete, count)
+
+                // Record all received values under the current timestamp.
+                // Many devices have a bad clock.
+                val now = System.currentTimeMillis()
+
+                val result = DiscreteBlock(firstDiscrete.addressClass)
+                try {
+                    val allBooleans = response.getAllBooleans("F")
+                    allBooleans.forEachIndexed { index, boolean ->
+                        result.put(DiscreteValue(firstDiscrete+index).setValue(boolean, now))
+                    }
+                } catch (e: PlcRuntimeException) {
+                    throw ModbusException("Got a PlcRuntimeException (" + e.message + ") on " + fieldTag, e)
+                }
+                return result
+            }
+
+            READ_HOLDING_REGISTERS,
+            READ_INPUT_REGISTERS -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstDiscrete.addressClass} cannot be retrieved using getDiscretes",
+                )
+            }
+
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode has not been implemented",
                 )
             }
         }

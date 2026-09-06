@@ -73,12 +73,6 @@ class ModbusDeviceJ2Mod(
         count: Int,
     ): RegisterBlock {
         when (val functionCode = forReading(firstRegister.addressClass)) {
-            READ_COIL,
-            READ_DISCRETE_INPUT,
-                -> {
-                throw NotYetImplementedException("Reading a ${firstRegister.addressClass} has not yet been implemented")
-            }
-
             READ_HOLDING_REGISTERS,
                 -> {
                 try {
@@ -113,9 +107,17 @@ class ModbusDeviceJ2Mod(
                 }
             }
 
-            else -> {
+            READ_COIL,
+            READ_DISCRETE_INPUT,
+                -> {
                 throw NotYetImplementedException(
                     "The function code $functionCode for ${firstRegister.addressClass} cannot be retrieved using getRegisters",
+                )
+            }
+
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode has not been implemented",
                 )
             }
         }
@@ -147,7 +149,10 @@ class ModbusDeviceJ2Mod(
         when (val functionCode = forReading(firstDiscrete.addressClass)) {
             READ_COIL -> {
                 try {
-                    val coils: BitVector = master.readCoils(unitId, firstDiscrete.physicalAddress, count)
+                    val coils: BitVector = master.readCoils(
+                        unitId,
+                        firstDiscrete.physicalAddress,
+                        count)
                     return buildDiscreteBlock(firstDiscrete, coils)
                 } catch (_: ModbusSlaveException) {
                     return createReadErrorDiscreteBlock(firstDiscrete, count)
@@ -173,9 +178,16 @@ class ModbusDeviceJ2Mod(
                 }
             }
 
-            else -> {
+            READ_HOLDING_REGISTERS,
+            READ_INPUT_REGISTERS -> {
                 throw NotYetImplementedException(
                     "The function code $functionCode for ${firstDiscrete.addressClass} cannot be retrieved using getDiscretes",
+                )
+            }
+
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode has not been implemented",
                 )
             }
         }

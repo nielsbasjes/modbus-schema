@@ -18,11 +18,15 @@ package nl.basjes.modbus.device.digitalpetri
 
 import com.digitalpetri.modbus.client.ModbusClient
 import com.digitalpetri.modbus.client.ModbusTcpClient
+import com.digitalpetri.modbus.pdu.ReadCoilsRequest
+import com.digitalpetri.modbus.pdu.ReadDiscreteInputsRequest
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest
 import com.digitalpetri.modbus.pdu.ReadInputRegistersRequest
 import com.digitalpetri.modbus.tcp.client.NettyClientTransportConfig
 import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.DiscreteBlock
+import nl.basjes.modbus.device.api.DiscreteValue
 import nl.basjes.modbus.device.api.FunctionCode.Companion.forReading
 import nl.basjes.modbus.device.api.FunctionCode.READ_COIL
 import nl.basjes.modbus.device.api.FunctionCode.READ_DISCRETE_INPUT
@@ -34,7 +38,9 @@ import nl.basjes.modbus.device.api.RegisterBlock
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.exception.NotYetImplementedException
+import nl.basjes.modbus.device.exception.createReadErrorDiscreteBlock
 import nl.basjes.modbus.device.exception.createReadErrorRegisterBlock
+import nl.basjes.modbus.device.utils.toBooleanListLSBFirst
 import com.digitalpetri.modbus.exceptions.ModbusException as DPModbusException
 import com.digitalpetri.modbus.exceptions.ModbusResponseException as DPModbusResponseException
 
@@ -71,12 +77,6 @@ class ModbusDeviceDigitalPetri(
         count: Int,
     ): RegisterBlock {
         when (val functionCode = forReading(firstRegister.addressClass)) {
-            READ_COIL,
-            READ_DISCRETE_INPUT,
-            -> {
-                throw NotYetImplementedException("Reading a ${firstRegister.addressClass} has not yet been implemented")
-            }
-
             READ_HOLDING_REGISTERS -> {
                 try {
                     val response =
@@ -113,9 +113,17 @@ class ModbusDeviceDigitalPetri(
                 }
             }
 
+            READ_COIL,
+            READ_DISCRETE_INPUT,
+                -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstRegister.addressClass} cannot be retrieved using getRegisters",
+                )
+            }
+
             else -> {
                 throw NotYetImplementedException(
-                    "The function code $functionCode for ${firstRegister.addressClass} has not yet been implemented",
+                    "The function code $functionCode has not been implemented",
                 )
             }
         }
@@ -157,6 +165,79 @@ class ModbusDeviceDigitalPetri(
         }
         return result
     }
+
+
+
+    @Throws(ModbusException::class)
+    override fun getDiscretes(
+        firstDiscrete: Address,
+        count: Int,
+    ): DiscreteBlock {
+        when (val functionCode = forReading(firstDiscrete.addressClass)) {
+            READ_COIL -> {
+                try {
+                    val response = client.readCoils(
+                        unitId,
+                        ReadCoilsRequest(firstDiscrete.physicalAddress, count)
+                    )
+                    return buildDiscreteBlock(firstDiscrete, response.coils, count)
+                } catch (_: DPModbusResponseException) {
+                    return createReadErrorDiscreteBlock(firstDiscrete, count)
+                } catch (e: ModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstDiscrete.physicalAddress + ":" + e.message,
+                        e,
+                    )
+                }
+            }
+
+            READ_DISCRETE_INPUT -> {
+                try {
+                    val response = client.readDiscreteInputs(
+                        unitId,
+                        ReadDiscreteInputsRequest(firstDiscrete.physicalAddress, count)
+                    )
+                    return buildDiscreteBlock(firstDiscrete, response.inputs, count)
+                } catch (_: DPModbusResponseException) {
+                    return createReadErrorDiscreteBlock(firstDiscrete, count)
+                } catch (e: ModbusException) {
+                    throw ModbusException(
+                        "For " + functionCode + " & " + firstDiscrete.physicalAddress + ":" + e.message,
+                        e,
+                    )
+                }
+            }
+
+            READ_HOLDING_REGISTERS,
+            READ_INPUT_REGISTERS -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode for ${firstDiscrete.addressClass} cannot be retrieved using getDiscretes",
+                )
+            }
+
+            else -> {
+                throw NotYetImplementedException(
+                    "The function code $functionCode has not been implemented",
+                )
+            }
+        }
+    }
+
+    private fun buildDiscreteBlock(
+        firstAddress: Address,
+        bytes: ByteArray,
+        count: Int,
+    ): DiscreteBlock {
+        // Record all received values under the current timestamp.
+        // Many devices have a bad clock.
+        val now = System.currentTimeMillis()
+        val result = DiscreteBlock(firstAddress.addressClass)
+        bytes.toBooleanListLSBFirst(count).forEachIndexed { index, boolean ->
+            result.put(DiscreteValue(firstAddress+index).setValue(boolean, now))
+        }
+        return result
+    }
+
 }
 
 fun ModbusDeviceTcpConfig.toModbusDeviceDigitalPetri(): ModbusDeviceDigitalPetri {

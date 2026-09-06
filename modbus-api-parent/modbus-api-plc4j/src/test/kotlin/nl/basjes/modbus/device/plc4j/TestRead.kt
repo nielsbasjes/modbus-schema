@@ -17,13 +17,15 @@
 package nl.basjes.modbus.device.plc4j
 
 import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingDeviceReadCoils
+import nl.basjes.modbus.device.test.ModbusDeviceTestReadingDiscreteInputs
 import nl.basjes.modbus.device.test.ModbusDeviceTestReadingHoldingRegisters
 import nl.basjes.modbus.device.test.ModbusDeviceTestReadingInputRegisters
 import nl.basjes.modbus.device.test.ModbusDeviceTester
 
 internal class TestRead :
-//    ModbusDeviceTestReadingDeviceReadCoils,   TODO: Implement Discretes
-//    ModbusDeviceTestReadingDiscreteInputs,   TODO: Implement Discretes
+    ModbusDeviceTestReadingDeviceReadCoils,
+    ModbusDeviceTestReadingDiscreteInputs,
     ModbusDeviceTestReadingInputRegisters,
     ModbusDeviceTestReadingHoldingRegisters {
     val deviceTester = ModbusDeviceTester { modbusHost, modbusPort, modbusUnit ->
