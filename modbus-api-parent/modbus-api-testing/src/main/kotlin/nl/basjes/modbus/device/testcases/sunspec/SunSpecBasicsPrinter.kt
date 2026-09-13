@@ -36,8 +36,6 @@ private val sunSpecStandardStartPhysicalAddress =
         Address(HOLDING_REGISTER, 50000),
     )
 
-const val SUNSPEC_STANDARD_UNITID: Int = 126
-
 /**
  * This class is for TESTING PURPOSES ONLY.
  * It simply walks the SunSpec model chain and prints some information.

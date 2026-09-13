@@ -38,8 +38,9 @@ private val LOG: Logger = LogManager.getLogger()
  */
 class ModbusSchemaTestSlave(
     unitId: Int = 42,
+    autoStart: Boolean = false,
     val callback: ((updates: Int) -> Unit)? = null,
-) {
+): AutoCloseable {
     val modbusTestSlave = ModbusTestSlave(unitId)
 
     /**
@@ -157,12 +158,24 @@ class ModbusSchemaTestSlave(
     }
 
     fun stop() {
-        scheduler.shutdown()
-        println("Waiting for running tasks to finish...")
-        val finishedCleanly = scheduler.awaitTermination(10, TimeUnit.SECONDS)
+        if (!scheduler.isTerminated) {
+            scheduler.shutdown()
+            println("Waiting for running tasks to finish...")
+            val finishedCleanly = scheduler.awaitTermination(10, TimeUnit.SECONDS)
 
-        println("Terminated ${if (finishedCleanly) "cleanly" else "after a timeout"}.")
-        assertTrue(finishedCleanly, "Modbus Test Slave did not terminate cleanly." )
+            println("Terminated ${if (finishedCleanly) "cleanly" else "after a timeout"}.")
+            assertTrue(finishedCleanly, "Modbus Test Slave did not terminate cleanly.")
+        }
+    }
+
+    init {
+        if (autoStart) {
+            start()
+        }
+    }
+
+    override fun close() {
+        stop()
     }
 
 }

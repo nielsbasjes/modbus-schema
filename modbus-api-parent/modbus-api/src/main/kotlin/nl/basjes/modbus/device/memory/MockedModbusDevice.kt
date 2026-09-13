@@ -36,8 +36,8 @@ import java.util.TreeMap
 
 open class MockedModbusDevice : ModbusDevice() {
     // Map AddressClass to block of registers
-    private val discreteBlocks: MutableMap<AddressClass, DiscreteBlock> = TreeMap()
-    private val registerBlocks: MutableMap<AddressClass, RegisterBlock> = TreeMap()
+    protected val discreteBlocks: MutableMap<AddressClass, DiscreteBlock> = TreeMap()
+    protected val registerBlocks: MutableMap<AddressClass, RegisterBlock> = TreeMap()
 
     private val logger: Logger = LogManager.getLogger()
 

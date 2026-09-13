@@ -216,7 +216,7 @@ class ModbusDeviceJ2Mod(
 fun ModbusDeviceTcpConfig.toModbusDeviceJ2Mod(): ModbusDeviceJ2Mod {
     val master: AbstractModbusMaster = ModbusTCPMaster(hostname, port)
     try {
-        print("Connecting...")
+        print("ModbusDeviceJ2Mod Connecting...")
         master.connect()
         println(" done")
         return ModbusDeviceJ2Mod(master, unitId)

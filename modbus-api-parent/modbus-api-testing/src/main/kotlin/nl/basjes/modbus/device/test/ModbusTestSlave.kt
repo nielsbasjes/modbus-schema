@@ -47,7 +47,7 @@ private const val THREAD_POOL_SIZE = 4
  * The server listens only on localhost and uses an automatically
  * allocated ephemeral TCP port.
  */
-class ModbusTestSlave(
+open class ModbusTestSlave(
     val unitId: Int = DEFAULT_UNIT_ID,
 ) : MockedModbusDevice() {
 
