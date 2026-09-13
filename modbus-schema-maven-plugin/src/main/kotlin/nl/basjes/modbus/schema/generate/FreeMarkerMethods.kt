@@ -122,6 +122,7 @@ fun Configuration.registerAdditionalMethods() =
         this.setSharedVariable("breakStringBlock",      BreakStringBlock())
         this.setSharedVariable("jvmReturnType",         ReturnTypeToJVMType())
         this.setSharedVariable("valueGetter",           ReturnTypeValueGetter())
+        this.setSharedVariable("fieldSubClass",         ReturnTypeFieldSubClass())
         this.setSharedVariable("asString",              ModbusBlockAsString(false))
         this.setSharedVariable("asStringMultiLine",     ModbusBlockAsString(true))
         this.setSharedVariable("indent",                Indent())
@@ -271,11 +272,11 @@ abstract class BaseSingleReturnTypeMethod : TemplateMethodModelEx {
 class ReturnTypeToJVMType : BaseSingleReturnTypeMethod() {
     override fun transform(input: ReturnType) =
         when (input) {
-            ReturnType.BOOLEAN -> "Boolean"
-            ReturnType.LONG -> "Long"
-            ReturnType.DOUBLE -> "Double"
-            ReturnType.STRING -> "String"
-            ReturnType.STRINGLIST -> "List<String>"
+            ReturnType.BOOLEAN      -> "Boolean"
+            ReturnType.LONG         -> "Long"
+            ReturnType.DOUBLE       -> "Double"
+            ReturnType.STRING       -> "String"
+            ReturnType.STRINGLIST   -> "List<String>"
             else -> "**UNKNOWN**"
         }
 }
@@ -283,11 +284,23 @@ class ReturnTypeToJVMType : BaseSingleReturnTypeMethod() {
 class ReturnTypeValueGetter : BaseSingleReturnTypeMethod() {
     override fun transform(input: ReturnType) =
         when (input) {
-            ReturnType.BOOLEAN -> "booleanValue"
-            ReturnType.LONG -> "longValue"
-            ReturnType.DOUBLE -> "doubleValue"
-            ReturnType.STRING -> "stringValue"
-            ReturnType.STRINGLIST -> "stringListValue"
+            ReturnType.BOOLEAN      -> "booleanValue"
+            ReturnType.LONG         -> "longValue"
+            ReturnType.DOUBLE       -> "doubleValue"
+            ReturnType.STRING       -> "stringValue"
+            ReturnType.STRINGLIST   -> "stringListValue"
+            else -> "**UNKNOWN**"
+        }
+}
+
+class ReturnTypeFieldSubClass : BaseSingleReturnTypeMethod() {
+    override fun transform(input: ReturnType) =
+        when (input) {
+            ReturnType.BOOLEAN      -> "FieldBoolean"
+            ReturnType.LONG         -> "FieldLong"
+            ReturnType.DOUBLE       -> "FieldDouble"
+            ReturnType.STRING       -> "FieldString"
+            ReturnType.STRINGLIST   -> "FieldStringList"
             else -> "**UNKNOWN**"
         }
 }

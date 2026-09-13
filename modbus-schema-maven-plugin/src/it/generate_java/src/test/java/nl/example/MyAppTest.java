@@ -78,7 +78,7 @@ class MyAppTest {
 
     @Test
     void checkIfGeneratedCodeWorks1() throws ModbusException {
-        SchemaDevice myDevice = new MyNewDevice().schemaDevice;
+        SchemaDevice myDevice = new MyNewDevice();
         myDevice.connect(modbusDevice);
         myDevice.updateAll();
 
@@ -155,44 +155,44 @@ class MyAppTest {
         MyNewDevice myDevice = new MyNewDevice().connect(modbusDevice);
         myDevice.updateAll();
 
-        assertNotNull(myDevice.main.myFloat           .field);
-        assertNotNull(myDevice.main.myDouble          .field);
-        assertNotNull(myDevice.main.myBitset1         .field);
-        assertNotNull(myDevice.main.myBitset2         .field);
-        assertNotNull(myDevice.main.myBitset3         .field);
-        assertNotNull(myDevice.main.myBitset4         .field);
-        assertNotNull(myDevice.main.myEnum            .field);
-        assertNotNull(myDevice.main.myEUI48           .field);
-        assertNotNull(myDevice.main.myShort           .field);
-        assertNotNull(myDevice.main.myUnsignedShort   .field);
-        assertNotNull(myDevice.main.myInteger         .field);
-        assertNotNull(myDevice.main.myUnsignedInteger .field);
-        assertNotNull(myDevice.main.myLong            .field);
-        assertNotNull(myDevice.main.myUnsignedLong    .field);
-        assertNotNull(myDevice.main.myIPv4            .field);
-        assertNotNull(myDevice.main.myIPv6            .field);
-        assertNotNull(myDevice.main.myName            .field);
-        assertNotNull(myDevice.main.myNameHex         .field);
+        assertNotNull(myDevice.main.myFloat           );
+        assertNotNull(myDevice.main.myDouble          );
+        assertNotNull(myDevice.main.myBitset1         );
+        assertNotNull(myDevice.main.myBitset2         );
+        assertNotNull(myDevice.main.myBitset3         );
+        assertNotNull(myDevice.main.myBitset4         );
+        assertNotNull(myDevice.main.myEnum            );
+        assertNotNull(myDevice.main.myEUI48           );
+        assertNotNull(myDevice.main.myShort           );
+        assertNotNull(myDevice.main.myUnsignedShort   );
+        assertNotNull(myDevice.main.myInteger         );
+        assertNotNull(myDevice.main.myUnsignedInteger );
+        assertNotNull(myDevice.main.myLong            );
+        assertNotNull(myDevice.main.myUnsignedLong    );
+        assertNotNull(myDevice.main.myIPv4            );
+        assertNotNull(myDevice.main.myIPv6            );
+        assertNotNull(myDevice.main.myName            );
+        assertNotNull(myDevice.main.myNameHex         );
 
         verifyAllFieldValues(
-            myDevice.main.myFloat           .field,
-            myDevice.main.myDouble          .field,
-            myDevice.main.myBitset1         .field,
-            myDevice.main.myBitset2         .field,
-            myDevice.main.myBitset3         .field,
-            myDevice.main.myBitset4         .field,
-            myDevice.main.myEnum            .field,
-            myDevice.main.myEUI48           .field,
-            myDevice.main.myShort           .field,
-            myDevice.main.myUnsignedShort   .field,
-            myDevice.main.myInteger         .field,
-            myDevice.main.myUnsignedInteger .field,
-            myDevice.main.myLong            .field,
-            myDevice.main.myUnsignedLong    .field,
-            myDevice.main.myIPv4            .field,
-            myDevice.main.myIPv6            .field,
-            myDevice.main.myName            .field,
-            myDevice.main.myNameHex         .field
+            myDevice.main.myFloat,
+            myDevice.main.myDouble,
+            myDevice.main.myBitset1,
+            myDevice.main.myBitset2,
+            myDevice.main.myBitset3,
+            myDevice.main.myBitset4,
+            myDevice.main.myEnum,
+            myDevice.main.myEUI48,
+            myDevice.main.myShort,
+            myDevice.main.myUnsignedShort,
+            myDevice.main.myInteger,
+            myDevice.main.myUnsignedInteger,
+            myDevice.main.myLong,
+            myDevice.main.myUnsignedLong,
+            myDevice.main.myIPv4,
+            myDevice.main.myIPv6,
+            myDevice.main.myName,
+            myDevice.main.myNameHex
         );
     }
 

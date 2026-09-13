@@ -38,7 +38,7 @@ public class Main {
             SunnyBoy36 sunnyBoy36 = new SunnyBoy36();
             sunnyBoy36.connect(modbusDevice);
 
-            sunnyBoy36.model1.need();
+            sunnyBoy36.model1.needAll();
             sunnyBoy36.update(1000L);
             System.out.println("MN="+sunnyBoy36.model1.mn);
             System.out.println("MD="+sunnyBoy36.model1.md);

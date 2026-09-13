@@ -362,8 +362,6 @@
           <configuration>
             <skipModules>
               <skipModule>nl.basjes.modbus/githooks</skipModule>
-              <skipModule>nl.basjes.modbus.demo/demos-parent</skipModule>
-              <skipModule>nl.basjes.modbus.demo/generate-custom-java</skipModule>
 <!--                TODO: EXCLUDE ALL DEMOS -->
             </skipModules>
           </configuration>

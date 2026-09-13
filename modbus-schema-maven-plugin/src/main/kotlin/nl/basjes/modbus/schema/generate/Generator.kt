@@ -41,7 +41,7 @@ class Generator(val log: Log) {
 
     fun String.openAsStream(): InputStream? {
         log.debug("Trying to open: $this")
-        val resourceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(this)
+        val resourceStream = Thread.currentThread().contextClassLoader.getResourceAsStream(this)
         if (resourceStream != null) {
             log.debug("- open as resource: success")
             return resourceStream
@@ -187,7 +187,7 @@ class Generator(val log: Log) {
                 "pluginVersion" to PROJECT_VERSION,
                 "packageName"   to packageName,
                 "className"     to className,
-                "schemaDevice" to schemaDevice,
+                "schemaDevice"  to schemaDevice,
             ),
             output,
         )

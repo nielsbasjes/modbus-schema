@@ -37,7 +37,7 @@ import nl.basjes.modbus.schema.fetcher.ModbusQuery
 import nl.basjes.modbus.schema.utils.requireValidIdentifier
 import kotlin.properties.Delegates
 
-class Field(
+open class Field(
     /** The block in which this field is located */
     val block: Block,
 
@@ -240,7 +240,7 @@ class Field(
             return true
         }
 
-    val value: Any?
+    open val value: Any?
         get() =
             when (returnType) {
                 UNKNOWN    -> null //TODO("Unknown returnType (Field $id) means we do not know yet")
@@ -549,3 +549,100 @@ class Field(
         }
     }
 }
+
+/**
+ * A subclass of Field only used for situations when it is certain the value returned by the expression is a Boolean
+ */
+@Suppress("unused") // Used by generated code.
+open class FieldBoolean(
+    block:            Block,
+    id:               String,
+    description:      String = "",
+    shortDescription: String = description,
+    immutable:        Boolean = false,
+    system:           Boolean = false,
+    expression:       String,
+    unit:             String = "",
+    fetchGroup:       String = "",
+): Field(block, id, description, shortDescription, immutable, system, expression, unit, fetchGroup) {
+    override val value get() = booleanValue
+    override fun toString(): String = value?.toString() ?: "null"
+}
+
+/**
+ * A subclass of Field only used for situations when it is certain the value returned by the expression is a Long
+ */
+@Suppress("unused") // Used by generated code.
+open class FieldLong(
+    block:            Block,
+    id:               String,
+    description:      String = "",
+    shortDescription: String = description,
+    immutable:        Boolean = false,
+    system:           Boolean = false,
+    expression:       String,
+    unit:             String = "",
+    fetchGroup:       String = "",
+): Field(block, id, description, shortDescription, immutable, system, expression, unit, fetchGroup) {
+    override val value get() = longValue
+    override fun toString(): String = value?.toString() ?: "null"
+}
+
+/**
+ * A subclass of Field only used for situations when it is certain the value returned by the expression is a Double
+ */
+@Suppress("unused") // Used by generated code.
+open class FieldDouble(
+    block:            Block,
+    id:               String,
+    description:      String = "",
+    shortDescription: String = description,
+    immutable:        Boolean = false,
+    system:           Boolean = false,
+    expression:       String,
+    unit:             String = "",
+    fetchGroup:       String = "",
+): Field(block, id, description, shortDescription, immutable, system, expression, unit, fetchGroup) {
+    override val value get() = doubleValue
+    override fun toString(): String = value?.toString() ?: "null"
+}
+
+/**
+ * A subclass of Field only used for situations when it is certain the value returned by the expression is a String
+ */
+@Suppress("unused") // Used by generated code.
+open class FieldString(
+    block:            Block,
+    id:               String,
+    description:      String = "",
+    shortDescription: String = description,
+    immutable:        Boolean = false,
+    system:           Boolean = false,
+    expression:       String,
+    unit:             String = "",
+    fetchGroup:       String = "",
+): Field(block, id, description, shortDescription, immutable, system, expression, unit, fetchGroup) {
+    override val value get() = stringValue
+    override fun toString(): String = value ?: "null"
+}
+
+/**
+ * A subclass of Field only used for situations when it is certain the value returned by the expression is a List<String>.
+ * Used by generated code.
+ */
+@Suppress("unused") // Used by generated code.
+open class FieldStringList(
+    block:            Block,
+    id:               String,
+    description:      String = "",
+    shortDescription: String = description,
+    immutable:        Boolean = false,
+    system:           Boolean = false,
+    expression:       String,
+    unit:             String = "",
+    fetchGroup:       String = "",
+): Field(block, id, description, shortDescription, immutable, system, expression, unit, fetchGroup) {
+    override val value get() = stringListValue
+    override fun toString(): String = value?.toString() ?: "null"
+}
+

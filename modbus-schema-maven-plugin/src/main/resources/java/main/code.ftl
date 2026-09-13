@@ -32,6 +32,11 @@ import nl.basjes.modbus.device.api.AddressClass;
 import nl.basjes.modbus.device.api.ModbusDevice;
 import nl.basjes.modbus.device.exception.ModbusException;
 import nl.basjes.modbus.schema.Field;
+import nl.basjes.modbus.schema.FieldBoolean;
+import nl.basjes.modbus.schema.FieldLong;
+import nl.basjes.modbus.schema.FieldDouble;
+import nl.basjes.modbus.schema.FieldString;
+import nl.basjes.modbus.schema.FieldStringList;
 import nl.basjes.modbus.schema.Block;
 import nl.basjes.modbus.schema.SchemaDevice;
 import nl.basjes.modbus.schema.YamlLoaderKt;
@@ -48,131 +53,29 @@ import static nl.basjes.modbus.schema.YamlLoaderKt.toSchemaDevice;
 /**
 * ${schemaDevice.description}
 */
-public class ${asClassName(className)} {
+public class ${asClassName(className)} extends SchemaDevice {
 
     public ${asClassName(className)}() {
-        schemaDevice.initialize();
+        super("${escapeForJava(schemaDevice.description)}", ${schemaDevice.maxRegistersPerModbusRequest});
+        initialize();
     }
 
-    public final SchemaDevice schemaDevice = new SchemaDevice();
-
+    @Override
     public ${asClassName(className)} connectBase(ModbusDevice modbusDevice) {
-        schemaDevice.connectBase(modbusDevice);
+        super.connectBase(modbusDevice);
         return this;
     }
 
-    public ${asClassName(className)} connect(ModbusDevice modbusDevice){
-        schemaDevice.connect(modbusDevice);
+    @Override
+    public ${asClassName(className)} connect(ModbusDevice modbusDevice) {
+        super.connect(modbusDevice);
         return this;
     }
 
-    public ${asClassName(className)} connect(ModbusDevice modbusDevice, int allowedGapReadSize){
-        schemaDevice.connect(modbusDevice, allowedGapReadSize);
+    @Override
+    public ${asClassName(className)} connect(ModbusDevice modbusDevice, int allowedGapReadSize) {
+        super.connect(modbusDevice, allowedGapReadSize);
         return this;
-    }
-
-    /**
-     * Update all registers related to the needed fields to be updated
-     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
-     */
-    public List<ModbusQuery> update() {
-        return schemaDevice.update();
-    }
-
-    /**
-     * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
-     * @param maxAge maximum age of the fields in milliseconds
-     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
-     */
-    public List<ModbusQuery> update(Long maxAge) {
-        return schemaDevice.update(maxAge);
-    }
-
-    /**
-     * Update all registers related to the specified field
-     * @param field the Field that must be updated
-     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
-     */
-    public List<ModbusQuery> update(Field field) {
-        return schemaDevice.update(field);
-    }
-
-    /**
-     * Make sure all registers mentioned in all known fields are retrieved.
-     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
-     */
-    public List<ModbusQuery> updateAll() throws ModbusException {
-        return schemaDevice.updateAll();
-    }
-
-    /**
-     * @param field The field that must be kept up-to-date
-     */
-    public void need(Field field) {
-        schemaDevice.need(field);
-    }
-
-    /**
-     * @param field The field that no longer needs to be kept up-to-date
-     */
-    public void unNeed(Field field) {
-        schemaDevice.unNeed(field);
-    }
-
-    /**
-     * We want all fields to be kept up-to-date
-     */
-    public void needAll() {
-        schemaDevice.needAll();
-    }
-
-    /**
-     * We no longer want all fields to be kept up-to-date
-     */
-    public void unNeedAll() {
-        schemaDevice.unNeedAll();
-    }
-
-    abstract public static class DeviceField {
-      public final Field field;
-      public DeviceField(Field field) {
-        this.field = field;
-      }
-      /**
-       * Retrieve the value of this field using the currently available device data.
-       */
-      abstract Object getValue();
-      /**
-       * We want this field to be kept up-to-date
-       */
-      public void need() {
-          field.need();
-      }
-      /**
-       * We no longer want this field to be kept up-to-date
-       */
-      public void unNeed() {
-          field.unNeed();
-      }
-      /**
-       * Directly update this field
-       * @return A list of all modbus queries that have been done (with duration and status)
-       */
-      public List<ModbusQuery> update() {
-          return field.update();
-      }
-      /**
-       * The unit of the returns value
-       */
-      public String getUnit() {
-          return field.getUnit();
-      }
-      /**
-       * The description of the Field
-       */
-      public String getDescription() {
-          return field.getDescription();
-      }
     }
 
 <#list schemaDevice.blocks as block>
@@ -180,44 +83,24 @@ public class ${asClassName(className)} {
     /**
      * ${block.description}
      */
-    public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(schemaDevice);
+    public final ${asClassName(block.id)} ${asVariableName(block.id)} = new ${asClassName(block.id)}(this);
 
-    public static class ${asClassName(block.id)} {
-        private Block block;
+    public static class ${asClassName(block.id)} extends Block {
         ${asClassName(block.id)}(SchemaDevice schemaDevice) {
-            this.block = Block.builder()
-              .schemaDevice(schemaDevice)
-              .id("${block.id}")
+        super(
+            schemaDevice,
+            "${block.id}",
 <#if block.description??>
-              .description("${escapeForJava(block.description)}")
+            "${escapeForJava(block.description)}",
+<#else>
+            "",
 </#if>
-              .build();
-
-<#list block.fields as field>
-            this.${asVariableName(field.id)?right_pad(block.maxFieldIdLength)} = new ${asClassName(field.id)}(block);
-</#list>
-        }
-
-        /**
-         * Directly update all fields in this Block
-         * @return A list of all modbus queries that have been done (with duration and status)
-         */
-        public List<ModbusQuery> update() {
-            return block.update();
-        }
-
-        /**
-         * All fields in this Block must be kept up-to-date
-         */
-        public void need() {
-            block.needAll();
-        }
-
-        /**
-         * All fields in this Block no longer need to be kept up-to-date
-         */
-        public void unNeed() {
-            block.unNeedAll();
+<#if block.shortDescription??>
+            "${escapeForJava(block.shortDescription)}"
+<#else>
+            ""
+</#if>
+            );
         }
 <#list block.fields as field>
 
@@ -228,26 +111,25 @@ public class ${asClassName(className)} {
          * Unit: ${field.unit}
          </#if>
          */
-        <#if field.system>private<#else>public</#if> final ${asClassName(field.id)} ${asVariableName(field.id)};
-        <#if field.system>private<#else>public</#if> static class ${asClassName(field.id)} extends DeviceField {
-            public ${asClassName(field.id)}(Block block) {
-                super(Field.builder()
-                           .block(block)
-                           .id("${field.id}")
-                           .description("${escapeForJava(field.description)}")
-                           .expression("${escapeForJava(field.parsedExpression.toString())}")
-                           .unit("${field.unit}")
-                           .immutable(${field.immutable?string('true', 'false')})
-                           .system(${field.system?string('true', 'false')})
-                           .fetchGroup("${field.fetchGroup}")
-                           .build());
-            }
-
-            @Override
-            public ${jvmReturnType(field.returnType)} getValue() {
-                return field.get${asClassName(valueGetter(field.returnType))}();
-            }
-        }
+        <#if field.system>private<#else>public</#if> final ${fieldSubClass(field.returnType)} ${asVariableName(field.id)} = new ${fieldSubClass(field.returnType)} (
+            /* block            */ this,
+            /* id               */ "${field.id}",
+<#if block.description??>
+            /* description      */ "${escapeForJava(field.description)}",
+<#else>
+            /* description      */ "",
+</#if>
+<#if block.shortDescription??>
+            /* shortDescription */ "${escapeForJava(field.shortDescription)}",
+<#else>
+            /* shortDescription */ "",
+</#if>
+            /* immutable        */ ${field.immutable?string('true', 'false')},
+            /* system           */ ${field.system?string('true', 'false')},
+            /* expression       */ "${escapeForJava(field.parsedExpression.toString())}",
+            /* unit             */ "${field.unit}",
+            /* fetchGroup       */ "${field.fetchGroup}"
+            );
 </#list>
 
         @Override

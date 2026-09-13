@@ -48,7 +48,7 @@ class Test${asClassName(className)} {
 
     @Test
     void ensureValidSchema() throws ModbusException {
-        SchemaDevice schemaDevice = new ${asClassName(className)}().schemaDevice;
+        SchemaDevice schemaDevice = new ${asClassName(className)}();
         assertTrue(schemaDevice.initialize(), "Unable to initialize schema device");
         TestScenarioResultsList results = schemaDevice.verifyProvidedTests();
         assertTrue(results.logResults(), "Unable to verify all tests defined in the schema definition" );

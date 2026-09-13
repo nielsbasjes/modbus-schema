@@ -98,7 +98,7 @@ class MyAppTest {
 
     @Test
     fun checkIfGeneratedCodeWorks1() {
-        val myDevice = MyNewDevice().schemaDevice
+        val myDevice = MyNewDevice()
         myDevice.connect(modbusDevice)
         myDevice.updateAll()
 
@@ -132,24 +132,24 @@ class MyAppTest {
         myDevice.updateAll()
 
         verifyAllFieldValues(
-            myDevice.main.myFloat           .field,
-            myDevice.main.myDouble          .field,
-            myDevice.main.myBitset1         .field,
-            myDevice.main.myBitset2         .field,
-            myDevice.main.myBitset3         .field,
-            myDevice.main.myBitset4         .field,
-            myDevice.main.myEnum            .field,
-            myDevice.main.myEUI48           .field,
-            myDevice.main.myShort           .field,
-            myDevice.main.myUnsignedShort   .field,
-            myDevice.main.myInteger         .field,
-            myDevice.main.myUnsignedInteger .field,
-            myDevice.main.myLong            .field,
-            myDevice.main.myUnsignedLong    .field,
-            myDevice.main.myIPv4            .field,
-            myDevice.main.myIPv6            .field,
-            myDevice.main.myName            .field,
-            myDevice.main.myNameHex         .field,
+            myDevice.main.myFloat           ,
+            myDevice.main.myDouble          ,
+            myDevice.main.myBitset1         ,
+            myDevice.main.myBitset2         ,
+            myDevice.main.myBitset3         ,
+            myDevice.main.myBitset4         ,
+            myDevice.main.myEnum            ,
+            myDevice.main.myEUI48           ,
+            myDevice.main.myShort           ,
+            myDevice.main.myUnsignedShort   ,
+            myDevice.main.myInteger         ,
+            myDevice.main.myUnsignedInteger ,
+            myDevice.main.myLong            ,
+            myDevice.main.myUnsignedLong    ,
+            myDevice.main.myIPv4            ,
+            myDevice.main.myIPv6            ,
+            myDevice.main.myName            ,
+            myDevice.main.myNameHex         ,
         )
     }
 

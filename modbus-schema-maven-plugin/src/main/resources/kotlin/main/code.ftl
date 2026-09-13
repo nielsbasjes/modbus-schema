@@ -31,6 +31,11 @@ package ${packageName}
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Field
+import nl.basjes.modbus.schema.FieldBoolean
+import nl.basjes.modbus.schema.FieldLong
+import nl.basjes.modbus.schema.FieldDouble
+import nl.basjes.modbus.schema.FieldString
+import nl.basjes.modbus.schema.FieldStringList
 import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.toSchemaDevice
@@ -39,91 +44,31 @@ import nl.basjes.modbus.schema.utils.StringTable
 /**
  * ${schemaDevice.description}
  */
-open class ${asClassName(className)} {
+open class ${asClassName(className)} : SchemaDevice("${escapeForJava(schemaDevice.description)}", ${schemaDevice.maxRegistersPerModbusRequest}) {
 
-    val schemaDevice = SchemaDevice()
-
-    val tests = schemaDevice.tests
-
-    fun connectBase(modbusDevice: ModbusDevice): ${asClassName(className)} {
-        schemaDevice.connectBase(modbusDevice)
+    override fun connectBase(
+        modbusDevice: ModbusDevice,
+    ): ${asClassName(className)} {
+        super.connectBase(modbusDevice)
         return this
     }
 
-    fun connect(modbusDevice: ModbusDevice): ${asClassName(className)} {
-        schemaDevice.connect(modbusDevice)
+    override fun connect(
+        modbusDevice: ModbusDevice,
+    ): ${asClassName(className)} {
+        super.connect(modbusDevice, 100)
         return this
     }
 
-    /**
-     * Update all registers related to the needed fields to be updated with a maximum age of the provided milliseconds
-     * @param maxAge maximum age of the fields in milliseconds
-     * @return A list of all modbus queries that have been done (with duration and status)
-     */
-    @JvmOverloads
-    fun update(maxAge: Long = 0) = schemaDevice.update(maxAge)
-
-    /**
-     * Update all registers related to the specified field
-     * @param field the Field that must be updated
-     * @return A list of all modbus queries that have been done (with duration and status)
-     */
-    fun update(field: Field) = schemaDevice.update(field)
-
-    /**
-     * Make sure all registers mentioned in all known fields are retrieved.
-     * @return A (possibly empty) list of all modbus queries that have been done (with duration and status)
-     */
-    @JvmOverloads
-    fun updateAll(maxAge: Long = 0) = schemaDevice.updateAll(maxAge)
-
-    /**
-     * @param field The field that must be kept up-to-date
-     */
-    fun need(field: Field) = schemaDevice.need(field)
-
-    /**
-     * @param field The field that no longer needs to be kept up-to-date
-     */
-    fun unNeed(field: Field) = schemaDevice.unNeed(field)
-
-    /**
-     * We want all fields to be kept up-to-date
-     */
-    fun needAll()  = schemaDevice.needAll()
-
-    /**
-     * We no longer want all fields to be kept up-to-date
-     */
-    fun unNeedAll()  = schemaDevice.unNeedAll()
-
-    abstract class DeviceField(val field: Field) {
+    override fun connect(
+        modbusDevice: ModbusDevice,
         /**
-         * Retrieve the value of this field using the currently available device data.
+         * How many registers may needlessly be read to optimize fetching
          */
-        abstract val value: Any?
-        /**
-         * We want this field to be kept up-to-date
-         */
-        fun need() = field.need()
-        /**
-         * We no longer want this field to be kept up-to-date
-         */
-        fun unNeed() = field.unNeed()
-        /**
-         * Directly update this field
-         * @return A list of all modbus queries that have been done (with duration and status)
-         */
-        fun update() = field.update();
-        /**
-         * The unit of the returns value
-         */
-        val unit =  field.unit
-        /**
-         * The description of the Field
-         */
-        val description = field.description
-        override fun toString(): String = if (value == null) { "null" } else { value.toString() }
+        allowedGapReadSize: Int,
+    ): ${asClassName(className)} {
+        super.connect(modbusDevice, allowedGapReadSize)
+        return this
     }
 
 <#list schemaDevice.blocks as block>
@@ -131,27 +76,18 @@ open class ${asClassName(className)} {
     /**
      * ${block.description}
      */
-    val ${asVariableName(block.id)} = ${asClassName(block.id)}(schemaDevice);
+    val ${asVariableName(block.id)} = ${asClassName(block.id)}(this);
 
-    class ${asClassName(block.id)}(schemaDevice: SchemaDevice) {
-        val block: Block;
-
-        /**
-         * Directly update all fields in this Block
-         * @return A list of all modbus queries that have been done (with duration and status)
-         */
-        fun update() = block.update()
-
-        /**
-         * All fields in this Block must be kept up-to-date
-         */
-        fun need() = block.needAll()
-
-        /**
-         * All fields in this Block no longer need to be kept up-to-date
-         */
-        fun unNeed() = block.unNeedAll()
-
+    class ${asClassName(block.id)}(schemaDevice: SchemaDevice): Block(
+        schemaDevice = schemaDevice,
+        id = "${block.id}",
+<#if block.description??>
+        description = "${escapeForJava(block.description)}",
+</#if>
+<#if block.shortDescription??>
+        shortDescription = "${escapeForJava(block.shortDescription)}",
+</#if>
+    ) {
 <#list block.fields as field>
 
         // ==========================================
@@ -161,35 +97,21 @@ open class ${asClassName(className)} {
          * Unit: ${field.unit}
          </#if>
          */
-        <#if field.system>private<#else>public</#if> val ${asVariableName(field.id)}: ${asClassName(field.id)}
-        <#if field.system>private<#else>public</#if> class ${asClassName(field.id)}(block: Block): DeviceField (
-            Field.builder()
-                 .block(block)
-                 .id("${field.id}")
-                 .description("${escapeForJava(field.description)}")
-                 .expression("${escapeForJava(field.parsedExpression.toString())}")
-                 .unit("${field.unit}")
-                 .immutable(${field.immutable?string('true', 'false')})
-                 .system(${field.system?string('true', 'false')})
-                 .fetchGroup("${field.fetchGroup}")
-                 .build()) {
-            override val value get() = field.${asVariableName(valueGetter(field.returnType))}
-        }
-</#list>
-
-        init {
-            this.block = Block.builder()
-              .schemaDevice(schemaDevice)
-              .id("${block.id}")
+        <#if field.system>private<#else>public</#if> val ${asVariableName(field.id)} = ${fieldSubClass(field.returnType)}(
+            block        = this,
+            id           = "${field.id}",
 <#if block.description??>
-              .description("${escapeForJava(block.description)}")
+            description  = "${escapeForJava(field.description)}",
 </#if>
-              .build()
-
-<#list block.fields as field>
-            this.${asVariableName(field.id)?right_pad(block.maxFieldIdLength)} = ${asClassName(field.id)}(block);
+            expression   = "${escapeForJava(field.parsedExpression.toString())}",
+<#if field.unit?has_content>
+            unit         = "${field.unit}",
+</#if>
+            immutable    = ${field.immutable?string('true', 'false')},
+            system       = ${field.system?string('true', 'false')},
+            fetchGroup   = "${field.fetchGroup}",
+        )
 </#list>
-        }
 
         override fun toString(): String {
             val table = StringTable()
@@ -223,7 +145,7 @@ open class ${asClassName(className)} {
     }
 
     init {
-        require(schemaDevice.initialize()) { "Unable to initialize schema device" }
+        require(initialize()) { "Unable to initialize schema device" }
     }
 
 }

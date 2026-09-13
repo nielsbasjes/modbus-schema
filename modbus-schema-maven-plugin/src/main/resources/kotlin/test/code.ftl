@@ -41,7 +41,7 @@ internal class Test${asClassName(className)} {
 
     @Test
     fun ensureValidSchema() {
-        val schemaDevice = ${asClassName(className)}().schemaDevice
+        val schemaDevice = ${asClassName(className)}()
         val results = schemaDevice.verifyProvidedTests()
         assertTrue(results.logResults(), "Unable to verify all tests defined in the schema definition" )
     }

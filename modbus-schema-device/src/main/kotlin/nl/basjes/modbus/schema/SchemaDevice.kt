@@ -186,7 +186,10 @@ constructor(
     var modbusDevice: ModbusDevice? = null
     var modbusBlockFetcher: ModbusBlockFetcher? = null
 
-    fun connectBase(modbusDevice: ModbusDevice): SchemaDevice {
+    /**
+     * Connect to the provided ModbusDevice and use the base fetcher (no optimizations)
+     */
+    open fun connectBase(modbusDevice: ModbusDevice): SchemaDevice {
         clearModbusBlocks()
         this.modbusDevice = modbusDevice
         modbusDevice.maxRegistersPerModbusRequest = maxRegistersPerModbusRequest
@@ -194,13 +197,22 @@ constructor(
         return this
     }
 
-    @JvmOverloads
-    fun connect(
+    /**
+     * Connect to the provided ModbusDevice and use the optimizing fetcher with an allowedGapReadSize of 100
+     */
+    open fun connect(
+        modbusDevice: ModbusDevice,
+    ): SchemaDevice = connect(modbusDevice, 100)
+
+    /**
+     * Connect to the provided ModbusDevice and use the optimizing fetcher
+     */
+    open fun connect(
         modbusDevice: ModbusDevice,
         /**
          * How many registers may needlessly be read to optimize fetching
          */
-        allowedGapReadSize: Int = 100,
+        allowedGapReadSize: Int,
     ): SchemaDevice {
         clearModbusBlocks()
         this.modbusDevice = modbusDevice
