@@ -52,7 +52,7 @@
     <dependency>
       <groupId>io.heapy.kotaml</groupId>
       <artifactId>kotaml-jvm</artifactId>
-      <version>0.110.0</version>
+      <version>0.111.0</version>
     </dependency>
 
     <dependency>
