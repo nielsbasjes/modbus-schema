@@ -77,6 +77,12 @@
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>nl.basjes.modbus</groupId>
+        <artifactId>modbus-schema-device-testing</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 

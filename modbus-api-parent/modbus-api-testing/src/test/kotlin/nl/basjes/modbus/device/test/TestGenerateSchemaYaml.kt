@@ -22,7 +22,7 @@ import kotlin.test.Test
 internal class TestGenerateSchemaYaml {
     @Test
     fun generate() {
-        val outputFile = File("target/classes", "ModbusSchemaTestSlave.yaml")
+        val outputFile = File("target/classes", "ModbusSchemaDeviceTestSlave.yaml")
         val schemaYaml = ModbusSchemaTestSlave(autoStart = false).modbusSchemaYaml
         outputFile.parentFile.mkdirs()
         outputFile.writeText(schemaYaml)

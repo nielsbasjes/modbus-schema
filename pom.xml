@@ -299,6 +299,7 @@
   </profiles>
 
   <build>
+    <defaultGoal>clean package</defaultGoal>
 
     <pluginManagement>
       <plugins>
@@ -548,6 +549,7 @@
     <module>modbus-schema-reference</module>
     <module>modbus-schema-device</module>
     <module>modbus-schema-maven-plugin</module>
+    <module>modbus-schema-device-testing</module>
   </modules>
 
   <licenses>
