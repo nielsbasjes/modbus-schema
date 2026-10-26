@@ -27,6 +27,13 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
+import nl.basjes.modbus.schema.immutable.ImmutableFieldBoolean
+import nl.basjes.modbus.schema.immutable.ImmutableFieldDouble
+import nl.basjes.modbus.schema.immutable.ImmutableFieldLong
+import nl.basjes.modbus.schema.immutable.ImmutableFieldString
+import nl.basjes.modbus.schema.immutable.ImmutableFieldStringList
+import nl.basjes.modbus.schema.immutable.get
+import nl.basjes.modbus.schema.immutable.toImmutable
 import nl.basjes.modbus.schema.toTable
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
@@ -99,6 +106,12 @@ class TestScenarioExpressions {
                 .getModbusValues(schemaDevice)
                 .joinToString(separator = ",") { it.toString() }
         assertTrue(registers.isEmpty(), "Registers was not empty $registers")
+
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest1 = immutableSchemaDevice["Block"]["test1"]
+        assertTrue(immutableFieldTest1 is ImmutableFieldLong)
+        assertEquals(test1.longValue, immutableFieldTest1.value)
     }
 
     @Throws(ModbusException::class)
@@ -120,6 +133,12 @@ class TestScenarioExpressions {
 
         assertEquals(ReturnType.DOUBLE, test1.returnType)
         assertEquals(ReturnType.DOUBLE, test2.returnType)
+
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest1 = immutableSchemaDevice["Block"]["test1"]
+        assertTrue(immutableFieldTest1 is ImmutableFieldDouble)
+        assertEquals(test1.doubleValue, immutableFieldTest1.value)
 
         val parsedExpression1 = test1.parsedExpression
         if (expected == null) {
@@ -175,6 +194,12 @@ class TestScenarioExpressions {
             assertEquals(expected, test1.booleanValue, "Expected $expected from $expression")
         }
 
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest1 = immutableSchemaDevice["Block"]["test1"]
+        assertTrue(immutableFieldTest1 is ImmutableFieldBoolean)
+        assertEquals(test1.booleanValue, immutableFieldTest1.value)
+
         val parsedExpression1 = test1.parsedExpression
         assertNotNull(parsedExpression1)
 
@@ -208,6 +233,12 @@ class TestScenarioExpressions {
 
         assertEquals(ReturnType.LONG, test1.returnType)
         assertEquals(ReturnType.LONG, test2.returnType)
+
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest1 = immutableSchemaDevice["Block"]["test1"]
+        assertTrue(immutableFieldTest1 is ImmutableFieldLong)
+        assertEquals(test1.longValue, immutableFieldTest1.value)
 
         if (expected == null) {
             assertNull(test1.longValue)
@@ -254,6 +285,12 @@ class TestScenarioExpressions {
         assertEquals(ReturnType.DOUBLE, test1.returnType)
         assertEquals(ReturnType.DOUBLE, test2.returnType)
 
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest1 = immutableSchemaDevice["Block"]["test1"]
+        assertTrue(immutableFieldTest1 is ImmutableFieldDouble)
+        assertEquals(test1.doubleValue, immutableFieldTest1.value)
+
         val parsedExpression1 = test1.parsedExpression
         if (expected == null) {
             assertNull(test1.doubleValue)
@@ -284,6 +321,12 @@ class TestScenarioExpressions {
         require(schemaDevice.initialize()) { "Init failed :\n${schemaDevice.initializationProblems()}" }
         assertEquals(ReturnType.STRING, testField.returnType)
         assertEquals(expected, testField.stringValue)
+
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest = immutableSchemaDevice["Block"]["test"]
+        assertTrue(immutableFieldTest is ImmutableFieldString)
+        assertEquals(testField.stringValue, immutableFieldTest.value)
     }
 
     private fun verify(
@@ -298,6 +341,12 @@ class TestScenarioExpressions {
         assertTrue(testField.initialize())
         assertEquals(ReturnType.STRINGLIST, testField.returnType)
         assertEquals(expected, testField.stringListValue)
+
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableSchemaDevice = schemaDevice.toImmutable()
+        val immutableFieldTest = immutableSchemaDevice["Block"]["test"]
+        assertTrue(immutableFieldTest is ImmutableFieldStringList)
+        assertEquals(testField.stringListValue, immutableFieldTest.value)
     }
 
     private fun isVALID(
@@ -347,7 +396,7 @@ class TestScenarioExpressions {
                 "The expression $expression MUST trigger an exception but it did not.\n" +
                     "The field was parsed as: ${field?.parsedExpression}",
             )
-        } catch (e: ModbusSchemaParseException) {
+        } catch (_: ModbusSchemaParseException) {
             // Success !
         }
     }
@@ -362,6 +411,71 @@ class TestScenarioExpressions {
         // Now we parse the result of toString, create a new Field and then check if they are equal
         val schemaDevice2 = buildVerifier("", "DEAD", TestField("test", fieldToString))
         assertEquals(expected, getField(schemaDevice2, "test")!!.parsedExpression.toString())
+    }
+
+
+    @Test
+    fun testImmutableEdges() {
+        val schemaDevice = SchemaDevice()
+        val block = Block(schemaDevice, "block")
+        val initializedField = Field(block = block, id = "initializedField", system = false, expression = "42")
+        initializedField.initialize()
+        assertTrue(initializedField.initialized)
+        assertFalse(initializedField.isSystem)
+
+        val uninitializedField = Field(block = block, id = "uninitializedField", system = false, expression = "42")
+        assertFalse(uninitializedField.initialized)
+        assertFalse(uninitializedField.isSystem)
+
+        val systemField = Field(block = block, id = "systemField", system = true, expression = "42")
+        assertFalse(uninitializedField.initialized)
+        assertTrue(systemField.isSystem)
+
+        schemaDevice.needAll() // Only the needed fields are copied to the immutable
+        val immutableDevice = schemaDevice.toImmutable()
+
+        assertNotNull(immutableDevice["block"])
+        assertNotNull(immutableDevice["block"]["initializedField"])
+        assertNull(immutableDevice["block"]["uninitializedField"])
+        assertNull(immutableDevice["block"]["systemField"])
+
+        assertNull(immutableDevice["no such block"])
+        assertNull(immutableDevice["no such block"]["no such field"])
+        assertNull(immutableDevice["block"]["no such field"])
+    }
+
+    @Test
+    fun testImmutableNotNeeded() {
+        val schemaDevice = SchemaDevice()
+        val block1 = Block(schemaDevice, "block1")
+        val field1 = Field(block = block1, id = "field1", expression = "42")
+        field1.initialize()
+        assertTrue(field1.initialized)
+        assertFalse(field1.isNeeded())
+
+        val block2 = Block(schemaDevice, "block2")
+        val uninitializedField = Field(block = block2, id = "uninitializedField", system = false, expression = "42")
+        uninitializedField.need()
+        assertFalse(uninitializedField.initialized)
+        assertFalse(uninitializedField.isSystem)
+        assertTrue(uninitializedField.isNeeded())
+
+        val systemField = Field(block = block2, id = "systemField", system = true, expression = "42")
+        systemField.initialize()
+        systemField.need()
+        assertTrue(systemField.isNeeded())
+        assertTrue(systemField.initialized)
+        assertTrue(systemField.isSystem)
+
+        // Only the needed fields are copied to the immutable
+        val immutableDevice = schemaDevice.toImmutable()
+
+        assertNull(immutableDevice["block1"])
+        assertNull(immutableDevice["block1"]["field1"])
+
+        assertNull(immutableDevice["block2"])
+        assertNull(immutableDevice["block2"]["uninitializedField"])
+        assertNull(immutableDevice["block2"]["systemField"])
     }
 
     @Test
