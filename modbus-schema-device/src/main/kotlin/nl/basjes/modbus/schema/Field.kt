@@ -243,7 +243,7 @@ open class Field(
     open val value: Any?
         get() =
             when (returnType) {
-                UNKNOWN    -> null //TODO("Unknown returnType (Field $id) means we do not know yet")
+                UNKNOWN    -> TODO("It is not possible to get the value of Field \"$id\" before initializing it.")
                 BOOLEAN    -> booleanValue
                 LONG       -> longValue
                 DOUBLE     -> doubleValue
